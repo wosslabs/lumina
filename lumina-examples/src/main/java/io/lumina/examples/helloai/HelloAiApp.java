@@ -7,8 +7,16 @@ import io.lumina.ui.Ui;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Minimal stateful chat application backed by Lumina's offline echo client.
+ */
 public final class HelloAiApp implements LuminaApp {
     private final ChatClient chat = ChatClients.echo();
+
+    /**
+     * Creates a Hello AI application using the built-in echo client.
+     */
+    public HelloAiApp() {}
 
     @Override
     public void build(Ui ui) {

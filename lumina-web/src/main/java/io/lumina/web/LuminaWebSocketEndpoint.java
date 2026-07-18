@@ -35,12 +35,23 @@ public final class LuminaWebSocketEndpoint {
         this.sessionManager = Objects.requireNonNull(sessionManager, "sessionManager");
     }
 
+    /**
+     * Opens a Lumina session and sends its initial component-tree snapshot.
+     *
+     * @param session newly opened WebSocket session
+     */
     @OnWebSocketOpen
     public void onOpen(Session session) {
         sessionHandle = sessionManager.create();
         sessionHandle.submit(Intent.connect()).whenComplete((result, error) -> reply(session, result, error));
     }
 
+    /**
+     * Applies a browser intent and sends the resulting patch or error.
+     *
+     * @param session active WebSocket session
+     * @param message JSON intent message
+     */
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         Intent intent;
@@ -54,11 +65,22 @@ public final class LuminaWebSocketEndpoint {
         sessionHandle.submit(intent).whenComplete((result, error) -> reply(session, result, error));
     }
 
+    /**
+     * Releases the Lumina session after its WebSocket closes.
+     *
+     * @param statusCode WebSocket close status
+     * @param reason peer-supplied close reason
+     */
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         closeSession();
     }
 
+    /**
+     * Releases the Lumina session after a WebSocket failure.
+     *
+     * @param cause WebSocket failure
+     */
     @OnWebSocketError
     public void onError(Throwable cause) {
         closeSession();

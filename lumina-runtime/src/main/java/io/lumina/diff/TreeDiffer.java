@@ -12,7 +12,16 @@ import java.util.Objects;
  */
 public final class TreeDiffer {
     /**
+     * Creates a stateless tree differ.
+     */
+    public TreeDiffer() {}
+
+    /**
      * Returns the operations that transform {@code before} into {@code after}.
+     *
+     * @param before previous component tree
+     * @param after current component tree
+     * @return immutable ordered patch operations
      */
     public List<PatchOp> diff(ComponentNode before, ComponentNode after) {
         List<PatchOp> operations = new ArrayList<>();

@@ -37,6 +37,11 @@ public final class UiBinder implements Ui {
     private final Deque<String> paths = new ArrayDeque<>();
     private final Deque<Map<String, Integer>> counters = new ArrayDeque<>();
 
+    /**
+     * Creates a binder backed by the supplied session state.
+     *
+     * @param session state owned by the current session
+     */
     public UiBinder(SessionState session) {
         this.session = Objects.requireNonNull(session, "session");
         paths.push(ROOT_PATH);
@@ -145,6 +150,11 @@ public final class UiBinder implements Ui {
         }
     }
 
+    /**
+     * Creates the immutable root containing all components declared during this run.
+     *
+     * @return root of the completed component tree
+     */
     public ComponentNode buildRoot() {
         return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), children);
     }

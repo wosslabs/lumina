@@ -48,6 +48,11 @@ public final class LuminaCli {
         return 1;
     }
 
+    /**
+     * Runs the Lumina command-line entry point and exits with its result code.
+     *
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         System.exit(run(args, System.out));
     }

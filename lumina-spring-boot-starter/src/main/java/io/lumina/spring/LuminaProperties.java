@@ -10,6 +10,11 @@ public class LuminaProperties {
     private int port = 8080;
 
     /**
+     * Creates properties with the default server port.
+     */
+    public LuminaProperties() {}
+
+    /**
      * Returns the server port.
      *
      * @return configured port

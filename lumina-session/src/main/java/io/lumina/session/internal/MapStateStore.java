@@ -6,8 +6,16 @@ import java.util.function.Function;
 
 import io.lumina.state.StateStore;
 
+/**
+ * In-memory {@link StateStore} used by a single Lumina session.
+ */
 public final class MapStateStore implements StateStore {
     private final Map<String, Object> values = new HashMap<>();
+
+    /**
+     * Creates an empty state store.
+     */
+    public MapStateStore() {}
 
     @Override
     @SuppressWarnings("unchecked")
