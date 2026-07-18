@@ -12,7 +12,7 @@ Lumina Phase 1 requires Java 21 and Maven.
 From the repository root, build and run the included Hello AI application:
 
 ```bash
-mvn -q -pl lumina-examples -am package
+mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java
 ```
 
@@ -20,9 +20,10 @@ Open [http://localhost:8080](http://localhost:8080), enter a prompt, and the
 built-in offline chat client will echo it. The example entry point is
 `io.lumina.examples.helloai.HelloAiMain`.
 
-The two commands are intentionally separate: the first installs the example's
-reactor dependencies, while the second runs the example module's configured
-main class.
+The two commands are intentionally separate: the first builds and installs the
+example and its reactor dependencies into the local Maven repository (required
+on a fresh checkout so sibling SNAPSHOT artifacts resolve), while the second
+runs the example module's configured main class.
 
 ## Modules
 

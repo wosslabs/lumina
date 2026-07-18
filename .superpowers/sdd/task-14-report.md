@@ -36,3 +36,24 @@ required full commands then passed with that same environment.
 Maven ran on Java 25 while compiling for Java 21. Mockito emitted its existing
 dynamic-agent compatibility warning and SLF4J reported no provider in tests;
 neither affected verification.
+
+## Follow-up: fresh-checkout quickstart (install vs package)
+
+**Status:** Complete.
+
+**Issue:** The documented quickstart used `-am package`, which compiles and
+packages reactor modules but does not install sibling SNAPSHOT artifacts into
+the local Maven repository. On a fresh checkout, the second command
+(`exec:java` scoped to `lumina-examples`) could fail to resolve dependencies
+that exist only as unreleased reactor builds.
+
+**Fix:**
+- Updated root `README.md` and `lumina-examples/README.md` to use
+  `mvn -q -pl lumina-examples -am install` before `exec:java`.
+- Clarified that `install` is required on a fresh checkout so sibling SNAPSHOT
+  artifacts resolve.
+
+**Verification:**
+- `mvn -q -pl lumina-examples -am install` — exit code 0, `BUILD SUCCESS`.
+- `mvn -q -pl lumina-examples exec:java` — printed
+  `Lumina Hello AI at http://localhost:8080/`; server killed after startup banner.
