@@ -3,11 +3,21 @@
 
   const ELEMENTS = {
     title: "lumina-title",
+    markdown: "lumina-markdown",
     text: "lumina-text",
+    button: "lumina-button",
+    text_input: "lumina-text-input",
     chat_input: "lumina-chat-input",
     user_message: "lumina-user-message",
-    ai_message: "lumina-ai-message"
+    ai_message: "lumina-ai-message",
+    code: "lumina-code",
+    json: "lumina-json",
+    table: "lumina-table",
+    image: "lumina-image",
+    file_upload: "lumina-file-upload",
+    progress: "lumina-progress"
   };
+  const MAX_UPLOAD_BYTES = 1024 * 1024;
 
   class LuminaNodeElement extends HTMLElement {
     set node(node) {
@@ -33,6 +43,53 @@
       const paragraph = document.createElement("p");
       paragraph.textContent = this.content;
       this.replaceChildren(paragraph);
+    }
+  }
+
+  class LuminaMarkdown extends LuminaNodeElement {
+    render() {
+      const fragment = document.createDocumentFragment();
+      const lines = this.content.split("\n");
+      lines.forEach((line, index) => {
+        const heading = /^(#{1,6})\s+(.*)$/.exec(line);
+        if (heading) {
+          const element = document.createElement(`h${heading[1].length}`);
+          element.textContent = heading[2];
+          fragment.append(element);
+        } else {
+          fragment.append(document.createTextNode(line));
+          if (index < lines.length - 1) {
+            fragment.append(document.createElement("br"));
+          }
+        }
+      });
+      this.replaceChildren(fragment);
+    }
+  }
+
+  class LuminaButton extends LuminaNodeElement {
+    render() {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = String(this._node?.props?.label ?? "");
+      button.addEventListener("click", () =>
+        this.closest("lumina-app")?.sendIntent("click", this._node.id));
+      this.replaceChildren(button);
+    }
+  }
+
+  class LuminaTextInput extends LuminaNodeElement {
+    render() {
+      const label = document.createElement("label");
+      const caption = document.createElement("span");
+      const input = document.createElement("input");
+      caption.textContent = String(this._node?.props?.label ?? "");
+      input.type = "text";
+      input.value = String(this._node?.props?.value ?? "");
+      input.addEventListener("change", () =>
+        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value }));
+      label.append(caption, input);
+      this.replaceChildren(label);
     }
   }
 
@@ -76,6 +133,111 @@
     }
   }
 
+  class LuminaCode extends LuminaNodeElement {
+    render() {
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.dataset.language = String(this._node?.props?.language ?? "");
+      code.textContent = String(this._node?.props?.source ?? "");
+      pre.append(code);
+      this.replaceChildren(pre);
+    }
+  }
+
+  class LuminaJson extends LuminaNodeElement {
+    render() {
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(this._node?.props?.value ?? null, null, 2);
+      this.replaceChildren(pre);
+    }
+  }
+
+  class LuminaTable extends LuminaNodeElement {
+    render() {
+      const rows = Array.isArray(this._node?.props?.rows) ? this._node.props.rows : [];
+      const columns = [...new Set(rows.flatMap((row) =>
+        row && typeof row === "object" && !Array.isArray(row) ? Object.keys(row) : []))];
+      const table = document.createElement("table");
+      if (columns.length) {
+        const head = document.createElement("thead");
+        const headingRow = document.createElement("tr");
+        columns.forEach((column) => {
+          const cell = document.createElement("th");
+          cell.scope = "col";
+          cell.textContent = column;
+          headingRow.append(cell);
+        });
+        head.append(headingRow);
+        table.append(head);
+      }
+      const body = document.createElement("tbody");
+      rows.forEach((row) => {
+        const tableRow = document.createElement("tr");
+        columns.forEach((column) => {
+          const cell = document.createElement("td");
+          cell.textContent = displayValue(row?.[column]);
+          tableRow.append(cell);
+        });
+        body.append(tableRow);
+      });
+      table.append(body);
+      this.replaceChildren(table);
+    }
+  }
+
+  class LuminaImage extends LuminaNodeElement {
+    render() {
+      const image = document.createElement("img");
+      image.src = String(this._node?.props?.src ?? "");
+      image.alt = "";
+      this.replaceChildren(image);
+    }
+  }
+
+  class LuminaFileUpload extends LuminaNodeElement {
+    render() {
+      const label = document.createElement("label");
+      const caption = document.createElement("span");
+      const input = document.createElement("input");
+      caption.textContent = String(this._node?.props?.label ?? "");
+      input.type = "file";
+      input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file) {
+          return;
+        }
+        const app = this.closest("lumina-app");
+        if (file.size > MAX_UPLOAD_BYTES) {
+          app?.setStatus("File exceeds the 1 MB limit");
+          input.value = "";
+          return;
+        }
+        try {
+          const data = await fileToBase64(file);
+          app?.sendIntent("file_upload", this._node.id, {
+            fileName: file.name,
+            contentType: file.type,
+            data
+          });
+        } catch {
+          app?.setStatus("Unable to read file");
+        }
+        input.value = "";
+      });
+      label.append(caption, input);
+      this.replaceChildren(label);
+    }
+  }
+
+  class LuminaProgress extends LuminaNodeElement {
+    render() {
+      const progress = document.createElement("progress");
+      progress.max = 1;
+      progress.value = Number(this._node?.props?.value ?? 0);
+      this.replaceChildren(progress);
+    }
+  }
+
   class LuminaApp extends HTMLElement {
     connectedCallback() {
       if (this.socket) {
@@ -96,15 +258,19 @@
     }
 
     submitChat(targetId, value) {
+      this.sendIntent("submit_chat", targetId, { value });
+    }
+
+    sendIntent(name, targetId, payload = {}) {
       if (this.socket?.readyState !== WebSocket.OPEN) {
         this.setStatus("Not connected");
         return;
       }
       this.socket.send(JSON.stringify({
         type: "intent",
-        name: "submit_chat",
+        name,
         targetId,
-        payload: { value }
+        payload
       }));
     }
 
@@ -201,6 +367,22 @@
     return element;
   }
 
+  function displayValue(value) {
+    if (value == null) {
+      return "";
+    }
+    return typeof value === "object" ? JSON.stringify(value) : String(value);
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => resolve(String(reader.result).split(",", 2)[1] ?? ""));
+      reader.addEventListener("error", () => reject(reader.error));
+      reader.readAsDataURL(file);
+    });
+  }
+
   function pathTokens(path) {
     if (!path) {
       return [];
@@ -290,9 +472,18 @@
   }
 
   customElements.define("lumina-title", LuminaTitle);
+  customElements.define("lumina-markdown", LuminaMarkdown);
   customElements.define("lumina-text", LuminaText);
+  customElements.define("lumina-button", LuminaButton);
+  customElements.define("lumina-text-input", LuminaTextInput);
   customElements.define("lumina-chat-input", LuminaChatInput);
   customElements.define("lumina-user-message", LuminaUserMessage);
   customElements.define("lumina-ai-message", LuminaAiMessage);
+  customElements.define("lumina-code", LuminaCode);
+  customElements.define("lumina-json", LuminaJson);
+  customElements.define("lumina-table", LuminaTable);
+  customElements.define("lumina-image", LuminaImage);
+  customElements.define("lumina-file-upload", LuminaFileUpload);
+  customElements.define("lumina-progress", LuminaProgress);
   customElements.define("lumina-app", LuminaApp);
 })();

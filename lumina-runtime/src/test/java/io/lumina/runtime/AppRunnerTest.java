@@ -6,10 +6,13 @@ import io.lumina.LuminaApp;
 import io.lumina.ai.ChatClients;
 import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
+import io.lumina.ui.UploadedFile;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
@@ -149,6 +152,25 @@ class AppRunnerTest {
 
         assertThat(findType(bAfter.root(), ComponentTypes.TEXT).props().get("content"))
                 .isEqualTo("hello ");
+    }
+
+    @Test
+    void fileUploadIntentMakesUploadedFileAvailableForOneRun() {
+        LuminaApp app = ui -> ui.fileUpload("Attachment")
+                .ifPresent(file -> ui.text(
+                        file.fileName() + ":" + new String(file.bytes(), StandardCharsets.UTF_8)));
+        SessionHandle session = new SessionManager(app).create();
+        RunResult initial = session.submit(Intent.connect()).join();
+        String uploadId = findType(initial.root(), ComponentTypes.FILE_UPLOAD).id();
+        UploadedFile file =
+                new UploadedFile("notes.txt", "text/plain", "hello".getBytes(StandardCharsets.UTF_8));
+
+        RunResult uploaded = session.submit(new Intent("file_upload", uploadId, Map.of("file", file))).join();
+        RunResult next = session.submit(Intent.connect()).join();
+
+        assertThat(findType(uploaded.root(), ComponentTypes.TEXT).props().get("content"))
+                .isEqualTo("notes.txt:hello");
+        assertThat(flattenTypes(next.root())).doesNotContain(ComponentTypes.TEXT);
     }
 
     private static ComponentNode findType(ComponentNode root, String type) {

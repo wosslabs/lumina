@@ -6,6 +6,8 @@ import io.lumina.LuminaException;
 import io.lumina.diff.PatchOp;
 import io.lumina.model.ComponentNode;
 import io.lumina.runtime.Intent;
+import io.lumina.ui.UploadedFile;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +18,7 @@ import java.util.Objects;
  * hand-written (de)serializers.
  */
 public final class ProtocolCodec {
+    private static final int MAX_UPLOAD_BYTES = 1024 * 1024;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private ProtocolCodec() {}
@@ -75,7 +78,34 @@ public final class ProtocolCodec {
             throw new LuminaException("Intent message missing 'name'");
         }
         Map<String, Object> payload = message.payload() == null ? Map.of() : message.payload();
+        if ("file_upload".equals(message.name())) {
+            payload = decodeUpload(payload);
+        }
         return new Intent(message.name(), message.targetId(), payload);
+    }
+
+    private static Map<String, Object> decodeUpload(Map<String, Object> payload) {
+        String fileName = stringPayload(payload, "fileName");
+        String contentType = stringPayload(payload, "contentType");
+        String data = stringPayload(payload, "data");
+        byte[] bytes;
+        try {
+            bytes = Base64.getDecoder().decode(data);
+        } catch (IllegalArgumentException e) {
+            throw new LuminaException("File upload contains invalid base64 data", e);
+        }
+        if (bytes.length > MAX_UPLOAD_BYTES) {
+            throw new LuminaException("File upload exceeds the 1 MB limit");
+        }
+        return Map.of("file", new UploadedFile(fileName, contentType, bytes));
+    }
+
+    private static String stringPayload(Map<String, Object> payload, String name) {
+        Object value = payload.get(name);
+        if (value instanceof String text) {
+            return text;
+        }
+        throw new LuminaException("File upload missing '" + name + "'");
     }
 
     private static String write(Object message) {

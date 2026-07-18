@@ -61,7 +61,17 @@ class LuminaServerIT {
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body())
                 .contains("customElements.define")
-                .contains("\"submit_chat\"");
+                .contains("\"submit_chat\"")
+                .contains("\"file_upload\"")
+                .contains("lumina-markdown")
+                .contains("lumina-button")
+                .contains("lumina-text-input")
+                .contains("lumina-code")
+                .contains("lumina-json")
+                .contains("lumina-table")
+                .contains("lumina-image")
+                .contains("lumina-file-upload")
+                .contains("lumina-progress");
     }
 
     @Test
