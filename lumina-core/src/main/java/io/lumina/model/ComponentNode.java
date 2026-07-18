@@ -17,6 +17,9 @@ public record ComponentNode(
         Map<String, Object> props,
         List<ComponentNode> children
 ) {
+    /**
+     * Creates a component node with defensive copies of props and children.
+     */
     public ComponentNode {
         props = Map.copyOf(props);
         children = List.copyOf(children);
