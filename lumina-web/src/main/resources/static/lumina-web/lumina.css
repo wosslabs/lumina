@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+lumina-app {
+  display: block;
+  width: min(44rem, calc(100% - 2rem));
+  margin: 3rem auto;
+}
+
+lumina-title h1 {
+  margin: 0 0 1.5rem;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+lumina-text p {
+  margin: 0.75rem 0;
+}
+
+lumina-user-message,
+lumina-ai-message {
+  display: block;
+  max-width: 80%;
+  margin: 0.75rem 0;
+}
+
+lumina-user-message {
+  margin-left: auto;
+}
+
+.message {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid color-mix(in srgb, CanvasText 22%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, CanvasText 6%, Canvas);
+  white-space: pre-wrap;
+}
+
+lumina-user-message .message {
+  background: color-mix(in srgb, LinkText 12%, Canvas);
+}
+
+lumina-chat-input {
+  display: block;
+  margin-top: 1.5rem;
+}
+
+lumina-chat-input form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+lumina-chat-input input {
+  min-width: 0;
+  flex: 1;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid color-mix(in srgb, CanvasText 30%, transparent);
+  border-radius: 0.35rem;
+  background: Field;
+  color: FieldText;
+  font: inherit;
+}
+
+lumina-chat-input button {
+  padding: 0.7rem 1rem;
+  border: 1px solid ButtonBorder;
+  border-radius: 0.35rem;
+  background: ButtonFace;
+  color: ButtonText;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lumina-status {
+  color: GrayText;
+  font-size: 0.9rem;
+}

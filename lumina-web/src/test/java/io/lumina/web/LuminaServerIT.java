@@ -32,26 +32,36 @@ class LuminaServerIT {
     }
 
     @Test
-    void indexPageServesPlaceholderClientShell() throws Exception {
+    void indexPageServesClientShell() throws Exception {
         server = LuminaServer.start(ui -> ui.title("Test App"), LuminaServerConfig.builder().port(0).build());
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(
                 HttpRequest.newBuilder(server.uri()).GET().build(), HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("lumina-app");
+        assertThat(response.body())
+                .contains("<lumina-app></lumina-app>")
+                .contains("/lumina-web/lumina-client.js")
+                .contains("/lumina-web/lumina.css");
     }
 
+    /**
+     * Manual acceptance: connect to {@code ws://host/ws}; render snapshot root children; apply
+     * ADD, REMOVE, REPLACE, UPDATE_PROPS, and REORDER patches; submit chat as an ADR-003
+     * {@code submit_chat} intent with the component target id and {@code payload.value}.
+     */
     @Test
-    void staticResourceUnderLuminaWebPathIsServed() throws Exception {
+    void browserClientScriptIsServed() throws Exception {
         server = LuminaServer.start(ui -> ui.title("Test App"), LuminaServerConfig.builder().port(0).build());
-        URI resource = server.uri().resolve("/lumina-web/placeholder.txt");
+        URI resource = server.uri().resolve("/lumina-web/lumina-client.js");
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(
                 HttpRequest.newBuilder(resource).GET().build(), HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Task 8");
+        assertThat(response.body())
+                .contains("customElements.define")
+                .contains("\"submit_chat\"");
     }
 
     @Test
