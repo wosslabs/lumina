@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootTest(
         classes = LuminaAutoConfigurationTest.TestApp.class,
-        properties = "lumina.port=0")
+        properties = {"lumina.port=0", "spring.config.import="})
 @ImportAutoConfiguration(LuminaAutoConfiguration.class)
 class LuminaAutoConfigurationTest {
     @Test

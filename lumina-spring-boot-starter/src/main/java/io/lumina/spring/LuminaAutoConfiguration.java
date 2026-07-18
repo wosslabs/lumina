@@ -18,6 +18,11 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnBean(LuminaApp.class)
 @EnableConfigurationProperties(LuminaProperties.class)
 public class LuminaAutoConfiguration {
+    /**
+     * Creates the Lumina Spring Boot auto-configuration.
+     */
+    public LuminaAutoConfiguration() {}
+
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnMissingBean(LuminaServer.class)
     static class EmbeddedServerConfiguration {

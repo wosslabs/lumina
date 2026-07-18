@@ -12,6 +12,9 @@ import java.util.Map;
  *     upload
  */
 public record Intent(String name, String targetId, Map<String, Object> payload) {
+    /**
+     * Creates an intent and snapshots its payload.
+     */
     public Intent {
         payload = Map.copyOf(payload);
     }

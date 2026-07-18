@@ -15,6 +15,9 @@ import java.util.Objects;
  * @param error user code failure message, or {@code null} on success
  */
 public record RunResult(ComponentNode root, List<PatchOp> patches, boolean fullSnapshot, String error) {
+    /**
+     * Creates a run result and snapshots its patch list.
+     */
     public RunResult {
         if (root == null && error == null) {
             throw new NullPointerException("root");

@@ -1,25 +1,43 @@
 # Lumina
 
-Lumina is a Java framework for building server-driven user interfaces.
+Lumina is an open-source Java framework for building interactive, server-driven
+web applications in pure Java. Inspired by Streamlit and designed for modern
+Java and AI applications, it owns rendering, session state, and real-time UI
+updates so application code needs no HTML, CSS, or JavaScript.
 
-## Quick start
+Lumina Phase 1 requires Java 21 and Maven.
 
-Define a `LuminaApp` and start the embedded server with `LuminaServer.start(app)`:
+## Hello AI quickstart
 
-```java
-import io.lumina.LuminaApp;
-import io.lumina.web.LuminaServer;
+From the repository root, build and run the included Hello AI application:
 
-public final class HelloLumina {
-    public static void main(String[] args) {
-        LuminaApp app = ui -> {
-            ui.title("Hello, Lumina");
-            ui.text("Your app is running.");
-        };
-
-        LuminaServer.start(app);
-    }
-}
+```bash
+mvn -q -pl lumina-examples -am package
+mvn -q -pl lumina-examples exec:java
 ```
 
-The server listens on port `8080` by default.
+Open [http://localhost:8080](http://localhost:8080), enter a prompt, and the
+built-in offline chat client will echo it. The example entry point is
+`io.lumina.examples.helloai.HelloAiMain`.
+
+The two commands are intentionally separate: the first installs the example's
+reactor dependencies, while the second runs the example module's configured
+main class.
+
+## Modules
+
+- `lumina-core` — application, UI, state, model, AI, and transport contracts.
+- `lumina-session` — isolated session and widget state storage.
+- `lumina-components` — shared built-in component property definitions.
+- `lumina-runtime` — UI binding, session execution, and component-tree diffing.
+- `lumina-web` — embedded Jetty server, WebSocket endpoint, and wire protocol.
+- `lumina-devtools` — development reload SPI and Phase 1 no-op implementation.
+- `lumina-spring-boot-starter` — optional Spring Boot auto-configuration.
+- `lumina-cli` — command-line launcher for `LuminaApp` implementations.
+- `lumina-examples` — runnable applications, including Hello AI.
+
+## Design
+
+The approved [Phase 1 architecture design](docs/superpowers/specs/2026-07-18-lumina-phase1-design.md)
+documents the goals, non-goals, architecture, protocol, and ADRs behind the
+implementation.
