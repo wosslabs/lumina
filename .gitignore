@@ -7,3 +7,6 @@ target/
 .project
 .settings/
 .DS_Store
+
+# Superpowers SDD scratch
+.superpowers/
