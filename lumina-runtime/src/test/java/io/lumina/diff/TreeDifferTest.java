@@ -26,6 +26,19 @@ class TreeDifferTest {
     }
 
     @Test
+    void changedSiblingIdProducesRemoveAndAdd() {
+        ComponentNode replacement = node("b", "text", Map.of("content", "new"));
+
+        List<PatchOp> ops = new TreeDiffer().diff(
+                root(node("a", "text", Map.of("content", "old"))),
+                root(replacement));
+
+        assertThat(ops).containsExactly(
+                new PatchOp("REMOVE", "/children/0", null, null, null),
+                new PatchOp("ADD", "/children/0", replacement, null, null));
+    }
+
+    @Test
     void changedNodeTypeProducesReplaceWithoutDescendantOps() {
         ComponentNode replacement = node("content", "text", Map.of("content", "new"));
 

@@ -88,9 +88,10 @@ The server reports a request or application failure without exposing internals:
 }
 ```
 
-Tree diffing uses node ids as sibling keys. A changed node id or type produces `REPLACE`; changed
-properties produce `UPDATE_PROPS`. Removed and added sibling ids produce `REMOVE` and `ADD`, common
-ids are compared recursively, and a changed relative order of common siblings produces `REORDER`.
+Tree diffing uses node ids as sibling keys. A changed sibling id produces `REMOVE` and `ADD`
+because keyed matching treats it as removing the old id and adding the new one. A changed node type
+on a common id produces `REPLACE`; changed properties produce `UPDATE_PROPS`. Common ids are
+compared recursively, and a changed relative order of common siblings produces `REORDER`.
 Pure additions or removals do not also emit a redundant reorder.
 
 ## Consequences
