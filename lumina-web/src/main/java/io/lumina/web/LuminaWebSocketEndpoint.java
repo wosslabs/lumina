@@ -58,7 +58,9 @@ public final class LuminaWebSocketEndpoint {
         try {
             intent = ProtocolCodec.parseIntent(message);
         } catch (RuntimeException e) {
-            LOGGER.log(System.Logger.Level.WARNING, "Rejected invalid WebSocket message", e);
+            // Malformed frames are routine and client-triggerable; log at DEBUG (with
+            // detail) to avoid noise and log-spam. The client still gets a clean error.
+            LOGGER.log(System.Logger.Level.DEBUG, "Rejected invalid WebSocket message", e);
             sendError(session, INVALID_MESSAGE);
             return;
         }
