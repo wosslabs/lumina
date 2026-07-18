@@ -27,4 +27,16 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>io.lumina.examples.helloai.HelloAiMain</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
