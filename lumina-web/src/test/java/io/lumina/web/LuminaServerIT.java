@@ -1,6 +1,7 @@
 package io.lumina.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +10,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
+import java.util.Base64;
+import java.util.Random;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
@@ -149,8 +153,76 @@ class LuminaServerIT {
         webSocket.abort();
     }
 
+    @Test
+    void websocketUploadLargerThan64KbRoundTripsToApplication() throws Exception {
+        server = LuminaServer.start(
+                ui -> ui.fileUpload("Attachment")
+                        .ifPresent(file -> ui.text("uploaded:" + file.fileName() + ":" + file.bytes().length)),
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+        String uploadId = findId(MAPPER.readTree(snapshot).path("root"), "file_upload");
+
+        byte[] fileBytes = new byte[100 * 1024];
+        new Random(42).nextBytes(fileBytes);
+        String data = Base64.getEncoder().encodeToString(fileBytes);
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"file_upload\",\"targetId\":\"" + uploadId + "\","
+                        + "\"payload\":{\"fileName\":\"photo.bin\",\"contentType\":\"application/octet-stream\","
+                        + "\"data\":\"" + data + "\"}}",
+                true);
+        String patch = listener.nextMessage();
+
+        assertThat(patch).contains("\"type\":\"patch\"");
+        assertThat(patch).contains("\"content\":\"uploaded:photo.bin:" + fileBytes.length + "\"");
+        webSocket.abort();
+    }
+
+    @Test
+    void websocketRejectsCrossSiteOrigin() {
+        server = LuminaServer.start(ui -> ui.title("T"), LuminaServerConfig.builder().port(0).build());
+        URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
+
+        assertThatThrownBy(() -> HttpClient.newHttpClient()
+                        .newWebSocketBuilder()
+                        .header("Origin", "http://evil.example")
+                        .buildAsync(wsUri, new CollectingListener())
+                        .get(5, TimeUnit.SECONDS))
+                .isInstanceOf(ExecutionException.class);
+    }
+
+    @Test
+    void websocketAcceptsLocalhostOrigin() throws Exception {
+        server = LuminaServer.start(ui -> ui.title("T"), LuminaServerConfig.builder().port(0).build());
+        URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
+        CollectingListener listener = new CollectingListener();
+
+        WebSocket webSocket = HttpClient.newHttpClient()
+                .newWebSocketBuilder()
+                .header("Origin", "http://127.0.0.1:" + server.port())
+                .buildAsync(wsUri, listener)
+                .get(5, TimeUnit.SECONDS);
+
+        assertThat(listener.nextMessage()).contains("\"type\":\"snapshot\"");
+        webSocket.abort();
+    }
+
+    @Test
+    void websocketRejectsConnectionsBeyondSessionCap() throws Exception {
+        server = LuminaServer.start(
+                ui -> ui.title("T"), LuminaServerConfig.builder().port(0).maxSessions(1).build());
+        CollectingListener firstListener = new CollectingListener();
+        WebSocket first = openWebSocket(firstListener);
+        firstListener.nextMessage();
+
+        assertThatThrownBy(() -> openWebSocket(new CollectingListener())).isInstanceOf(ExecutionException.class);
+
+        first.abort();
+    }
+
     private WebSocket openWebSocket(CollectingListener listener) throws Exception {
-        URI wsUri = URI.create("ws://localhost:" + server.port() + "/ws");
+        URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
         return HttpClient.newHttpClient()
                 .newWebSocketBuilder()
                 .buildAsync(wsUri, listener)

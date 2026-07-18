@@ -80,8 +80,17 @@ public final class ProtocolCodec {
         Map<String, Object> payload = message.payload() == null ? Map.of() : message.payload();
         if ("file_upload".equals(message.name())) {
             payload = decodeUpload(payload);
+        } else if ("input".equals(message.name()) || "submit_chat".equals(message.name())) {
+            requireStringValueIfPresent(payload, message.name());
         }
         return new Intent(message.name(), message.targetId(), payload);
+    }
+
+    private static void requireStringValueIfPresent(Map<String, Object> payload, String intentName) {
+        Object value = payload.get("value");
+        if (value != null && !(value instanceof String)) {
+            throw new LuminaException("Intent '" + intentName + "' payload 'value' must be a string");
+        }
     }
 
     private static Map<String, Object> decodeUpload(Map<String, Object> payload) {
