@@ -93,6 +93,21 @@ class AppRunnerTest {
     }
 
     @Test
+    void failedInitialConnectReturnsErrorResult() {
+        LuminaApp app = ui -> {
+            throw new IllegalStateException("initial boom");
+        };
+        SessionHandle session = new SessionManager(app).create();
+
+        RunResult result = session.submit(Intent.connect()).join();
+
+        assertThat(result.error()).isEqualTo("initial boom");
+        assertThat(result.root()).isNull();
+        assertThat(result.patches()).isEmpty();
+        assertThat(result.fullSnapshot()).isFalse();
+    }
+
+    @Test
     void intentsForSameSessionExecuteSerially() {
         LuminaApp app = ui -> {
             int[] count = ui.state().computeIfAbsent("count", k -> new int[] {0});

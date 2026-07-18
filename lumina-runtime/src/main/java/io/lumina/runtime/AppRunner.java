@@ -44,9 +44,6 @@ final class AppRunner {
             app.build(ui);
             newRoot = ui.buildRoot();
         } catch (Exception e) {
-            if (previousRoot == null) {
-                throw new LuminaException("Failed to build initial UI for intent '" + intent.name() + "'", e);
-            }
             return RunResult.error(previousRoot, describe(e));
         }
 

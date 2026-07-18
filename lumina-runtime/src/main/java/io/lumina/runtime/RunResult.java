@@ -16,7 +16,9 @@ import java.util.Objects;
  */
 public record RunResult(ComponentNode root, List<PatchOp> patches, boolean fullSnapshot, String error) {
     public RunResult {
-        Objects.requireNonNull(root, "root");
+        if (root == null && error == null) {
+            throw new NullPointerException("root");
+        }
         patches = List.copyOf(patches);
     }
 
@@ -53,7 +55,8 @@ public record RunResult(ComponentNode root, List<PatchOp> patches, boolean fullS
     /**
      * Creates an error result that keeps the previous tree and surfaces a failure message.
      *
-     * @param previousRoot last known-good component tree root
+     * @param previousRoot last known-good component tree root, or {@code null} before the first
+     *     successful run
      * @param message failure message
      * @return error result with no patches
      */
