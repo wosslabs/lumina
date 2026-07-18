@@ -1,2 +1,0 @@
-Lumina static assets placeholder for Task 8's /lumina-web/** routing.
-Task 9 adds the browser client (lumina-client.js, lumina.css) here.
