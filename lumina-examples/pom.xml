@@ -15,7 +15,6 @@
     <dependency>
       <groupId>io.lumina</groupId>
       <artifactId>lumina-spring-boot-starter</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

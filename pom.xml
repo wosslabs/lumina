@@ -57,6 +57,21 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.lumina</groupId>
+        <artifactId>lumina-devtools</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.lumina</groupId>
+        <artifactId>lumina-spring-boot-starter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.lumina</groupId>
+        <artifactId>lumina-cli</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>${junit.version}</version>
