@@ -7,6 +7,8 @@ import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import io.lumina.ui.UploadedFile;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,33 @@ class UiBinderTest {
                         Map.of("rows", rows),
                         Map.of("src", "/logo.svg"),
                         Map.of("value", 0.75));
+    }
+
+    @Test
+    void jsonAndTableSnapshotMutableInputsRecursively() {
+        UiBinder ui = new UiBinder(new SessionState());
+        Map<String, Object> jsonEntry = new HashMap<>(Map.of("answer", 42));
+        List<Object> jsonItems = new ArrayList<>(List.of(jsonEntry));
+        Map<String, Object> json = new HashMap<>(Map.of("items", jsonItems));
+        List<Object> cells = new ArrayList<>(List.of("original"));
+        Map<String, Object> row = new HashMap<>(Map.of("cells", cells));
+        List<Map<String, Object>> rows = new ArrayList<>(List.of(row));
+
+        ui.json(json);
+        ui.table(rows);
+
+        jsonEntry.put("answer", 99);
+        jsonItems.add("added");
+        json.put("extra", true);
+        cells.set(0, "changed");
+        row.put("extra", true);
+        rows.add(Map.of("cells", List.of("added")));
+
+        assertThat(ui.buildRoot().children())
+                .extracting(ComponentNode::props)
+                .containsExactly(
+                        Map.of("value", Map.of("items", List.of(Map.of("answer", 42)))),
+                        Map.of("rows", List.of(Map.of("cells", List.of("original")))));
     }
 
     @Test
