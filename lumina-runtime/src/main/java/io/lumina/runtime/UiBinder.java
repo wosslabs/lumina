@@ -16,8 +16,10 @@ import io.lumina.ui.Ui;
 import io.lumina.ui.UploadedFile;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,12 +96,12 @@ public final class UiBinder implements Ui {
 
     @Override
     public void json(Object value) {
-        addNode(ComponentTypes.JSON, Map.of(VALUE, jsonValue(value)));
+        addNode(ComponentTypes.JSON, Map.of(VALUE, snapshotJsonValue(value)));
     }
 
     @Override
     public void table(List<Map<String, Object>> rows) {
-        addNode(ComponentTypes.TABLE, Map.of(ROWS, rows));
+        addNode(ComponentTypes.TABLE, Map.of(ROWS, snapshotJsonValue(rows)));
     }
 
     @Override
@@ -162,10 +164,18 @@ public final class UiBinder implements Ui {
         return paths.peek() + "/" + type + "#" + index;
     }
 
-    private Object jsonValue(Object value) {
-        if (value instanceof Map<?, ?>
-                || value instanceof List<?>
-                || value instanceof String
+    private Object snapshotJsonValue(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            Map<Object, Object> snapshot = new LinkedHashMap<>();
+            map.forEach((key, entryValue) -> snapshot.put(key, snapshotJsonValue(entryValue)));
+            return Collections.unmodifiableMap(snapshot);
+        }
+        if (value instanceof List<?> list) {
+            List<Object> snapshot = new ArrayList<>(list.size());
+            list.forEach(entry -> snapshot.add(snapshotJsonValue(entry)));
+            return Collections.unmodifiableList(snapshot);
+        }
+        if (value instanceof String
                 || value instanceof Number
                 || value instanceof Boolean) {
             return value;
