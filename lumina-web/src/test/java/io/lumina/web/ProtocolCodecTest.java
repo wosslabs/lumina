@@ -7,6 +7,9 @@ import io.lumina.LuminaException;
 import io.lumina.diff.PatchOp;
 import io.lumina.model.ComponentNode;
 import io.lumina.runtime.Intent;
+import io.lumina.ui.UploadedFile;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -63,6 +66,34 @@ class ProtocolCodecTest {
         Intent intent = ProtocolCodec.parseIntent(json);
 
         assertThat(intent).isEqualTo(Intent.input("auto:/text_input#0", "hello"));
+    }
+
+    @Test
+    void parsesFileUploadIntentFromBase64Payload() {
+        String json = "{\"type\":\"intent\",\"name\":\"file_upload\",\"targetId\":\"auto:/file_upload#0\","
+                + "\"payload\":{\"fileName\":\"notes.txt\",\"contentType\":\"text/plain\","
+                + "\"data\":\"aGVsbG8=\"}}";
+
+        Intent intent = ProtocolCodec.parseIntent(json);
+
+        assertThat(intent.name()).isEqualTo("file_upload");
+        assertThat(intent.targetId()).isEqualTo("auto:/file_upload#0");
+        UploadedFile file = (UploadedFile) intent.payload().get("file");
+        assertThat(file.fileName()).isEqualTo("notes.txt");
+        assertThat(file.contentType()).isEqualTo("text/plain");
+        assertThat(file.bytes()).containsExactly("hello".getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void rejectsFileUploadLargerThanOneMegabyte() {
+        String data = Base64.getEncoder().encodeToString(new byte[1024 * 1024 + 1]);
+        String json = "{\"type\":\"intent\",\"name\":\"file_upload\",\"targetId\":\"upload\","
+                + "\"payload\":{\"fileName\":\"large.bin\",\"contentType\":\"application/octet-stream\","
+                + "\"data\":\"" + data + "\"}}";
+
+        assertThatThrownBy(() -> ProtocolCodec.parseIntent(json))
+                .isInstanceOf(LuminaException.class)
+                .hasMessageContaining("1 MB");
     }
 
     @Test

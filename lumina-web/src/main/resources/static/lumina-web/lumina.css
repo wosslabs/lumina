@@ -26,6 +26,95 @@ lumina-text p {
   margin: 0.75rem 0;
 }
 
+lumina-markdown,
+lumina-code,
+lumina-json,
+lumina-table,
+lumina-image,
+lumina-text-input,
+lumina-file-upload,
+lumina-progress {
+  display: block;
+  margin: 1rem 0;
+}
+
+lumina-markdown h1,
+lumina-markdown h2,
+lumina-markdown h3,
+lumina-markdown h4,
+lumina-markdown h5,
+lumina-markdown h6 {
+  margin: 1rem 0 0.5rem;
+}
+
+lumina-button button,
+lumina-chat-input button {
+  padding: 0.7rem 1rem;
+  border: 1px solid ButtonBorder;
+  border-radius: 0.35rem;
+  background: ButtonFace;
+  color: ButtonText;
+  font: inherit;
+  cursor: pointer;
+}
+
+lumina-text-input label,
+lumina-file-upload label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+lumina-text-input input,
+lumina-file-upload input {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, CanvasText 30%, transparent);
+  border-radius: 0.35rem;
+  background: Field;
+  color: FieldText;
+  font: inherit;
+}
+
+lumina-code pre,
+lumina-json pre {
+  overflow-x: auto;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, CanvasText 8%, Canvas);
+  white-space: pre-wrap;
+}
+
+lumina-table {
+  overflow-x: auto;
+}
+
+lumina-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+lumina-table th,
+lumina-table td {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+lumina-table th {
+  background: color-mix(in srgb, CanvasText 7%, Canvas);
+}
+
+lumina-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+lumina-progress progress {
+  width: 100%;
+}
+
 lumina-user-message,
 lumina-ai-message {
   display: block;
@@ -68,16 +157,6 @@ lumina-chat-input input {
   background: Field;
   color: FieldText;
   font: inherit;
-}
-
-lumina-chat-input button {
-  padding: 0.7rem 1rem;
-  border: 1px solid ButtonBorder;
-  border-radius: 0.35rem;
-  background: ButtonFace;
-  color: ButtonText;
-  font: inherit;
-  cursor: pointer;
 }
 
 .lumina-status {

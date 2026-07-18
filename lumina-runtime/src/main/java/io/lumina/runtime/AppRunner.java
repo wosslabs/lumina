@@ -59,6 +59,7 @@ final class AppRunner {
             case "click" -> widgets.set(requireTarget(intent), true);
             case "input" -> widgets.set(requireTarget(intent), intent.payload().get("value"));
             case "submit_chat" -> widgets.setChatSubmit(requireTarget(intent), (String) intent.payload().get("value"));
+            case "file_upload" -> widgets.set(requireTarget(intent), intent.payload().get("file"));
             default -> throw new LuminaException("Unknown intent: " + intent.name());
         }
     }

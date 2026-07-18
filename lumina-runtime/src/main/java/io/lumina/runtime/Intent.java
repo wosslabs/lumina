@@ -5,9 +5,11 @@ import java.util.Map;
 /**
  * One client-originated action submitted to a {@link SessionHandle} for the next rerun.
  *
- * @param name intent kind: {@code connect}, {@code click}, {@code input}, or {@code submit_chat}
+ * @param name intent kind: {@code connect}, {@code click}, {@code input}, {@code submit_chat}, or
+ *     {@code file_upload}
  * @param targetId widget key this intent applies to, or {@code null} for {@code connect}
- * @param payload intent-specific data, e.g. {@code value} for {@code input} and {@code submit_chat}
+ * @param payload intent-specific data, e.g. {@code value} for text intents or {@code file} for an
+ *     upload
  */
 public record Intent(String name, String targetId, Map<String, Object> payload) {
     public Intent {

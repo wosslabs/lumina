@@ -19,7 +19,8 @@ public interface Ui {
     void title(String text);
 
     /**
-     * Renders Markdown-formatted rich text.
+     * Renders Markdown-formatted rich text. Phase 1 supports headings ({@code #} through
+     * {@code ######}) and line breaks only; raw HTML is always displayed as text.
      *
      * @param md Markdown source; never null
      */
