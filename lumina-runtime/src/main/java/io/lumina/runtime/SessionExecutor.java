@@ -11,7 +11,10 @@ import java.util.function.Supplier;
  * platform thread.
  */
 final class SessionExecutor {
-    private final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
+    private static final String SHUTDOWN_MESSAGE = "Session executor is shut down";
+
+    private final LinkedBlockingQueue<QueuedTask<?>> queue = new LinkedBlockingQueue<>();
+    private final Object lifecycleLock = new Object();
     private final Thread worker;
     private volatile boolean shutdown;
 
@@ -21,29 +24,69 @@ final class SessionExecutor {
     }
 
     <T> CompletableFuture<T> submit(Supplier<T> work) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        queue.add(() -> {
-            try {
-                future.complete(work.get());
-            } catch (Throwable t) {
-                future.completeExceptionally(t);
+        QueuedTask<T> task = new QueuedTask<>(work);
+        synchronized (lifecycleLock) {
+            if (shutdown) {
+                task.reject();
+            } else {
+                queue.add(task);
             }
-        });
-        return future;
+        }
+        return task.future();
     }
 
     void shutdown() {
-        shutdown = true;
+        synchronized (lifecycleLock) {
+            shutdown = true;
+            QueuedTask<?> task;
+            while ((task = queue.poll()) != null) {
+                task.reject();
+            }
+        }
         worker.interrupt();
     }
 
     private void runLoop() {
-        while (!shutdown) {
+        while (true) {
+            QueuedTask<?> task;
             try {
-                queue.take().run();
+                task = queue.take();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
+            }
+            synchronized (lifecycleLock) {
+                if (shutdown) {
+                    task.reject();
+                    return;
+                }
+            }
+            task.run();
+        }
+    }
+
+    private static final class QueuedTask<T> implements Runnable {
+        private final Supplier<T> work;
+        private final CompletableFuture<T> future = new CompletableFuture<>();
+
+        private QueuedTask(Supplier<T> work) {
+            this.work = work;
+        }
+
+        private CompletableFuture<T> future() {
+            return future;
+        }
+
+        private void reject() {
+            future.completeExceptionally(new IllegalStateException(SHUTDOWN_MESSAGE));
+        }
+
+        @Override
+        public void run() {
+            try {
+                future.complete(work.get());
+            } catch (Throwable t) {
+                future.completeExceptionally(t);
             }
         }
     }
