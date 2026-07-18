@@ -36,8 +36,18 @@ the resulting patch — or an error message if decoding or the rerun failed. `Pr
 single place that encodes and decodes the ADR-003 wire shapes with Jackson, using Jackson's native
 record support so `ComponentNode`/`PatchOp` require no hand-written (de)serializers.
 
-`LuminaServerConfig` carries `host`/`port` (default `8080`); tests bind port `0` and read the
-OS-assigned port back from the running server via `LuminaServer.port()`.
+`LuminaServerConfig` carries `host` (default `127.0.0.1`, loopback-only) and `port` (default
+`8080`); tests bind port `0` and read the OS-assigned port back from the running server via
+`LuminaServer.port()`. It also carries `maxSessions` (default `100`) and `idleTimeout` (default
+30 minutes) enforced at the WebSocket upgrade handshake, and an optional `allowedOrigins`
+allowlist.
+
+The upgrade handshake rejects requests before a `LuminaWebSocketEndpoint` is even created when:
+the `Origin` header is present but does not match the server's own host/localhost on the bound
+port (or `allowedOrigins`, if configured) — mitigating cross-site WebSocket hijacking, since a
+browser always sends `Origin` while non-browser clients typically omit it; or the number of open
+sessions is already at `maxSessions` — the client receives an HTTP error response instead of an
+upgraded connection.
 
 ## Consequences
 Apps embed Lumina with one call (`LuminaServer.start(app)`) without knowing Jetty exists.

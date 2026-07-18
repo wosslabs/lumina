@@ -20,6 +20,11 @@ Open [http://localhost:8080](http://localhost:8080), enter a prompt, and the
 built-in offline chat client will echo it. The example entry point is
 `io.lumina.examples.helloai.HelloAiMain`.
 
+By default the embedded server binds to `127.0.0.1` (loopback only) so it is
+not reachable from other machines on the network. Pass a
+`LuminaServerConfig.builder().host("0.0.0.0")...` (or another address) to
+`LuminaServer.start(app, config)` to expose it more broadly.
+
 The two commands are intentionally separate: the first builds and installs the
 example and its reactor dependencies into the local Maven repository (required
 on a fresh checkout so sibling SNAPSHOT artifacts resolve), while the second

@@ -97,6 +97,26 @@ class ProtocolCodecTest {
     }
 
     @Test
+    void rejectsNonStringValueForInputIntent() {
+        String json = "{\"type\":\"intent\",\"name\":\"input\",\"targetId\":\"auto:/text_input#0\","
+                + "\"payload\":{\"value\":42}}";
+
+        assertThatThrownBy(() -> ProtocolCodec.parseIntent(json))
+                .isInstanceOf(LuminaException.class)
+                .hasMessageContaining("value");
+    }
+
+    @Test
+    void rejectsNonStringValueForSubmitChatIntent() {
+        String json = "{\"type\":\"intent\",\"name\":\"submit_chat\",\"targetId\":\"auto:/chat_input#0\","
+                + "\"payload\":{\"value\":{\"nested\":true}}}";
+
+        assertThatThrownBy(() -> ProtocolCodec.parseIntent(json))
+                .isInstanceOf(LuminaException.class)
+                .hasMessageContaining("value");
+    }
+
+    @Test
     void malformedJsonThrowsLuminaException() {
         assertThatThrownBy(() -> ProtocolCodec.parseIntent("not json"))
                 .isInstanceOf(LuminaException.class);
