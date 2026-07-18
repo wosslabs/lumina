@@ -100,7 +100,32 @@ class LuminaServerIT {
         webSocket.sendText("not json", true);
         String error = listener.nextMessage();
 
-        assertThat(error).contains("\"type\":\"error\"");
+        assertThat(error).isEqualTo("{\"type\":\"error\",\"message\":\"Invalid message\"}");
+        assertThat(error).doesNotContain("Malformed intent message", "LuminaException");
+        webSocket.abort();
+    }
+
+    @Test
+    void websocketApplicationFailureUsesStablePublicError() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    ui.title("T");
+                    if (ui.button("Fail")) {
+                        throw new IllegalStateException("secret application detail");
+                    }
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+        String buttonId = findId(MAPPER.readTree(snapshot).path("root"), "button");
+
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"click\",\"targetId\":\"" + buttonId + "\",\"payload\":{}}", true);
+        String error = listener.nextMessage();
+
+        assertThat(error).isEqualTo("{\"type\":\"error\",\"message\":\"Application error\"}");
+        assertThat(error).doesNotContain("secret application detail", "IllegalStateException");
         webSocket.abort();
     }
 

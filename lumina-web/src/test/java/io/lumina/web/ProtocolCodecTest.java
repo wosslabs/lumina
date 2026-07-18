@@ -72,6 +72,18 @@ class ProtocolCodecTest {
     }
 
     @Test
+    void missingTypeThrowsLuminaException() {
+        assertThatThrownBy(() -> ProtocolCodec.parseIntent("{\"name\":\"connect\"}"))
+                .isInstanceOf(LuminaException.class);
+    }
+
+    @Test
+    void wrongTypeThrowsLuminaException() {
+        assertThatThrownBy(() -> ProtocolCodec.parseIntent("{\"type\":\"snapshot\",\"name\":\"connect\"}"))
+                .isInstanceOf(LuminaException.class);
+    }
+
+    @Test
     void missingNameThrowsLuminaException() {
         assertThatThrownBy(() -> ProtocolCodec.parseIntent("{\"type\":\"intent\"}"))
                 .isInstanceOf(LuminaException.class);

@@ -68,6 +68,9 @@ public final class ProtocolCodec {
         } catch (JsonProcessingException e) {
             throw new LuminaException("Malformed intent message", e);
         }
+        if (!"intent".equals(message.type())) {
+            throw new LuminaException("Message type must be 'intent'");
+        }
         if (message.name() == null) {
             throw new LuminaException("Intent message missing 'name'");
         }

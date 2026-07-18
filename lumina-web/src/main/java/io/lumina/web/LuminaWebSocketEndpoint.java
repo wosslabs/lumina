@@ -23,6 +23,11 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
  */
 @WebSocket
 public final class LuminaWebSocketEndpoint {
+    private static final System.Logger LOGGER =
+            System.getLogger(LuminaWebSocketEndpoint.class.getName());
+    private static final String INVALID_MESSAGE = "Invalid message";
+    private static final String APPLICATION_ERROR = "Application error";
+
     private final SessionManager sessionManager;
     private volatile SessionHandle sessionHandle;
 
@@ -42,7 +47,8 @@ public final class LuminaWebSocketEndpoint {
         try {
             intent = ProtocolCodec.parseIntent(message);
         } catch (RuntimeException e) {
-            sendError(session, describe(e));
+            LOGGER.log(System.Logger.Level.WARNING, "Rejected invalid WebSocket message", e);
+            sendError(session, INVALID_MESSAGE);
             return;
         }
         sessionHandle.submit(intent).whenComplete((result, error) -> reply(session, result, error));
@@ -60,11 +66,13 @@ public final class LuminaWebSocketEndpoint {
 
     private void reply(Session session, RunResult result, Throwable error) {
         if (error != null) {
-            sendError(session, describe(error));
+            LOGGER.log(System.Logger.Level.ERROR, "WebSocket intent execution failed", error);
+            sendError(session, APPLICATION_ERROR);
             return;
         }
         if (result.hasError()) {
-            sendError(session, result.error());
+            LOGGER.log(System.Logger.Level.ERROR, "Lumina application failed: {0}", result.error());
+            sendError(session, APPLICATION_ERROR);
             return;
         }
         String json = result.fullSnapshot()
@@ -82,10 +90,5 @@ public final class LuminaWebSocketEndpoint {
         if (handle != null) {
             handle.close();
         }
-    }
-
-    private String describe(Throwable t) {
-        String message = t.getMessage();
-        return message != null ? message : t.getClass().getSimpleName();
     }
 }
