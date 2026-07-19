@@ -96,9 +96,8 @@ final class AppRunner {
         boolean firstRun = previousRoot == null;
         List<PatchOp> raw = firstRun ? List.of() : differ.diff(previousRoot, newRoot);
         Set<String> streamed = ui.streamedNodeIds();
-        ComponentNode finalRoot = newRoot;
         List<PatchOp> filtered = raw.stream()
-                .filter(op -> !isSuppressed(op, finalRoot, streamed))
+                .filter(op -> !isSuppressed(op, newRoot, streamed))
                 .toList();
         previousRoot = newRoot;
         return firstRun ? RunResult.snapshot(newRoot) : RunResult.patched(newRoot, filtered);

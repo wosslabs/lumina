@@ -202,7 +202,7 @@ class LuminaServerIT {
 
         java.util.List<String> messages = new java.util.ArrayList<>();
         boolean sawEnd = false;
-        for (int i = 0; i < 50 && !sawEnd; i++) {
+        for (int i = 0; i < 20 && !sawEnd; i++) {
             String message = listener.nextMessage();
             messages.add(message);
             sawEnd = message.contains("\"op\":\"end\"");
@@ -217,7 +217,8 @@ class LuminaServerIT {
 
         assertThat(messages).anyMatch(
                 m -> (m.contains("\"type\":\"patch\"") || m.contains("\"type\":\"snapshot\""))
-                        && m.contains("ai_message"));
+                        && m.contains("ai_message")
+                        && m.contains("\"op\":\"ADD\""));
 
         String appended = messages.stream()
                 .filter(m -> m.contains("\"op\":\"append\""))
