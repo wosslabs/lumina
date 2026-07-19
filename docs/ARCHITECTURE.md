@@ -1,6 +1,6 @@
 # Lumina Architecture
 
-Authoritative technical architecture for Lumina (`0.3.0-SNAPSHOT`). Companion to [`VISION.md`](VISION.md). Decisions already accepted live in [`docs/adr/`](adr/); Phase 0 forward ADRs (007–012) are referenced by intended filename.
+Authoritative technical architecture for Lumina (`0.3.0-SNAPSHOT`). Companion to [`VISION.md`](VISION.md). Accepted decisions live in [`docs/adr/`](adr/), including the Phase 0 direction-setting ADRs (007–012).
 
 ---
 
@@ -32,9 +32,10 @@ C4Container
 
     Person(user, "User", "Browser")
 
+    Container(client, "Thin browser client", "Vanilla Web Components", "Build-step-free; applies tree snapshots/patches and stream frames")
+
     System_Boundary(jvm, "Lumina JVM process") {
-        Container(client, "Thin browser client", "Vanilla Web Components", "Build-step-free; applies tree snapshots/patches and stream frames")
-        Container(web, "lumina-web", "Jetty 12.1 EE11", "Embedded HTTP/WebSocket; ProtocolCodec; LuminaWebSocketEndpoint")
+        Container(web, "lumina-web", "Jetty 12.1.11 EE11", "Embedded HTTP/WebSocket; ProtocolCodec; LuminaWebSocketEndpoint")
         Container(runtime, "lumina-runtime", "Java", "UiBinder, AppRunner, TreeDiffer, SessionManager, RunSink")
         Container(core, "lumina-core", "Java", "Ui DSL, ComponentNode, StateStore, ChatClient/TokenStream SPIs")
         Container(session, "lumina-session", "Java", "Session-scoped state storage")
