@@ -2,6 +2,7 @@ package io.lumina.web;
 
 import io.lumina.runtime.Intent;
 import io.lumina.runtime.RunResult;
+import io.lumina.runtime.RunSink;
 import io.lumina.runtime.SessionHandle;
 import io.lumina.runtime.SessionManager;
 import java.util.Objects;
@@ -43,7 +44,8 @@ public final class LuminaWebSocketEndpoint {
     @OnWebSocketOpen
     public void onOpen(Session session) {
         sessionHandle = sessionManager.create();
-        sessionHandle.submit(Intent.connect()).whenComplete((result, error) -> reply(session, result, error));
+        sessionHandle.submit(Intent.connect(), sinkFor(session))
+                .whenComplete((result, error) -> reply(session, result, error));
     }
 
     /**
@@ -64,7 +66,8 @@ public final class LuminaWebSocketEndpoint {
             sendError(session, INVALID_MESSAGE);
             return;
         }
-        sessionHandle.submit(intent).whenComplete((result, error) -> reply(session, result, error));
+        sessionHandle.submit(intent, sinkFor(session))
+                .whenComplete((result, error) -> reply(session, result, error));
     }
 
     /**
@@ -103,6 +106,36 @@ public final class LuminaWebSocketEndpoint {
                 ? ProtocolCodec.toSnapshotJson(result.root())
                 : ProtocolCodec.toPatchJson(result.patches());
         session.sendText(json, Callback.NOOP);
+    }
+
+    /**
+     * Builds a {@link RunSink} that encodes interim structural results and forwards raw stream
+     * frames to {@code session}, so a streaming run's {@code stream} frames and mid-run structural
+     * flushes reach the client before the final reply (ADR-006).
+     *
+     * @param session active WebSocket session
+     * @return sink delivering interim results and stream frames to {@code session}
+     */
+    private RunSink sinkFor(Session session) {
+        return new RunSink() {
+            @Override
+            public void deliverInterim(RunResult interim) {
+                if (interim.hasError()) {
+                    // Defensive only: flushBefore never delivers an error result mid-run.
+                    sendError(session, APPLICATION_ERROR);
+                    return;
+                }
+                String json = interim.fullSnapshot()
+                        ? ProtocolCodec.toSnapshotJson(interim.root())
+                        : ProtocolCodec.toPatchJson(interim.patches());
+                session.sendText(json, Callback.NOOP);
+            }
+
+            @Override
+            public void sendFrame(String json) {
+                session.sendText(json, Callback.NOOP);
+            }
+        };
     }
 
     private void sendError(Session session, String message) {
