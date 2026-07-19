@@ -31,6 +31,21 @@ public final class SessionHandle {
     }
 
     /**
+     * Queues {@code intent} for this session and reruns the app once prior submissions complete,
+     * streaming interim structural results and text {@code stream} frames to {@code sink} as the
+     * rerun progresses.
+     *
+     * @param intent intent to apply
+     * @param sink receiver of interim results and stream frames
+     * @return future completed with the run result, or completed exceptionally on a framework error
+     */
+    public CompletableFuture<RunResult> submit(Intent intent, RunSink sink) {
+        Objects.requireNonNull(intent, "intent");
+        Objects.requireNonNull(sink, "sink");
+        return executor.submit(() -> runner.run(app, session, intent, sink));
+    }
+
+    /**
      * Stops this session's executor thread. No further submissions will be processed.
      */
     public void close() {
