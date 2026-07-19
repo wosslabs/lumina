@@ -1,5 +1,6 @@
 package io.lumina.ui;
 
+import io.lumina.ai.TokenStream;
 import io.lumina.state.StateStore;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,16 @@ public interface Ui {
      * @param message message text; never null
      */
     void ai(String message);
+
+    /**
+     * Renders an assistant chat message whose text streams in chunk-by-chunk. Blocks until the
+     * stream completes and returns the fully accumulated text (for history persistence). The
+     * accumulated text also becomes the message node's content.
+     *
+     * @param tokens streamed reply chunks; must not be null
+     * @return the fully accumulated reply text
+     */
+    String ai(TokenStream tokens);
 
     /**
      * Renders a syntax-highlighted code block.

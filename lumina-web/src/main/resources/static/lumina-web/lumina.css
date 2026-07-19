@@ -138,6 +138,18 @@ lumina-user-message .message {
   background: color-mix(in srgb, LinkText 12%, Canvas);
 }
 
+lumina-ai-message.streaming .message::after {
+  content: "▍";
+  margin-left: 0.1rem;
+  animation: lumina-blink 1s step-start infinite;
+}
+
+@keyframes lumina-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 lumina-chat-input {
   display: block;
   margin-top: 1.5rem;
