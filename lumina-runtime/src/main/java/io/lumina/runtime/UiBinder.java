@@ -8,6 +8,7 @@ import static io.lumina.components.ComponentSpecs.SOURCE;
 import static io.lumina.components.ComponentSpecs.SRC;
 import static io.lumina.components.ComponentSpecs.VALUE;
 
+import io.lumina.ai.TokenStream;
 import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
@@ -20,10 +21,12 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -33,9 +36,11 @@ public final class UiBinder implements Ui {
     private static final String ROOT_PATH = "auto:";
 
     private final SessionState session;
+    private final StreamBridge stream;
     private final List<ComponentNode> children = new ArrayList<>();
     private final Deque<String> paths = new ArrayDeque<>();
     private final Deque<Map<String, Integer>> counters = new ArrayDeque<>();
+    private final Set<String> streamedIds = new LinkedHashSet<>();
 
     /**
      * Creates a binder backed by the supplied session state.
@@ -43,7 +48,19 @@ public final class UiBinder implements Ui {
      * @param session state owned by the current session
      */
     public UiBinder(SessionState session) {
+        this(session, StreamBridge.NOOP);
+    }
+
+    /**
+     * Creates a binder backed by the supplied session state, notifying {@code stream} while
+     * streamed {@code ai_message} content is produced.
+     *
+     * @param session state owned by the current session
+     * @param stream hook invoked while streaming an {@code ai_message}
+     */
+    public UiBinder(SessionState session, StreamBridge stream) {
         this.session = Objects.requireNonNull(session, "session");
+        this.stream = Objects.requireNonNull(stream, "stream");
         paths.push(ROOT_PATH);
         counters.push(new HashMap<>());
     }
@@ -92,6 +109,25 @@ public final class UiBinder implements Ui {
     @Override
     public void ai(String message) {
         addNode(ComponentTypes.AI_MESSAGE, Map.of(CONTENT, message));
+    }
+
+    @Override
+    public String ai(TokenStream tokens) {
+        Objects.requireNonNull(tokens, "tokens");
+        String key = nextKey(ComponentTypes.AI_MESSAGE);
+        children.add(new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, ""), List.of()));
+        stream.flushBefore(List.copyOf(children));
+        stream.streamStart(key);
+        StringBuilder acc = new StringBuilder();
+        for (String chunk : tokens) {
+            acc.append(chunk);
+            stream.streamAppend(key, chunk);
+        }
+        stream.streamEnd(key);
+        streamedIds.add(key);
+        int last = children.size() - 1;
+        children.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
+        return acc.toString();
     }
 
     @Override
@@ -157,6 +193,15 @@ public final class UiBinder implements Ui {
      */
     public ComponentNode buildRoot() {
         return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), children);
+    }
+
+    /**
+     * Returns the ids of {@code ai_message} nodes produced via {@link #ai(TokenStream)} this run.
+     *
+     * @return immutable snapshot of streamed node ids
+     */
+    Set<String> streamedNodeIds() {
+        return Set.copyOf(streamedIds);
     }
 
     private String addNode(String type, Map<String, Object> props) {
