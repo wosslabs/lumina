@@ -5,10 +5,13 @@ import io.lumina.LuminaException;
 import io.lumina.diff.PatchOp;
 import io.lumina.diff.TreeDiffer;
 import io.lumina.model.ComponentNode;
+import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import io.lumina.session.internal.WidgetState;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Drives one session's rerun loop: applies an {@link Intent} to widget state, rebuilds the
@@ -32,15 +35,58 @@ final class AppRunner {
      * @return run result carrying the new tree, patches, or an error
      */
     RunResult run(LuminaApp app, SessionState session, Intent intent) {
+        return run(app, session, intent, RunSink.NOOP);
+    }
+
+    /**
+     * Same as {@link #run(LuminaApp, SessionState, Intent)}, but streams interim structural
+     * flushes and text {@code stream} frames to {@code sink} as the app builds, and suppresses
+     * the final patch ops that would otherwise redundantly resend content already streamed.
+     *
+     * @param app application entry point
+     * @param session session-scoped state shared across reruns
+     * @param intent intent to apply before rebuilding
+     * @param sink receiver of interim results and stream frames
+     * @return run result carrying the new tree, patches, or an error
+     */
+    RunResult run(LuminaApp app, SessionState session, Intent intent, RunSink sink) {
         Objects.requireNonNull(app, "app");
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(intent, "intent");
+        Objects.requireNonNull(sink, "sink");
 
         applyIntent(session.widgets(), intent);
 
+        StreamBridge bridge = new StreamBridge() {
+            @Override
+            public void flushBefore(List<ComponentNode> childrenSoFar) {
+                ComponentNode interim = new ComponentNode("root", ComponentTypes.ROOT, Map.of(), childrenSoFar);
+                sink.deliverInterim(previousRoot == null
+                        ? RunResult.snapshot(interim)
+                        : RunResult.patched(interim, differ.diff(previousRoot, interim)));
+                previousRoot = interim;
+            }
+
+            @Override
+            public void streamStart(String nodeId) {
+                sink.sendFrame(StreamFrames.start(nodeId));
+            }
+
+            @Override
+            public void streamAppend(String nodeId, String text) {
+                sink.sendFrame(StreamFrames.append(nodeId, text));
+            }
+
+            @Override
+            public void streamEnd(String nodeId) {
+                sink.sendFrame(StreamFrames.end(nodeId));
+            }
+        };
+
         ComponentNode newRoot;
+        UiBinder ui;
         try {
-            UiBinder ui = new UiBinder(session);
+            ui = new UiBinder(session, bridge);
             app.build(ui);
             newRoot = ui.buildRoot();
         } catch (Exception e) {
@@ -48,9 +94,64 @@ final class AppRunner {
         }
 
         boolean firstRun = previousRoot == null;
-        List<PatchOp> patches = firstRun ? List.of() : differ.diff(previousRoot, newRoot);
+        List<PatchOp> raw = firstRun ? List.of() : differ.diff(previousRoot, newRoot);
+        Set<String> streamed = ui.streamedNodeIds();
+        ComponentNode finalRoot = newRoot;
+        List<PatchOp> filtered = raw.stream()
+                .filter(op -> !isSuppressed(op, finalRoot, streamed))
+                .toList();
         previousRoot = newRoot;
-        return firstRun ? RunResult.snapshot(newRoot) : RunResult.patched(newRoot, patches);
+        return firstRun ? RunResult.snapshot(newRoot) : RunResult.patched(newRoot, filtered);
+    }
+
+    private boolean isSuppressed(PatchOp op, ComponentNode root, Set<String> streamedIds) {
+        if (!"UPDATE_PROPS".equals(op.op())) {
+            return false;
+        }
+        String nodeId = nodeIdAtPath(root, op.path());
+        return nodeId != null && streamedIds.contains(nodeId);
+    }
+
+    /**
+     * Resolves the id of the node addressed by a flat {@code /children/<index>} style path,
+     * walking one {@code children}/{@code index} pair at a time from {@code root}.
+     *
+     * @param root tree to resolve the path against
+     * @param path patch op path, e.g. {@code "/children/2"}
+     * @return the resolved node's id, or {@code null} if the path can't be resolved
+     */
+    private String nodeIdAtPath(ComponentNode root, String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        String[] segments = path.split("/");
+        ComponentNode current = root;
+        boolean descended = false;
+        int i = 0;
+        while (i < segments.length) {
+            String segment = segments[i];
+            if (segment.isEmpty()) {
+                i++;
+                continue;
+            }
+            if (!"children".equals(segment) || i + 1 >= segments.length) {
+                return null;
+            }
+            int index;
+            try {
+                index = Integer.parseInt(segments[i + 1]);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+            List<ComponentNode> kids = current.children();
+            if (index < 0 || index >= kids.size()) {
+                return null;
+            }
+            current = kids.get(index);
+            descended = true;
+            i += 2;
+        }
+        return descended ? current.id() : null;
     }
 
     private void applyIntent(WidgetState widgets, Intent intent) {

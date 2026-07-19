@@ -119,11 +119,14 @@ public final class UiBinder implements Ui {
         stream.flushBefore(List.copyOf(children));
         stream.streamStart(key);
         StringBuilder acc = new StringBuilder();
-        for (String chunk : tokens) {
-            acc.append(chunk);
-            stream.streamAppend(key, chunk);
+        try {
+            for (String chunk : tokens) {
+                acc.append(chunk);
+                stream.streamAppend(key, chunk);
+            }
+        } finally {
+            stream.streamEnd(key);
         }
-        stream.streamEnd(key);
         streamedIds.add(key);
         int last = children.size() - 1;
         children.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
