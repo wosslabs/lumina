@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.ee10.websocket.server.JettyServerUpgradeRequest;
-import org.eclipse.jetty.ee10.websocket.server.JettyServerUpgradeResponse;
-import org.eclipse.jetty.ee10.websocket.server.JettyWebSocketServerContainer;
-import org.eclipse.jetty.ee10.websocket.server.config.JettyWebSocketServletContainerInitializer;
+import org.eclipse.jetty.ee11.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee11.servlet.ServletHolder;
+import org.eclipse.jetty.ee11.websocket.server.JettyServerUpgradeRequest;
+import org.eclipse.jetty.ee11.websocket.server.JettyServerUpgradeResponse;
+import org.eclipse.jetty.ee11.websocket.server.JettyWebSocketServerContainer;
+import org.eclipse.jetty.ee11.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 

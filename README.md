@@ -5,7 +5,20 @@ web applications in pure Java. Inspired by Streamlit and designed for modern
 Java and AI applications, it owns rendering, session state, and real-time UI
 updates so application code needs no HTML, CSS, or JavaScript.
 
-Lumina Phase 1 requires Java 21 and Maven.
+## Requirements
+
+- **Java 25+** and **Maven 3.9+**
+- Platform stack: Spring Boot **4.1.0**, Spring AI **2.0.0**, Jetty **12.1.11** (EE11)
+
+## Roadmap
+
+See [`docs/VISION.md`](docs/VISION.md) for the product vision, phase goals, and
+status matrix.
+
+## Architecture
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current system
+architecture, module boundaries, and design decisions.
 
 ## Hello AI quickstart
 
