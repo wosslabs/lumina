@@ -24,6 +24,17 @@ public class LuminaSpringAiAutoConfiguration {
      */
     public LuminaSpringAiAutoConfiguration() {}
 
+    /**
+     * Registers a Spring AI-backed Lumina {@link io.lumina.ai.ChatClient} built from the
+     * application's {@link ChatModel}.
+     *
+     * <p>Requires exactly one candidate {@link ChatModel} bean: if the context defines several
+     * without a {@code @Primary} (or otherwise qualified) one, injection fails with
+     * {@code NoUniqueBeanDefinitionException}, as with any single-typed Spring injection point.
+     *
+     * @param chatModel the Spring AI chat model to adapt; must resolve to a unique bean
+     * @return a Lumina chat client streaming replies through the model
+     */
     @Bean
     @ConditionalOnBean(ChatModel.class)
     @ConditionalOnMissingBean(io.lumina.ai.ChatClient.class)

@@ -5,6 +5,7 @@ import io.lumina.runtime.RunResult;
 import io.lumina.runtime.RunSink;
 import io.lumina.runtime.SessionHandle;
 import io.lumina.runtime.SessionManager;
+import java.util.ArrayDeque;
 import java.util.Objects;
 import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
@@ -30,7 +31,11 @@ public final class LuminaWebSocketEndpoint {
     private static final String APPLICATION_ERROR = "Application error";
 
     private final SessionManager sessionManager;
+    private final Object outboundLock = new Object();
+    private final ArrayDeque<String> outbound = new ArrayDeque<>();
     private volatile SessionHandle sessionHandle;
+    private volatile Session session;
+    private boolean sending;
 
     LuminaWebSocketEndpoint(SessionManager sessionManager) {
         this.sessionManager = Objects.requireNonNull(sessionManager, "sessionManager");
@@ -43,9 +48,10 @@ public final class LuminaWebSocketEndpoint {
      */
     @OnWebSocketOpen
     public void onOpen(Session session) {
+        this.session = session;
         sessionHandle = sessionManager.create();
-        sessionHandle.submit(Intent.connect(), sinkFor(session))
-                .whenComplete((result, error) -> reply(session, result, error));
+        sessionHandle.submit(Intent.connect(), sinkFor())
+                .whenComplete((result, error) -> reply(result, error));
     }
 
     /**
@@ -63,11 +69,11 @@ public final class LuminaWebSocketEndpoint {
             // Malformed frames are routine and client-triggerable; log at DEBUG (with
             // detail) to avoid noise and log-spam. The client still gets a clean error.
             LOGGER.log(System.Logger.Level.DEBUG, "Rejected invalid WebSocket message", e);
-            sendError(session, INVALID_MESSAGE);
+            sendError(INVALID_MESSAGE);
             return;
         }
-        sessionHandle.submit(intent, sinkFor(session))
-                .whenComplete((result, error) -> reply(session, result, error));
+        sessionHandle.submit(intent, sinkFor())
+                .whenComplete((result, error) -> reply(result, error));
     }
 
     /**
@@ -91,55 +97,103 @@ public final class LuminaWebSocketEndpoint {
         closeSession();
     }
 
-    private void reply(Session session, RunResult result, Throwable error) {
+    private void reply(RunResult result, Throwable error) {
         if (error != null) {
             LOGGER.log(System.Logger.Level.ERROR, "WebSocket intent execution failed", error);
-            sendError(session, APPLICATION_ERROR);
+            sendError(APPLICATION_ERROR);
             return;
         }
         if (result.hasError()) {
             LOGGER.log(System.Logger.Level.ERROR, "Lumina application failed: {0}", result.error());
-            sendError(session, APPLICATION_ERROR);
+            sendError(APPLICATION_ERROR);
             return;
         }
         String json = result.fullSnapshot()
                 ? ProtocolCodec.toSnapshotJson(result.root())
                 : ProtocolCodec.toPatchJson(result.patches());
-        session.sendText(json, Callback.NOOP);
+        send(json);
     }
 
     /**
      * Builds a {@link RunSink} that encodes interim structural results and forwards raw stream
-     * frames to {@code session}, so a streaming run's {@code stream} frames and mid-run structural
-     * flushes reach the client before the final reply (ADR-006).
+     * frames to the connection's session, so a streaming run's {@code stream} frames and mid-run
+     * structural flushes reach the client before the final reply (ADR-006).
      *
-     * @param session active WebSocket session
-     * @return sink delivering interim results and stream frames to {@code session}
+     * @return sink delivering interim results and stream frames to the connection's session
      */
-    private RunSink sinkFor(Session session) {
+    private RunSink sinkFor() {
         return new RunSink() {
             @Override
             public void deliverInterim(RunResult interim) {
                 if (interim.hasError()) {
                     // Defensive only: flushBefore never delivers an error result mid-run.
-                    sendError(session, APPLICATION_ERROR);
+                    sendError(APPLICATION_ERROR);
                     return;
                 }
                 String json = interim.fullSnapshot()
                         ? ProtocolCodec.toSnapshotJson(interim.root())
                         : ProtocolCodec.toPatchJson(interim.patches());
-                session.sendText(json, Callback.NOOP);
+                send(json);
             }
 
             @Override
             public void sendFrame(String json) {
-                session.sendText(json, Callback.NOOP);
+                send(json);
             }
         };
     }
 
-    private void sendError(Session session, String message) {
-        session.sendText(ProtocolCodec.toErrorJson(message), Callback.NOOP);
+    private void sendError(String message) {
+        send(ProtocolCodec.toErrorJson(message));
+    }
+
+    /**
+     * Enqueues {@code json} for delivery, preserving FIFO order across callers.
+     *
+     * <p>Jetty 12's non-blocking write contract forbids starting a new {@code sendText} before
+     * the previous one completes, so all outgoing frames are serialized through {@link #outbound}
+     * with at most one send in flight; each send's completion callback dispatches the next queued
+     * message. This method may be called concurrently from the session's callback thread (interim
+     * results, stream frames) and from the {@code whenComplete} thread of the final reply, so
+     * queue mutation and the {@link #sending} flag are guarded by {@link #outboundLock}.
+     *
+     * @param json message to send
+     */
+    private void send(String json) {
+        synchronized (outboundLock) {
+            outbound.add(json);
+            if (sending) {
+                return;
+            }
+            sending = true;
+        }
+        dispatchNext();
+    }
+
+    private void dispatchNext() {
+        String next;
+        synchronized (outboundLock) {
+            next = outbound.poll();
+            if (next == null) {
+                sending = false;
+                return;
+            }
+        }
+        session.sendText(next, new Callback() {
+            @Override
+            public void succeed() {
+                dispatchNext();
+            }
+
+            @Override
+            public void fail(Throwable t) {
+                LOGGER.log(System.Logger.Level.DEBUG, "WebSocket send failed; dropping queued frames", t);
+                synchronized (outboundLock) {
+                    outbound.clear();
+                    sending = false;
+                }
+            }
+        });
     }
 
     private void closeSession() {
