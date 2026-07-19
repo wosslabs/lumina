@@ -6,27 +6,11 @@
   <parent>
     <groupId>io.lumina</groupId>
     <artifactId>lumina-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
   </parent>
   <artifactId>lumina-spring-boot-starter</artifactId>
   <packaging>jar</packaging>
   <name>Lumina Spring Boot Starter</name>
-  <!--
-    Parent still imports junit-bom 5.11.4 ahead of spring-boot-dependencies.
-    Spring Boot 4.1 / Spring Framework 7 SpringExtension requires JUnit Jupiter 6.x
-    (Store.computeIfAbsent(Object, Function, Class)). Override only in this module.
-  -->
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>6.0.3</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>io.lumina</groupId>
