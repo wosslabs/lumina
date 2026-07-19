@@ -291,6 +291,35 @@
         this.render();
       } else if (message.type === "error") {
         this.setStatus(message.message || "Application error");
+      } else if (message.type === "stream" && this.tree) {
+        this.applyStream(message);
+      }
+    }
+
+    applyStream({ id, op, text }) {
+      const element = this.querySelector('[data-lumina-id="' + CSS.escape(id) + '"]');
+      const node = findNodeById(this.tree, id);
+      const messageElement = element?.querySelector(":scope > .message");
+
+      if (op === "start") {
+        if (node) {
+          node.props = { ...node.props, content: "" };
+        }
+        if (messageElement) {
+          messageElement.textContent = "";
+        }
+        element?.classList.add("streaming");
+      } else if (op === "append") {
+        if (node) {
+          node.props = { ...node.props, content: (node.props?.content ?? "") + text };
+        }
+        if (messageElement) {
+          messageElement.textContent += text;
+        } else if (element) {
+          element.textContent += text;
+        }
+      } else if (op === "end") {
+        element?.classList.remove("streaming");
       }
     }
 
@@ -381,6 +410,22 @@
       reader.addEventListener("error", () => reject(reader.error));
       reader.readAsDataURL(file);
     });
+  }
+
+  function findNodeById(root, id) {
+    if (!root) {
+      return null;
+    }
+    if (root.id === id) {
+      return root;
+    }
+    for (const child of root.children ?? []) {
+      const found = findNodeById(child, id);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
   }
 
   function pathTokens(path) {
