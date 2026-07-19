@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.lumina</groupId>
   <artifactId>lumina-parent</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Lumina Parent</name>
   <modules>
@@ -21,15 +21,15 @@
     <module>lumina-examples</module>
   </modules>
   <properties>
-    <java.version>21</java.version>
-    <maven.compiler.release>21</maven.compiler.release>
+    <java.version>25</java.version>
+    <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <junit.version>5.11.4</junit.version>
+    <junit.version>6.0.3</junit.version>
     <assertj.version>3.27.3</assertj.version>
-    <jetty.version>12.0.16</jetty.version>
+    <jetty.version>12.1.11</jetty.version>
     <jackson.version>2.18.3</jackson.version>
-    <spring-boot.version>3.4.4</spring-boot.version>
-    <spring-ai.version>1.1.2</spring-ai.version>
+    <spring-boot.version>4.1.0</spring-boot.version>
+    <spring-ai.version>2.0.0</spring-ai.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -88,6 +88,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-bom</artifactId>
+        <version>${jetty.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee11</groupId>
+        <artifactId>jetty-ee11-bom</artifactId>
         <version>${jetty.version}</version>
         <type>pom</type>
         <scope>import</scope>
