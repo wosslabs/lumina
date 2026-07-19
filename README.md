@@ -30,6 +30,18 @@ example and its reactor dependencies into the local Maven repository (required
 on a fresh checkout so sibling SNAPSHOT artifacts resolve), while the second
 runs the example module's configured main class.
 
+## Streaming chat
+
+`StreamingChatApp` in `lumina-examples` demonstrates `Ui.ai(TokenStream)`:
+replies stream to the client as they are produced instead of appearing all at
+once. See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat)
+for details.
+
+```bash
+mvn -q -pl lumina-examples -am install
+mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.streaming.StreamingChatMain
+```
+
 ## Modules
 
 - `lumina-core` — application, UI, state, model, AI, and transport contracts.
@@ -39,8 +51,11 @@ runs the example module's configured main class.
 - `lumina-web` — embedded Jetty server, WebSocket endpoint, and wire protocol.
 - `lumina-devtools` — development reload SPI and Phase 1 no-op implementation.
 - `lumina-spring-boot-starter` — optional Spring Boot auto-configuration.
+- `lumina-spring-ai` — optional Spring AI `ChatClient` adapter that streams
+  replies through `TokenStream` via a Reactor `Flux` bridge.
 - `lumina-cli` — command-line launcher for `LuminaApp` implementations.
-- `lumina-examples` — runnable applications, including Hello AI.
+- `lumina-examples` — runnable applications, including Hello AI and the
+  streaming chat example.
 
 ## Design
 
