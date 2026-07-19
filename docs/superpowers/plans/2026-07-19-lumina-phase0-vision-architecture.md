@@ -6,7 +6,7 @@
 
 **Architecture:** Two sequential task groups. Group A performs the platform upgrade with `mvn` gates so the docs describe a real, building stack. Group B writes documentation only (no code). The single hard code change is migrating `lumina-web` from Jetty EE10 to EE11 (Servlet 6.1); everything else is version bumps + API re-verification.
 
-**Tech Stack:** Java 25, Spring Boot 4.1.0 (`spring-boot-dependencies` BOM), Spring AI 2.0.0 (`spring-ai-bom`), Jetty 12.1.11 (`jetty-bom`, EE11 servlet + websocket), Jackson 2 (isolated in `lumina-web`), JUnit 5, AssertJ, Maven, Mermaid C4.
+**Tech Stack:** Java 25, Spring Boot 4.1.0 (`spring-boot-dependencies` BOM), Spring AI 2.0.0 (`spring-ai-bom`), Jetty 12.1.11 (`jetty-bom`, EE11 servlet + websocket), Jackson 2 (isolated in `lumina-web`), JUnit 6.0.3, AssertJ, Maven, Mermaid C4.
 
 ## Global Constraints
 
