@@ -196,23 +196,34 @@ git commit -m "build: align lumina-spring-boot-starter with Spring Boot 4.1"
 ### Task 5: [Upgrade] Full-reactor verify on JDK 25 + version bump to 0.3.0-SNAPSHOT
 
 **Files:**
+- Modify: `pom.xml` (parent `junit.version` property)
+- Modify: `lumina-spring-boot-starter/pom.xml` (remove the module-local `junit-bom` override added in Task 2ee5831)
 - Modify: every module `pom.xml` `<version>`/parent `<version>` `0.2.0-SNAPSHOT` → `0.3.0-SNAPSHOT`
 
 **Interfaces:**
 - Consumes: Tasks 1–4.
 - Produces: a fully building `0.3.0-SNAPSHOT` reactor on the new platform.
 
-- [ ] **Step 1: Bump the version across the reactor**
+- [ ] **Step 1: Align JUnit at the parent level (consolidate Task 4's module-local override)**
+
+Task 4 found Spring Boot 4.1 requires JUnit Jupiter 6.x for `SpringExtension` and applied a module-local `junit-bom` override in `lumina-spring-boot-starter/pom.xml`. Consolidate it:
+- In parent `pom.xml`, bump `<junit.version>` from `5.11.4` to the JUnit version Spring Boot 4.1.0 manages (Task 4 verified **6.0.3**; re-confirm it matches `spring-boot-dependencies` 4.1.0's managed `junit-jupiter` version before setting). The parent already imports `junit-bom` via `${junit.version}` ahead of `spring-boot-dependencies`, so this one property governs all modules.
+- Remove the now-redundant module-local `junit-bom` `dependencyManagement` override from `lumina-spring-boot-starter/pom.xml` (added in commit `2ee5831`) so there is a single JUnit source of truth.
+
+Run: `mvn -q -pl lumina-spring-boot-starter,lumina-core,lumina-session,lumina-runtime -am test -Dsurefire.failIfNoSpecifiedTests=false`
+Expected: tests pass with JUnit 6.0.3 supplied by the parent (no module-local override). If any module's existing test uses a JUnit API changed in 6.x, fix the test at its source.
+
+- [ ] **Step 2: Bump the version across the reactor**
 
 Run: `mvn -q versions:set -DnewVersion=0.3.0-SNAPSHOT -DgenerateBackupPoms=false`
 Expected: all module POMs (parent + 10 modules) now read `0.3.0-SNAPSHOT`. Verify none were missed with `grep -rn "0.2.0-SNAPSHOT" --include=pom.xml .` (expect no matches).
 
-- [ ] **Step 2: Clean verify the whole reactor**
+- [ ] **Step 3: Clean verify the whole reactor**
 
 Run: `mvn -q clean verify`
-Expected: BUILD SUCCESS for all 10 modules on JDK 25, including `lumina-web` IT and `lumina-spring-ai` context tests. Fix any residual failures at their source (do not skip tests).
+Expected: BUILD SUCCESS for all 10 modules on JDK 25, including the `lumina-web` IT and the `lumina-spring-ai` tests. Fix any residual failures at their source (do not skip tests).
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add -A
