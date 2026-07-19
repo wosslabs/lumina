@@ -180,6 +180,70 @@ class LuminaServerIT {
     }
 
     @Test
+    void websocketStreamsAiMessageInChunks() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    String p = ui.chatInput();
+                    if (p != null) {
+                        ui.user(p);
+                        ui.ai(io.lumina.ai.ChatClients.echo().stream(p));
+                    }
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+        String chatInputId = findId(MAPPER.readTree(snapshot).path("root"), "chat_input");
+
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"submit_chat\",\"targetId\":\"" + chatInputId + "\","
+                        + "\"payload\":{\"value\":\"hi there\"}}",
+                true);
+
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        boolean sawEnd = false;
+        for (int i = 0; i < 50 && !sawEnd; i++) {
+            String message = listener.nextMessage();
+            messages.add(message);
+            sawEnd = message.contains("\"op\":\"end\"");
+        }
+        assertThat(sawEnd).isTrue();
+
+        assertThat(messages).anyMatch(m -> m.contains("\"op\":\"start\""));
+        assertThat(messages).anyMatch(m -> m.contains("\"op\":\"append\""));
+        int startIndex = indexOfFirstContaining(messages, "\"op\":\"start\"");
+        int endIndex = indexOfFirstContaining(messages, "\"op\":\"end\"");
+        assertThat(startIndex).isLessThan(endIndex);
+
+        assertThat(messages).anyMatch(
+                m -> (m.contains("\"type\":\"patch\"") || m.contains("\"type\":\"snapshot\""))
+                        && m.contains("ai_message"));
+
+        String appended = messages.stream()
+                .filter(m -> m.contains("\"op\":\"append\""))
+                .map(m -> {
+                    try {
+                        return MAPPER.readTree(m).path("text").asText();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .reduce("", String::concat);
+        assertThat(appended).isEqualTo("Echo: hi there");
+
+        webSocket.abort();
+    }
+
+    private static int indexOfFirstContaining(java.util.List<String> messages, String needle) {
+        for (int i = 0; i < messages.size(); i++) {
+            if (messages.get(i).contains(needle)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Test
     void websocketRejectsCrossSiteOrigin() {
         server = LuminaServer.start(ui -> ui.title("T"), LuminaServerConfig.builder().port(0).build());
         URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
