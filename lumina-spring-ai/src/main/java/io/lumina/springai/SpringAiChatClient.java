@@ -65,7 +65,14 @@ public class SpringAiChatClient implements io.lumina.ai.ChatClient {
                 if (done) {
                     return false;
                 }
-                Object item = take(queue);
+                Object item;
+                try {
+                    item = queue.take();
+                } catch (InterruptedException e) {
+                    done = true;
+                    Thread.currentThread().interrupt();
+                    throw new LuminaException("Interrupted while waiting for Spring AI stream", e);
+                }
                 if (item == end) {
                     done = true;
                     return false;
@@ -90,15 +97,6 @@ public class SpringAiChatClient implements io.lumina.ai.ChatClient {
                 return value;
             }
         };
-    }
-
-    private static Object take(BlockingQueue<Object> queue) {
-        try {
-            return queue.take();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new LuminaException("Interrupted while waiting for Spring AI stream", e);
-        }
     }
 
     private static final class Err {
