@@ -3,6 +3,7 @@ package io.lumina.runtime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.lumina.LuminaException;
 import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
@@ -187,6 +188,58 @@ class UiBinderTest {
         ComponentNode root = new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.of());
 
         assertThat(new RunResult(root).root()).isSameAs(root);
+    }
+
+    @Test
+    void containerNestsChildrenUnderContainerNode() {
+        UiBinder ui = new UiBinder(new SessionState());
+        ui.container(box -> box.text("inside"));
+        ComponentNode root = ui.buildRoot();
+        assertThat(root.children()).hasSize(1);
+        ComponentNode container = root.children().getFirst();
+        assertThat(container.type()).isEqualTo(ComponentTypes.CONTAINER);
+        assertThat(container.children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.TEXT);
+        assertThat(container.children().getFirst().props()).containsEntry("content", "inside");
+    }
+
+    @Test
+    void columnsCreatesEqualColumnSlots() {
+        UiBinder ui = new UiBinder(new SessionState());
+        ui.columns(2, cols -> {
+            cols[0].markdown("L");
+            cols[1].button("R");
+        });
+        ComponentNode columns = ui.buildRoot().children().getFirst();
+        assertThat(columns.type()).isEqualTo(ComponentTypes.COLUMNS);
+        assertThat(columns.props()).containsEntry("count", 2);
+        assertThat(columns.children()).hasSize(2);
+        assertThat(columns.children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.COLUMN, ComponentTypes.COLUMN);
+        assertThat(columns.children().get(0).props()).containsEntry("index", 0);
+        assertThat(columns.children().get(1).children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.BUTTON);
+    }
+
+    @Test
+    void secondSidebarThrows() {
+        UiBinder ui = new UiBinder(new SessionState());
+        ui.sidebar(s -> s.text("ok"));
+        assertThatThrownBy(() -> ui.sidebar(s -> s.text("no")))
+                .isInstanceOf(LuminaException.class)
+                .hasMessageContaining("Only one sidebar");
+    }
+
+    @Test
+    void expanderReflectsWidgetStateOpenFlag() {
+        SessionState session = new SessionState();
+        UiBinder ui = new UiBinder(session);
+        assertThat(ui.expander("Details", b -> b.text("hidden"))).isFalse();
+        String expanderId = ui.buildRoot().children().getFirst().id();
+        session.widgets().set(expanderId, true);
+        ui = new UiBinder(session);
+        assertThat(ui.expander("Details", b -> b.text("shown"))).isTrue();
+        assertThat(ui.buildRoot().children().getFirst().props()).containsEntry("open", true);
     }
 
     private record NamedValue(String value) {
