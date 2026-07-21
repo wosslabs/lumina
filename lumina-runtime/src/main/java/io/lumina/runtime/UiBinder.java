@@ -1,13 +1,17 @@
 package io.lumina.runtime;
 
 import static io.lumina.components.ComponentSpecs.CONTENT;
+import static io.lumina.components.ComponentSpecs.COUNT;
+import static io.lumina.components.ComponentSpecs.INDEX;
 import static io.lumina.components.ComponentSpecs.LABEL;
 import static io.lumina.components.ComponentSpecs.LANGUAGE;
+import static io.lumina.components.ComponentSpecs.OPEN;
 import static io.lumina.components.ComponentSpecs.ROWS;
 import static io.lumina.components.ComponentSpecs.SOURCE;
 import static io.lumina.components.ComponentSpecs.SRC;
 import static io.lumina.components.ComponentSpecs.VALUE;
 
+import io.lumina.LuminaException;
 import io.lumina.ai.TokenStream;
 import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
@@ -29,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Builds an immutable component tree from one run of the {@link Ui} DSL.
@@ -48,6 +53,7 @@ public final class UiBinder implements Ui {
     private final Deque<String> paths = new ArrayDeque<>();
     private final Deque<Map<String, Integer>> counters = new ArrayDeque<>();
     private final Set<String> streamedIds = new LinkedHashSet<>();
+    private boolean sidebarUsed;
 
     /**
      * Creates a binder backed by the supplied session state.
@@ -200,22 +206,60 @@ public final class UiBinder implements Ui {
 
     @Override
     public void container(Consumer<Ui> body) {
-        throw new UnsupportedOperationException("Task 3");
+        Objects.requireNonNull(body, "body");
+        String id = nextKey(ComponentTypes.CONTAINER);
+        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.CONTAINER, Map.of(), children));
     }
 
     @Override
     public void columns(int n, Consumer<Ui[]> cols) {
-        throw new UnsupportedOperationException("Task 3");
+        if (n < 1) {
+            throw new IllegalArgumentException("columns requires n >= 1");
+        }
+        Objects.requireNonNull(cols, "cols");
+        String columnsId = nextKey(ComponentTypes.COLUMNS);
+        Frame[] colFrames = new Frame[n];
+        Ui[] scopes = new Ui[n];
+        for (int i = 0; i < n; i++) {
+            colFrames[i] = new Frame();
+            scopes[i] = new ScopedUi(this, colFrames[i]);
+        }
+        cols.accept(scopes);
+        List<ComponentNode> columnNodes = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            String colKey = nextKey(ComponentTypes.COLUMN);
+            columnNodes.add(new ComponentNode(
+                    colKey, ComponentTypes.COLUMN, Map.of(INDEX, i), colFrames[i].children()));
+        }
+        frames.peek()
+                .children()
+                .add(new ComponentNode(columnsId, ComponentTypes.COLUMNS, Map.of(COUNT, n), columnNodes));
     }
 
     @Override
     public void sidebar(Consumer<Ui> body) {
-        throw new UnsupportedOperationException("Task 3");
+        Objects.requireNonNull(body, "body");
+        if (sidebarUsed) {
+            throw new LuminaException("Only one sidebar is allowed per build()");
+        }
+        sidebarUsed = true;
+        String id = nextKey(ComponentTypes.SIDEBAR);
+        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR, Map.of(), children));
     }
 
     @Override
     public boolean expander(String label, Consumer<Ui> body) {
-        throw new UnsupportedOperationException("Task 3");
+        Objects.requireNonNull(label, "label");
+        Objects.requireNonNull(body, "body");
+        String key = nextKey(ComponentTypes.EXPANDER);
+        boolean open = Boolean.TRUE.equals(session.widgets().value(key));
+        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        frames.peek()
+                .children()
+                .add(new ComponentNode(key, ComponentTypes.EXPANDER, Map.of(LABEL, label, OPEN, open), children));
+        return open;
     }
 
     /**
@@ -251,6 +295,35 @@ public final class UiBinder implements Ui {
         return paths.peek() + "/" + type + "#" + index;
     }
 
+    List<ComponentNode> withFrame(Runnable block) {
+        Frame frame = new Frame();
+        frames.push(frame);
+        try {
+            block.run();
+        } finally {
+            frames.pop();
+        }
+        return frame.children();
+    }
+
+    private void withinFrame(Frame frame, Runnable block) {
+        frames.push(frame);
+        try {
+            block.run();
+        } finally {
+            frames.pop();
+        }
+    }
+
+    private <T> T withinFrame(Frame frame, Supplier<T> block) {
+        frames.push(frame);
+        try {
+            return block.get();
+        } finally {
+            frames.pop();
+        }
+    }
+
     private Object snapshotJsonValue(Object value) {
         if (value instanceof Map<?, ?> map) {
             Map<Object, Object> snapshot = new LinkedHashMap<>();
@@ -268,5 +341,132 @@ public final class UiBinder implements Ui {
             return value;
         }
         return String.valueOf(value);
+    }
+
+    /**
+     * Column-scoped {@link Ui} that activates a dedicated frame for each delegated call so
+     * {@code cols[i]} can be used in any order within {@link #columns(int, Consumer)}.
+     */
+    private static final class ScopedUi implements Ui {
+        private final UiBinder parent;
+        private final Frame frame;
+
+        ScopedUi(UiBinder parent, Frame frame) {
+            this.parent = parent;
+            this.frame = frame;
+        }
+
+        private void run(Runnable action) {
+            parent.withinFrame(frame, action);
+        }
+
+        private <T> T call(Supplier<T> action) {
+            return parent.withinFrame(frame, action);
+        }
+
+        @Override
+        public void title(String text) {
+            run(() -> parent.title(text));
+        }
+
+        @Override
+        public void markdown(String md) {
+            run(() -> parent.markdown(md));
+        }
+
+        @Override
+        public void text(String text) {
+            run(() -> parent.text(text));
+        }
+
+        @Override
+        public boolean button(String label) {
+            return call(() -> parent.button(label));
+        }
+
+        @Override
+        public String textInput(String label) {
+            return call(() -> parent.textInput(label));
+        }
+
+        @Override
+        public String chatInput() {
+            return call(parent::chatInput);
+        }
+
+        @Override
+        public void user(String message) {
+            run(() -> parent.user(message));
+        }
+
+        @Override
+        public void ai(String message) {
+            run(() -> parent.ai(message));
+        }
+
+        @Override
+        public String ai(TokenStream tokens) {
+            return call(() -> parent.ai(tokens));
+        }
+
+        @Override
+        public void code(String language, String source) {
+            run(() -> parent.code(language, source));
+        }
+
+        @Override
+        public void json(Object value) {
+            run(() -> parent.json(value));
+        }
+
+        @Override
+        public void table(List<Map<String, Object>> rows) {
+            run(() -> parent.table(rows));
+        }
+
+        @Override
+        public void image(String urlOrResource) {
+            run(() -> parent.image(urlOrResource));
+        }
+
+        @Override
+        public Optional<UploadedFile> fileUpload(String label) {
+            return call(() -> parent.fileUpload(label));
+        }
+
+        @Override
+        public void progress(double value) {
+            run(() -> parent.progress(value));
+        }
+
+        @Override
+        public StateStore state() {
+            return parent.state();
+        }
+
+        @Override
+        public <T> T withKey(String key, Function<Ui, T> block) {
+            return call(() -> parent.withKey(key, block));
+        }
+
+        @Override
+        public void container(Consumer<Ui> body) {
+            run(() -> parent.container(body));
+        }
+
+        @Override
+        public void columns(int n, Consumer<Ui[]> cols) {
+            run(() -> parent.columns(n, cols));
+        }
+
+        @Override
+        public void sidebar(Consumer<Ui> body) {
+            run(() -> parent.sidebar(body));
+        }
+
+        @Override
+        public boolean expander(String label, Consumer<Ui> body) {
+            return call(() -> parent.expander(label, body));
+        }
     }
 }
