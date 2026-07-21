@@ -5,8 +5,8 @@ import java.util.Map;
 /**
  * One client-originated action submitted to a {@link SessionHandle} for the next rerun.
  *
- * @param name intent kind: {@code connect}, {@code click}, {@code input}, {@code submit_chat}, or
- *     {@code file_upload}
+ * @param name intent kind: {@code connect}, {@code click}, {@code input}, {@code submit_chat},
+ *     {@code file_upload}, or {@code expander_toggle}
  * @param targetId widget key this intent applies to, or {@code null} for {@code connect}
  * @param payload intent-specific data, e.g. {@code value} for text intents or {@code file} for an
  *     upload
@@ -58,5 +58,15 @@ public record Intent(String name, String targetId, Map<String, Object> payload) 
      */
     public static Intent input(String targetId, String value) {
         return new Intent("input", targetId, Map.of("value", value));
+    }
+
+    /**
+     * Creates an expander open/closed toggle intent.
+     *
+     * @param targetId expander widget key
+     * @return expander_toggle intent
+     */
+    public static Intent expanderToggle(String targetId) {
+        return new Intent("expander_toggle", targetId, Map.of());
     }
 }
