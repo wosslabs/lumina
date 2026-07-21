@@ -18,6 +18,12 @@ public final class ComponentSpecs {
     public static final String ROWS = "rows";
     /** Property containing an image URL or resource path. */
     public static final String SRC = "src";
+    /** Property containing the number of columns in a {@code columns} node. */
+    public static final String COUNT = "count";
+    /** Property containing a column's zero-based index. */
+    public static final String INDEX = "index";
+    /** Property containing whether an expander is open. */
+    public static final String OPEN = "open";
 
     private ComponentSpecs() {}
 }
