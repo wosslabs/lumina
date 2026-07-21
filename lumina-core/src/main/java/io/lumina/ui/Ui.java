@@ -5,6 +5,7 @@ import io.lumina.state.StateStore;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -141,4 +142,35 @@ public interface Ui {
      * @return value returned by the block
      */
     <T> T withKey(String key, Function<Ui, T> block);
+
+    /** Groups widgets in a generic block container. */
+    void container(Consumer<Ui> body);
+
+    /**
+     * Lays out {@code n} equal-width columns. {@code cols[i]} is the {@code Ui} scoped to column
+     * {@code i}. {@code n} must be {@code >= 1}.
+     *
+     * @param n number of columns; must be {@code >= 1}
+     * @param cols callback receiving one {@code Ui} per column; never null
+     */
+    void columns(int n, Consumer<Ui[]> cols);
+
+    /**
+     * Renders a left sidebar rail (at most once per {@code build()}). Widgets declared in
+     * {@code body} appear in the sidebar.
+     *
+     * @param body sidebar content declarations; never null
+     */
+    void sidebar(Consumer<Ui> body);
+
+    /**
+     * Collapsible section with {@code label}. Returns whether the expander is open after this run
+     * (including any toggle intent applied before the rebuild). Open/closed persists in session
+     * widget state keyed by the expander's node id.
+     *
+     * @param label expander heading; never null
+     * @param body content shown when open; never null
+     * @return {@code true} if the expander is open after this run
+     */
+    boolean expander(String label, Consumer<Ui> body);
 }

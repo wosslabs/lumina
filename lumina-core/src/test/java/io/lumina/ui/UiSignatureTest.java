@@ -7,6 +7,7 @@ import io.lumina.state.StateStore;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +36,17 @@ class UiSignatureTest {
         @Override public void progress(double value) {}
         @Override public StateStore state() { return null; }
         @Override public <T> T withKey(String key, Function<Ui, T> block) { return block.apply(this); }
+        @Override public void container(Consumer<Ui> body) { body.accept(this); }
+        @Override public void columns(int n, Consumer<Ui[]> cols) {
+            Ui[] array = new Ui[n];
+            java.util.Arrays.fill(array, this);
+            cols.accept(array);
+        }
+        @Override public void sidebar(Consumer<Ui> body) { body.accept(this); }
+        @Override public boolean expander(String label, Consumer<Ui> body) {
+            body.accept(this);
+            return false;
+        }
     }
 
     @Test

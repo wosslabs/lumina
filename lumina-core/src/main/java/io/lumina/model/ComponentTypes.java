@@ -35,6 +35,16 @@ public final class ComponentTypes {
     public static final String FILE_UPLOAD = "file_upload";
     /** Progress indicator. */
     public static final String PROGRESS = "progress";
+    /** Generic block container. */
+    public static final String CONTAINER = "container";
+    /** Row of equal-width columns. */
+    public static final String COLUMNS = "columns";
+    /** Single column slot inside a {@link #COLUMNS} row. */
+    public static final String COLUMN = "column";
+    /** Left navigation rail (at most one per build). */
+    public static final String SIDEBAR = "sidebar";
+    /** Collapsible section with persisted open state. */
+    public static final String EXPANDER = "expander";
 
     private ComponentTypes() {}
 }
