@@ -59,12 +59,11 @@ final class AppRunner {
 
         StreamBridge bridge = new StreamBridge() {
             @Override
-            public void flushBefore(List<ComponentNode> childrenSoFar) {
-                ComponentNode interim = new ComponentNode("root", ComponentTypes.ROOT, Map.of(), childrenSoFar);
+            public void flushBefore(ComponentNode interimRoot) {
                 sink.deliverInterim(previousRoot == null
-                        ? RunResult.snapshot(interim)
-                        : RunResult.patched(interim, differ.diff(previousRoot, interim)));
-                previousRoot = interim;
+                        ? RunResult.snapshot(interimRoot)
+                        : RunResult.patched(interimRoot, differ.diff(previousRoot, interimRoot)));
+                previousRoot = interimRoot;
             }
 
             @Override

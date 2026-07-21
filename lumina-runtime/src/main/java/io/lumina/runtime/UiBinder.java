@@ -47,12 +47,18 @@ public final class UiBinder implements Ui {
         }
     }
 
+    private record PendingLayout(String id, String type, Map<String, Object> props) {}
+
+    private record OpenColumns(String columnsId, int count, String[] colKeys, Frame[] colFrames) {}
+
     private final SessionState session;
     private final StreamBridge stream;
     private final Deque<Frame> frames = new ArrayDeque<>();
     private final Deque<String> paths = new ArrayDeque<>();
     private final Deque<Map<String, Integer>> counters = new ArrayDeque<>();
+    private final Deque<PendingLayout> pendingLayouts = new ArrayDeque<>();
     private final Set<String> streamedIds = new LinkedHashSet<>();
+    private OpenColumns openColumns;
     private boolean sidebarUsed;
 
     /**
@@ -129,9 +135,9 @@ public final class UiBinder implements Ui {
     public String ai(TokenStream tokens) {
         Objects.requireNonNull(tokens, "tokens");
         String key = nextKey(ComponentTypes.AI_MESSAGE);
-        List<ComponentNode> current = frames.peek().children();
+        List<ComponentNode> current = targetChildren();
         current.add(new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, ""), List.of()));
-        stream.flushBefore(List.copyOf(current));
+        stream.flushBefore(snapshotInterimRoot());
         stream.streamStart(key);
         StringBuilder acc = new StringBuilder();
         try {
@@ -208,7 +214,7 @@ public final class UiBinder implements Ui {
     public void container(Consumer<Ui> body) {
         Objects.requireNonNull(body, "body");
         String id = nextKey(ComponentTypes.CONTAINER);
-        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.CONTAINER, Map.of(), () -> body.accept(this));
         frames.peek().children().add(new ComponentNode(id, ComponentTypes.CONTAINER, Map.of(), children));
     }
 
@@ -219,18 +225,24 @@ public final class UiBinder implements Ui {
         }
         Objects.requireNonNull(cols, "cols");
         String columnsId = nextKey(ComponentTypes.COLUMNS);
+        String[] colKeys = new String[n];
         Frame[] colFrames = new Frame[n];
         Ui[] scopes = new Ui[n];
         for (int i = 0; i < n; i++) {
+            colKeys[i] = nextKey(ComponentTypes.COLUMN);
             colFrames[i] = new Frame();
-            scopes[i] = new ScopedUi(this, colFrames[i]);
+            scopes[i] = new ColumnScopedUi(this, colFrames[i], colKeys[i]);
         }
-        cols.accept(scopes);
+        openColumns = new OpenColumns(columnsId, n, colKeys, colFrames);
+        try {
+            cols.accept(scopes);
+        } finally {
+            openColumns = null;
+        }
         List<ComponentNode> columnNodes = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            String colKey = nextKey(ComponentTypes.COLUMN);
             columnNodes.add(new ComponentNode(
-                    colKey, ComponentTypes.COLUMN, Map.of(INDEX, i), colFrames[i].children()));
+                    colKeys[i], ComponentTypes.COLUMN, Map.of(INDEX, i), colFrames[i].children()));
         }
         frames.peek()
                 .children()
@@ -245,7 +257,7 @@ public final class UiBinder implements Ui {
         }
         sidebarUsed = true;
         String id = nextKey(ComponentTypes.SIDEBAR);
-        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.SIDEBAR, Map.of(), () -> body.accept(this));
         frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR, Map.of(), children));
     }
 
@@ -255,7 +267,8 @@ public final class UiBinder implements Ui {
         Objects.requireNonNull(body, "body");
         String key = nextKey(ComponentTypes.EXPANDER);
         boolean open = Boolean.TRUE.equals(session.widgets().value(key));
-        List<ComponentNode> children = withFrame(() -> body.accept(this));
+        List<ComponentNode> children =
+                withLayoutFrame(key, ComponentTypes.EXPANDER, Map.of(LABEL, label, OPEN, open), () -> body.accept(this));
         frames.peek()
                 .children()
                 .add(new ComponentNode(key, ComponentTypes.EXPANDER, Map.of(LABEL, label, OPEN, open), children));
@@ -287,7 +300,11 @@ public final class UiBinder implements Ui {
     }
 
     private void addNode(String key, String type, Map<String, Object> props) {
-        frames.peek().children().add(new ComponentNode(key, type, props, List.of()));
+        targetChildren().add(new ComponentNode(key, type, props, List.of()));
+    }
+
+    private List<ComponentNode> targetChildren() {
+        return frames.peek().children();
     }
 
     private String nextKey(String type) {
@@ -295,15 +312,105 @@ public final class UiBinder implements Ui {
         return paths.peek() + "/" + type + "#" + index;
     }
 
-    List<ComponentNode> withFrame(Runnable block) {
+    private List<ComponentNode> withLayoutFrame(
+            String id, String type, Map<String, Object> props, Runnable block) {
         Frame frame = new Frame();
         frames.push(frame);
+        pendingLayouts.push(new PendingLayout(id, type, props));
         try {
             block.run();
         } finally {
+            pendingLayouts.pop();
             frames.pop();
         }
         return frame.children();
+    }
+
+    private ComponentNode snapshotInterimRoot() {
+        if (openColumns != null && frames.size() >= 2) {
+            return wrapPendingLayouts(levelWithOpenColumnsPartial());
+        }
+        List<Frame> framesBottomUp = bottomUp(frames);
+        if (framesBottomUp.size() == 1 && pendingLayouts.isEmpty()) {
+            return new ComponentNode(
+                    "root", ComponentTypes.ROOT, Map.of(), List.copyOf(framesBottomUp.getFirst().children()));
+        }
+        List<ComponentNode> nodes = List.copyOf(framesBottomUp.getLast().children());
+        return wrapPendingLayouts(nodes);
+    }
+
+    private List<ComponentNode> levelWithOpenColumnsPartial() {
+        List<Frame> stack = bottomUp(frames);
+        Frame parent = stack.get(stack.size() - 2);
+        List<ComponentNode> level = new ArrayList<>(parent.children());
+        level.add(buildOpenColumnsPartial());
+        return level;
+    }
+
+    private ComponentNode buildOpenColumnsPartial() {
+        Frame activeColFrame = frames.peek();
+        List<ComponentNode> columnNodes = new ArrayList<>(openColumns.count());
+        for (int i = 0; i < openColumns.count(); i++) {
+            List<ComponentNode> colChildren = openColumns.colFrames()[i] == activeColFrame
+                    ? List.copyOf(activeColFrame.children())
+                    : List.copyOf(openColumns.colFrames()[i].children());
+            columnNodes.add(new ComponentNode(
+                    openColumns.colKeys()[i], ComponentTypes.COLUMN, Map.of(INDEX, i), colChildren));
+        }
+        return new ComponentNode(
+                openColumns.columnsId(), ComponentTypes.COLUMNS, Map.of(COUNT, openColumns.count()), columnNodes);
+    }
+
+    private ComponentNode wrapPendingLayouts(List<ComponentNode> innermostLevel) {
+        List<Frame> framesBottomUp = bottomUp(frames);
+        List<PendingLayout> layouts = bottomUp(pendingLayouts);
+        if (layouts.isEmpty()) {
+            return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(innermostLevel));
+        }
+        List<ComponentNode> nodes = innermostLevel;
+        for (int depth = layouts.size(); depth >= 1; depth--) {
+            PendingLayout layout = layouts.get(depth - 1);
+            ComponentNode partial =
+                    new ComponentNode(layout.id(), layout.type(), layout.props(), List.copyOf(nodes));
+            if (depth == 1) {
+                List<ComponentNode> rootChildren = new ArrayList<>(framesBottomUp.getFirst().children());
+                rootChildren.add(partial);
+                return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(rootChildren));
+            }
+            Frame parentFrame = framesBottomUp.get(depth - 1);
+            List<ComponentNode> parentChildren = new ArrayList<>(parentFrame.children());
+            parentChildren.add(partial);
+            nodes = parentChildren;
+        }
+        throw new IllegalStateException("unreachable");
+    }
+
+    private static <T> List<T> bottomUp(Deque<T> deque) {
+        List<T> list = new ArrayList<>(deque);
+        Collections.reverse(list);
+        return list;
+    }
+
+    private void withinColumnScope(String columnKey, Frame frame, Runnable block) {
+        paths.push(columnKey);
+        counters.push(new HashMap<>());
+        try {
+            withinFrame(frame, block);
+        } finally {
+            counters.pop();
+            paths.pop();
+        }
+    }
+
+    private <T> T withinColumnScope(String columnKey, Frame frame, Supplier<T> block) {
+        paths.push(columnKey);
+        counters.push(new HashMap<>());
+        try {
+            return withinFrame(frame, block);
+        } finally {
+            counters.pop();
+            paths.pop();
+        }
     }
 
     private void withinFrame(Frame frame, Runnable block) {
@@ -344,24 +451,26 @@ public final class UiBinder implements Ui {
     }
 
     /**
-     * Column-scoped {@link Ui} that activates a dedicated frame for each delegated call so
-     * {@code cols[i]} can be used in any order within {@link #columns(int, Consumer)}.
+     * Column-scoped {@link Ui} that activates a dedicated frame and key path for each delegated
+     * call so {@code cols[i]} can be used in any order within {@link #columns(int, Consumer)}.
      */
-    private static final class ScopedUi implements Ui {
+    private static final class ColumnScopedUi implements Ui {
         private final UiBinder parent;
         private final Frame frame;
+        private final String columnKey;
 
-        ScopedUi(UiBinder parent, Frame frame) {
+        ColumnScopedUi(UiBinder parent, Frame frame, String columnKey) {
             this.parent = parent;
             this.frame = frame;
+            this.columnKey = columnKey;
         }
 
         private void run(Runnable action) {
-            parent.withinFrame(frame, action);
+            parent.withinColumnScope(columnKey, frame, action);
         }
 
         private <T> T call(Supplier<T> action) {
-            return parent.withinFrame(frame, action);
+            return parent.withinColumnScope(columnKey, frame, action);
         }
 
         @Override

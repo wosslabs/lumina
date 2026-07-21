@@ -231,6 +231,21 @@ class UiBinderTest {
     }
 
     @Test
+    void columnsScopeWidgetKeysUnderColumnPath() {
+        UiBinder ui = new UiBinder(new SessionState());
+        ui.columns(2, cols -> {
+            cols[0].button("Left");
+            cols[1].button("Right");
+        });
+        ComponentNode columns = ui.buildRoot().children().getFirst();
+        String col0ButtonId = columns.children().get(0).children().getFirst().id();
+        String col1ButtonId = columns.children().get(1).children().getFirst().id();
+        assertThat(col0ButtonId).contains("/column#");
+        assertThat(col1ButtonId).contains("/column#");
+        assertThat(col0ButtonId).isNotEqualTo(col1ButtonId);
+    }
+
+    @Test
     void expanderReflectsWidgetStateOpenFlag() {
         SessionState session = new SessionState();
         UiBinder ui = new UiBinder(session);

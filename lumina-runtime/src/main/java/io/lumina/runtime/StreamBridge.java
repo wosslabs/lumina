@@ -1,7 +1,6 @@
 package io.lumina.runtime;
 
 import io.lumina.model.ComponentNode;
-import java.util.List;
 
 /**
  * Runtime hook the {@link UiBinder} calls while streaming an {@code ai_message}: it flushes an
@@ -10,13 +9,13 @@ import java.util.List;
  */
 interface StreamBridge {
     StreamBridge NOOP = new StreamBridge() {
-        @Override public void flushBefore(List<ComponentNode> childrenSoFar) { }
+        @Override public void flushBefore(ComponentNode interimRoot) { }
         @Override public void streamStart(String nodeId) { }
         @Override public void streamAppend(String nodeId, String text) { }
         @Override public void streamEnd(String nodeId) { }
     };
 
-    void flushBefore(List<ComponentNode> childrenSoFar);
+    void flushBefore(ComponentNode interimRoot);
     void streamStart(String nodeId);
     void streamAppend(String nodeId, String text);
     void streamEnd(String nodeId);
