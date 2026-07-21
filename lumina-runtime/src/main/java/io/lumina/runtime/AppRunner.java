@@ -160,6 +160,11 @@ final class AppRunner {
             case "input" -> widgets.set(requireTarget(intent), intent.payload().get("value"));
             case "submit_chat" -> widgets.setChatSubmit(requireTarget(intent), (String) intent.payload().get("value"));
             case "file_upload" -> widgets.set(requireTarget(intent), intent.payload().get("file"));
+            case "expander_toggle" -> {
+                String key = requireTarget(intent);
+                boolean open = Boolean.TRUE.equals(widgets.value(key));
+                widgets.set(key, !open);
+            }
             default -> throw new LuminaException("Unknown intent: " + intent.name());
         }
     }
