@@ -15,8 +15,12 @@ class UiBinderStreamingTest {
     private static final class RecordingBridge implements StreamBridge {
         final List<String> events = new ArrayList<>();
         int flushes = 0;
+        ComponentNode lastInterimRoot;
 
-        @Override public void flushBefore(List<ComponentNode> childrenSoFar) { flushes++; }
+        @Override public void flushBefore(ComponentNode interimRoot) {
+            flushes++;
+            lastInterimRoot = interimRoot;
+        }
         @Override public void streamStart(String nodeId) { events.add("start:" + nodeId); }
         @Override public void streamAppend(String nodeId, String text) { events.add("append:" + text); }
         @Override public void streamEnd(String nodeId) { events.add("end:" + nodeId); }
@@ -57,5 +61,23 @@ class UiBinderStreamingTest {
         UiBinder ui = new UiBinder(new SessionState());
         ui.ai("done");
         assertThat(ui.buildRoot().children()).hasSize(1);
+    }
+
+    @Test
+    void streamingInsideContainerFlushesFullRootSnapshot() {
+        SessionState session = new SessionState();
+        RecordingBridge bridge = new RecordingBridge();
+        UiBinder ui = new UiBinder(session, bridge);
+
+        ui.title("Outside");
+        ui.container(box -> box.ai(TokenStream.fromIterable(List.of("Hi"))));
+
+        assertThat(bridge.flushes).isEqualTo(1);
+        assertThat(bridge.lastInterimRoot.children()).hasSize(2);
+        assertThat(bridge.lastInterimRoot.children().get(0).type()).isEqualTo(ComponentTypes.TITLE);
+        assertThat(bridge.lastInterimRoot.children().get(1).type()).isEqualTo(ComponentTypes.CONTAINER);
+        assertThat(bridge.lastInterimRoot.children().get(1).children()).hasSize(1);
+        assertThat(bridge.lastInterimRoot.children().get(1).children().getFirst().type())
+                .isEqualTo(ComponentTypes.AI_MESSAGE);
     }
 }
