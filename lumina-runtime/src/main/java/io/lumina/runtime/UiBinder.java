@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -35,9 +36,15 @@ import java.util.function.Function;
 public final class UiBinder implements Ui {
     private static final String ROOT_PATH = "auto:";
 
+    private record Frame(List<ComponentNode> children) {
+        Frame() {
+            this(new ArrayList<>());
+        }
+    }
+
     private final SessionState session;
     private final StreamBridge stream;
-    private final List<ComponentNode> children = new ArrayList<>();
+    private final Deque<Frame> frames = new ArrayDeque<>();
     private final Deque<String> paths = new ArrayDeque<>();
     private final Deque<Map<String, Integer>> counters = new ArrayDeque<>();
     private final Set<String> streamedIds = new LinkedHashSet<>();
@@ -63,6 +70,7 @@ public final class UiBinder implements Ui {
         this.stream = Objects.requireNonNull(stream, "stream");
         paths.push(ROOT_PATH);
         counters.push(new HashMap<>());
+        frames.push(new Frame());
     }
 
     @Override
@@ -115,8 +123,9 @@ public final class UiBinder implements Ui {
     public String ai(TokenStream tokens) {
         Objects.requireNonNull(tokens, "tokens");
         String key = nextKey(ComponentTypes.AI_MESSAGE);
-        children.add(new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, ""), List.of()));
-        stream.flushBefore(List.copyOf(children));
+        List<ComponentNode> current = frames.peek().children();
+        current.add(new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, ""), List.of()));
+        stream.flushBefore(List.copyOf(current));
         stream.streamStart(key);
         StringBuilder acc = new StringBuilder();
         try {
@@ -128,8 +137,8 @@ public final class UiBinder implements Ui {
             stream.streamEnd(key);
         }
         streamedIds.add(key);
-        int last = children.size() - 1;
-        children.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
+        int last = current.size() - 1;
+        current.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
         return acc.toString();
     }
 
@@ -189,13 +198,33 @@ public final class UiBinder implements Ui {
         }
     }
 
+    @Override
+    public void container(Consumer<Ui> body) {
+        throw new UnsupportedOperationException("Task 3");
+    }
+
+    @Override
+    public void columns(int n, Consumer<Ui[]> cols) {
+        throw new UnsupportedOperationException("Task 3");
+    }
+
+    @Override
+    public void sidebar(Consumer<Ui> body) {
+        throw new UnsupportedOperationException("Task 3");
+    }
+
+    @Override
+    public boolean expander(String label, Consumer<Ui> body) {
+        throw new UnsupportedOperationException("Task 3");
+    }
+
     /**
      * Creates the immutable root containing all components declared during this run.
      *
      * @return root of the completed component tree
      */
     public ComponentNode buildRoot() {
-        return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), children);
+        return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(frames.peek().children()));
     }
 
     /**
@@ -214,7 +243,7 @@ public final class UiBinder implements Ui {
     }
 
     private void addNode(String key, String type, Map<String, Object> props) {
-        children.add(new ComponentNode(key, type, props, List.of()));
+        frames.peek().children().add(new ComponentNode(key, type, props, List.of()));
     }
 
     private String nextKey(String type) {
