@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.lumina.LuminaApp;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -274,6 +275,44 @@ class LuminaServerIT {
     }
 
     @Test
+    void websocketSnapshotContainsNestedColumnsLayout() throws Exception {
+        server = LuminaServer.start(new LayoutITApp(), LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+
+        assertThat(snapshot).contains("\"type\":\"snapshot\"");
+        assertThat(snapshot).contains("\"type\":\"columns\"");
+        assertThat(snapshot).contains("\"type\":\"column\"");
+        assertThat(snapshot).contains("\"content\":\"A\"");
+        assertThat(snapshot).contains("\"content\":\"B\"");
+        webSocket.abort();
+    }
+
+    @Test
+    void websocketExpanderToggleOpensExpander() throws Exception {
+        server = LuminaServer.start(
+                ui -> ui.expander("More", body -> body.text("hidden")),
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+        String expanderId = findId(MAPPER.readTree(snapshot).path("root"), "expander");
+
+        assertThat(snapshot).contains("\"open\":false");
+
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"expander_toggle\",\"targetId\":\"" + expanderId + "\",\"payload\":{}}",
+                true);
+        String response = listener.nextMessage();
+
+        assertThat(response.contains("\"type\":\"patch\"") || response.contains("\"type\":\"snapshot\""))
+                .isTrue();
+        assertThat(response).contains("\"open\":true");
+        webSocket.abort();
+    }
+
+    @Test
     void websocketRejectsConnectionsBeyondSessionCap() throws Exception {
         server = LuminaServer.start(
                 ui -> ui.title("T"), LuminaServerConfig.builder().port(0).maxSessions(1).build());
@@ -305,6 +344,16 @@ class LuminaServerIT {
             }
         }
         return null;
+    }
+
+    public static final class LayoutITApp implements LuminaApp {
+        @Override
+        public void build(io.lumina.ui.Ui ui) {
+            ui.columns(2, cols -> {
+                cols[0].text("A");
+                cols[1].text("B");
+            });
+        }
     }
 
     /** Collects complete WebSocket text messages, re-requesting after each per JDK contract. */
