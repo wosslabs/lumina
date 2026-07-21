@@ -15,7 +15,12 @@
     table: "lumina-table",
     image: "lumina-image",
     file_upload: "lumina-file-upload",
-    progress: "lumina-progress"
+    progress: "lumina-progress",
+    container: "lumina-container",
+    columns: "lumina-columns",
+    column: "lumina-column",
+    sidebar: "lumina-sidebar",
+    expander: "lumina-expander"
   };
   const MAX_UPLOAD_BYTES = 1024 * 1024;
 
@@ -235,6 +240,80 @@
       progress.max = 1;
       progress.value = Number(this._node?.props?.value ?? 0);
       this.replaceChildren(progress);
+    }
+  }
+
+  class LuminaLayoutElement extends LuminaNodeElement {
+    render() {
+      // Layout nodes keep child DOM from renderNode; subclasses apply shell classes only.
+    }
+  }
+
+  class LuminaContainer extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-container";
+    }
+  }
+
+  class LuminaColumns extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-columns";
+    }
+  }
+
+  class LuminaColumn extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-column";
+    }
+  }
+
+  class LuminaSidebar extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-sidebar";
+    }
+  }
+
+  class LuminaExpander extends LuminaNodeElement {
+    connectedCallback() {
+      this._ensureDetails();
+      if (!this._toggleBound) {
+        this._details.addEventListener("toggle", () => {
+          this.closest("lumina-app")?.sendIntent("expander_toggle", this._node?.id);
+        });
+        this._toggleBound = true;
+      }
+    }
+
+    _ensureDetails() {
+      if (!this._details) {
+        this._details = document.createElement("details");
+        this._details.className = "lumina-expander";
+        this._details.append(document.createElement("summary"));
+        super.appendChild(this._details);
+      }
+      return this._details;
+    }
+
+    append(...nodes) {
+      const details = this._ensureDetails();
+      for (const node of nodes) {
+        if (node === details) {
+          super.append(node);
+        } else {
+          details.append(node);
+        }
+      }
+      return this;
+    }
+
+    render() {
+      const details = this._ensureDetails();
+      details.open = this._node?.props?.open === true;
+      details.querySelector("summary").textContent = String(this._node?.props?.label ?? "");
     }
   }
 
@@ -530,5 +609,10 @@
   customElements.define("lumina-image", LuminaImage);
   customElements.define("lumina-file-upload", LuminaFileUpload);
   customElements.define("lumina-progress", LuminaProgress);
+  customElements.define("lumina-container", LuminaContainer);
+  customElements.define("lumina-columns", LuminaColumns);
+  customElements.define("lumina-column", LuminaColumn);
+  customElements.define("lumina-sidebar", LuminaSidebar);
+  customElements.define("lumina-expander", LuminaExpander);
   customElements.define("lumina-app", LuminaApp);
 })();

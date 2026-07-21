@@ -16,6 +16,55 @@ lumina-app {
   margin: 3rem auto;
 }
 
+lumina-app:has(> lumina-sidebar) {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1.5rem;
+  width: min(64rem, calc(100% - 2rem));
+  margin: 2rem auto;
+}
+
+lumina-app:has(> lumina-sidebar) > :not(lumina-sidebar):not(.lumina-status) {
+  flex: 1;
+  min-width: 0;
+}
+
+lumina-container,
+.lumina-container {
+  display: block;
+}
+
+lumina-columns,
+.lumina-columns {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+lumina-column,
+.lumina-column {
+  flex: 1;
+  min-width: 0;
+}
+
+lumina-sidebar,
+.lumina-sidebar {
+  flex: 0 0 12rem;
+  min-width: 12rem;
+}
+
+lumina-expander,
+.lumina-expander {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+lumina-expander summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
 lumina-title h1 {
   margin: 0 0 1.5rem;
   font-size: 2rem;
