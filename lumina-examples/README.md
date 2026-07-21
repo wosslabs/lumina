@@ -27,3 +27,13 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.streami
 
 Since this module's default `mainClass` is `HelloAiMain`, running the
 streaming example overrides it with `-Dexec.mainClass`.
+
+## Layout demo
+
+`LayoutDemoApp` demonstrates nested layout primitives: sidebar, equal-width
+columns, container, and expander.
+
+```bash
+mvn -q -pl lumina-examples -am install
+mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.layout.LayoutDemoMain
+```

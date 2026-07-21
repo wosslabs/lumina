@@ -1,7 +1,7 @@
 # ADR-007: Nested component tree & layout containers
 
 ## Status
-Accepted
+Accepted. Implemented in 0.4.0-SNAPSHOT (container, columns, sidebar, expander).
 
 ## Context
 Today the server builds an immutable `ComponentNode` tree, but children are effectively a flat
