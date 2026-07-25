@@ -61,20 +61,20 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P1 | WebSocket transport | ✅ | `LuminaWebSocketEndpoint` + backpressure |
 | P1 | SSE transport | ❌ | — |
 | P1 | Hello World | ✅ | `lumina-examples` |
-| P1.5 | Design system / tokens | ❌ | Spec approved; target `0.5.0` |
-| P1.5 | App shell (wide/centered) | ❌ | `PageConfig` API + client shell CSS |
-| P1.5 | Widget visual polish | ❌ | All existing types restyled |
-| P1.5 | Dark mode baseline | ❌ | `prefers-color-scheme` tokens |
-| P1.5 | Showcase demo | ❌ | `ShowcaseApp` hero demo |
-| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | `lumina-components` — must meet P1.5 polish before new widgets |
-| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | Blocked on P1.5 styling rule |
+| P1.5 | Design system / tokens | ✅ | `lumina-tokens.css`, ADR-013 (`0.5.0`) |
+| P1.5 | App shell (wide/centered) | ✅ | `PageConfig` API + client shell CSS |
+| P1.5 | Widget visual polish | ✅ | All existing types restyled |
+| P1.5 | Dark mode baseline | ✅ | `prefers-color-scheme` tokens |
+| P1.5 | Showcase demo | ✅ | `ShowcaseApp` hero demo |
+| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | `lumina-components` — P1.5 polish applied |
+| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | Next P2 widgets |
 | P3 | chat UI, streaming tokens, history, markdown, code highlight | ✅ | Phase 2 delivered |
 | P3 | citations, RAG sources, tool-call viz, token usage, cost, latency | ❌ | — |
 | P4 | Spring AI ChatClient auto-config | ◐ | `lumina-spring-ai`; echo-tested only, no real model wired |
 | P4 | LangChain4j, Bedrock, OpenAI, Azure, Vertex, Ollama | ❌ | — |
 | P5–P10 | all | ❌ | Not started |
 
-**Resume point:** P1.5 UX Foundation → P1 gaps (routing, hot reload, SSE) → P2 widgets.
+**Resume point:** P1 gaps (routing, hot reload, SSE) → P2 widgets.
 
 ## Guiding principles
 

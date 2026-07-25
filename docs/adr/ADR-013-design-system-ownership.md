@@ -1,7 +1,7 @@
 # ADR-013: Design system ownership & page configuration
 
 ## Status
-Accepted. Implementation target: `0.5.0-SNAPSHOT` (P1.5 UX Foundation).
+Accepted. Implemented in `0.5.0-SNAPSHOT` (P1.5 UX Foundation).
 
 ## Context
 Lumina's thin client ships framework-owned CSS and Web Components. After nested layout
