@@ -1,0 +1,11 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--lumina-font-sans);
+  font-size: var(--lumina-text-base);
+  line-height: 1.5;
+  color: var(--lumina-color-text);
+  background: var(--lumina-color-bg);
+  -webkit-font-smoothing: antialiased;
+}

@@ -1,0 +1,55 @@
+:root {
+  color-scheme: light dark;
+
+  /* Color */
+  --lumina-color-primary: #2563EB;
+  --lumina-color-primary-hover: #1D4ED8;
+  --lumina-color-bg: #FFFFFF;
+  --lumina-color-bg-subtle: #F8FAFC;
+  --lumina-color-sidebar: #F0F2F6;
+  --lumina-color-border: #E2E8F0;
+  --lumina-color-text: #0F172A;
+  --lumina-color-text-muted: #64748B;
+
+  /* Typography */
+  --lumina-font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --lumina-font-mono: ui-monospace, "Cascadia Code", monospace;
+  --lumina-text-base: 1rem;
+  --lumina-text-sm: 0.875rem;
+  --lumina-text-lg: 1.125rem;
+
+  /* Spacing (4px grid) */
+  --lumina-space-1: 0.25rem;
+  --lumina-space-2: 0.5rem;
+  --lumina-space-3: 0.75rem;
+  --lumina-space-4: 1rem;
+  --lumina-space-6: 1.5rem;
+  --lumina-space-8: 2rem;
+
+  /* Radius & shadow */
+  --lumina-radius-sm: 0.375rem;
+  --lumina-radius-md: 0.5rem;
+  --lumina-radius-lg: 0.75rem;
+  --lumina-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --lumina-shadow-md: 0 4px 12px rgb(15 23 42 / 0.08);
+
+  /* Layout */
+  --lumina-sidebar-width: 21rem;
+  --lumina-content-max-centered: 45rem;
+  --lumina-content-padding: var(--lumina-space-8);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lumina-color-primary: #3B82F6;
+    --lumina-color-primary-hover: #60A5FA;
+    --lumina-color-bg: #0F172A;
+    --lumina-color-bg-subtle: #1E293B;
+    --lumina-color-sidebar: #172033;
+    --lumina-color-border: #334155;
+    --lumina-color-text: #F8FAFC;
+    --lumina-color-text-muted: #94A3B8;
+    --lumina-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.24);
+    --lumina-shadow-md: 0 4px 12px rgb(0 0 0 / 0.32);
+  }
+}
