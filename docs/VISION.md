@@ -21,6 +21,8 @@ Canonical Phase 0–10 roadmap:
 - **P0 Vision & Architecture** — this spec's deliverables.
 - **P1 Framework Kernel (MVP)** — embedded server, component tree, rendering, diff engine, session
   state, routing, basic layout, hot reload, WebSocket/SSE transport, Hello World.
+- **P1.5 UX Foundation** — design system (tokens, typography, dark mode baseline), app shell
+  (wide/centered layout, styled sidebar), widget polish, `pageConfig` API, showcase demo.
 - **P2 Core UI Components** — text, markdown, code, buttons, text/number input, checkbox, select,
   radio, slider, images, tables, JSON viewer, progress, spinners, file upload/download.
 - **P3 AI Components** — chat UI, streaming tokens, prompt editor, history, markdown, code
@@ -29,8 +31,8 @@ Canonical Phase 0–10 roadmap:
   Bedrock, OpenAI, Azure, Vertex, Ollama; `ui.ai(chatClient.prompt(prompt))`.
 - **P5 Agentic UI** — agent timeline, tool invocation viewer, reasoning graph, workflow viz, memory
   inspection, multi-agent, human approval steps, live execution logs.
-- **P6 Advanced Layout & UX** — tabs, sidebars, expanders, dialogs, notifications, responsive
-  layouts, theming, dark mode, accessibility, keyboard shortcuts.
+- **P6 Advanced Layout & UX** — tabs, dialogs, notifications, responsive breakpoints, theme toggle,
+  accessibility, keyboard shortcuts (baseline visual polish moved to P1.5).
 - **P7 Enterprise** — auth/SSO hooks, RBAC, session clustering, observability
   (Micrometer/OpenTelemetry), audit logging, i18n, config profiles, security hardening.
 - **P8 Extensibility** — plugin API, component SDK, theme SDK, transport SPI, rendering SPI, AI
@@ -49,25 +51,30 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | Phase | Item | Status | Notes |
 |-------|------|--------|-------|
 | P1 | Embedded server | ✅ | Jetty 12 embedded (`lumina-web`, ADR-005) |
-| P1 | Component tree | ◐ | Immutable `ComponentNode`, but **flat children only** |
-| P1 | Rendering engine | ◐ | Server-driven; no nested layout |
+| P1 | Component tree | ✅ | Nested `ComponentNode` tree (ADR-007, `0.4.0`) |
+| P1 | Rendering engine | ✅ | Server-driven nested layout + diff patches |
 | P1 | Diff engine | ✅ | `TreeDiffer` + patch ops (ADR-003) |
-| P1 | Session state | ◐ | `StateStore` session map; not typed; no routing |
-| P1 | Routing | ❌ | — |
-| P1 | Basic layout | ❌ | No columns/tabs/container |
+| P1 | Session state | ◐ | `StateStore` + `WidgetState`; not typed; no routing |
+| P1 | Routing | ❌ | ADR-008 accepted, not implemented |
+| P1 | Basic layout | ✅ | `container`, `columns`, `sidebar`, `expander` (`0.4.0`) |
 | P1 | Hot reload | ❌ | `NoOpReloader` stub only |
 | P1 | WebSocket transport | ✅ | `LuminaWebSocketEndpoint` + backpressure |
 | P1 | SSE transport | ❌ | — |
 | P1 | Hello World | ✅ | `lumina-examples` |
-| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | `lumina-components` |
-| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | — |
+| P1.5 | Design system / tokens | ❌ | Spec approved; target `0.5.0` |
+| P1.5 | App shell (wide/centered) | ❌ | `PageConfig` API + client shell CSS |
+| P1.5 | Widget visual polish | ❌ | All existing types restyled |
+| P1.5 | Dark mode baseline | ❌ | `prefers-color-scheme` tokens |
+| P1.5 | Showcase demo | ❌ | `ShowcaseApp` hero demo |
+| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | `lumina-components` — must meet P1.5 polish before new widgets |
+| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | Blocked on P1.5 styling rule |
 | P3 | chat UI, streaming tokens, history, markdown, code highlight | ✅ | Phase 2 delivered |
 | P3 | citations, RAG sources, tool-call viz, token usage, cost, latency | ❌ | — |
 | P4 | Spring AI ChatClient auto-config | ◐ | `lumina-spring-ai`; echo-tested only, no real model wired |
 | P4 | LangChain4j, Bedrock, OpenAI, Azure, Vertex, Ollama | ❌ | — |
 | P5–P10 | all | ❌ | Not started |
 
-**Resume point after Phase 0:** P1 gaps (nested layout, routing, hot reload, SSE) → then finish P2 widgets.
+**Resume point:** P1.5 UX Foundation → P1 gaps (routing, hot reload, SSE) → P2 widgets.
 
 ## Guiding principles
 
