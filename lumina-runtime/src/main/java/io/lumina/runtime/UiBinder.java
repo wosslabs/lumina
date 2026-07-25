@@ -317,16 +317,21 @@ public final class UiBinder implements Ui {
      * @return root of the completed component tree
      */
     public ComponentNode buildRoot() {
-        Map<String, Object> props = new LinkedHashMap<>();
-        if (pageConfig != null) {
-            if (!pageConfig.title().isBlank()) {
-                props.put(PAGE_TITLE, pageConfig.title());
-            }
-            props.put(LAYOUT, pageConfig.layout().wireValue());
-            props.put(SIDEBAR_STATE, pageConfig.sidebarState().wireValue());
-        }
-        return new ComponentNode("root", ComponentTypes.ROOT, Map.copyOf(props),
+        return new ComponentNode("root", ComponentTypes.ROOT, rootProps(),
                 List.copyOf(frames.peek().children()));
+    }
+
+    private Map<String, Object> rootProps() {
+        if (pageConfig == null) {
+            return Map.of();
+        }
+        Map<String, Object> props = new LinkedHashMap<>();
+        if (!pageConfig.title().isBlank()) {
+            props.put(PAGE_TITLE, pageConfig.title());
+        }
+        props.put(LAYOUT, pageConfig.layout().wireValue());
+        props.put(SIDEBAR_STATE, pageConfig.sidebarState().wireValue());
+        return Map.copyOf(props);
     }
 
     private void lockPageConfig() {
@@ -382,7 +387,7 @@ public final class UiBinder implements Ui {
         List<Frame> framesBottomUp = bottomUp(frames);
         if (framesBottomUp.size() == 1 && pendingLayouts.isEmpty()) {
             return new ComponentNode(
-                    "root", ComponentTypes.ROOT, Map.of(), List.copyOf(framesBottomUp.getFirst().children()));
+                    "root", ComponentTypes.ROOT, rootProps(), List.copyOf(framesBottomUp.getFirst().children()));
         }
         List<ComponentNode> nodes = List.copyOf(framesBottomUp.getLast().children());
         return wrapPendingLayouts(nodes);
@@ -414,7 +419,7 @@ public final class UiBinder implements Ui {
         List<Frame> framesBottomUp = bottomUp(frames);
         List<PendingLayout> layouts = bottomUp(pendingLayouts);
         if (layouts.isEmpty()) {
-            return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(innermostLevel));
+            return new ComponentNode("root", ComponentTypes.ROOT, rootProps(), List.copyOf(innermostLevel));
         }
         List<ComponentNode> nodes = innermostLevel;
         for (int depth = layouts.size(); depth >= 1; depth--) {
@@ -424,7 +429,7 @@ public final class UiBinder implements Ui {
             if (depth == 1) {
                 List<ComponentNode> rootChildren = new ArrayList<>(framesBottomUp.getFirst().children());
                 rootChildren.add(partial);
-                return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(rootChildren));
+                return new ComponentNode("root", ComponentTypes.ROOT, rootProps(), List.copyOf(rootChildren));
             }
             Frame parentFrame = framesBottomUp.get(depth - 1);
             List<ComponentNode> parentChildren = new ArrayList<>(parentFrame.children());

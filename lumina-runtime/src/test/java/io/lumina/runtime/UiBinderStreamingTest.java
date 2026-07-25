@@ -1,11 +1,14 @@
 package io.lumina.runtime;
 
+import static io.lumina.components.ComponentSpecs.PAGE_TITLE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.lumina.ai.TokenStream;
 import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
+import io.lumina.ui.PageConfig;
+import io.lumina.ui.PageLayout;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -79,5 +82,15 @@ class UiBinderStreamingTest {
         assertThat(bridge.lastInterimRoot.children().get(1).children()).hasSize(1);
         assertThat(bridge.lastInterimRoot.children().get(1).children().getFirst().type())
                 .isEqualTo(ComponentTypes.AI_MESSAGE);
+    }
+
+    @Test
+    void streamingInterimRootIncludesPageConfigProps() {
+        RecordingBridge bridge = new RecordingBridge();
+        UiBinder ui = new UiBinder(new SessionState(), bridge);
+        ui.pageConfig(PageConfig.builder().title("Stream Dashboard").layout(PageLayout.WIDE).build());
+        ui.container(box -> box.ai(TokenStream.fromIterable(List.of("Hi"))));
+        assertThat(bridge.lastInterimRoot.props()).containsEntry(PAGE_TITLE, "Stream Dashboard");
+        assertThat(bridge.lastInterimRoot.props()).containsEntry("layout", "wide");
     }
 }
