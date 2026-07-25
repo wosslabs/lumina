@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lumina.LuminaApp;
+import io.lumina.ui.PageConfig;
+import io.lumina.ui.PageLayout;
+import io.lumina.ui.SidebarState;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -271,6 +274,29 @@ class LuminaServerIT {
                 .get(5, TimeUnit.SECONDS);
 
         assertThat(listener.nextMessage()).contains("\"type\":\"snapshot\"");
+        webSocket.abort();
+    }
+
+    @Test
+    void websocketSnapshotIncludesPageConfig() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    ui.pageConfig(PageConfig.builder()
+                            .title("Dashboard")
+                            .layout(PageLayout.WIDE)
+                            .sidebar(SidebarState.EXPANDED)
+                            .build());
+                    ui.title("Hello");
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+
+        assertThat(snapshot).contains("\"type\":\"snapshot\"");
+        assertThat(snapshot).contains("\"pageTitle\"");
+        assertThat(snapshot).contains("\"layout\":\"wide\"");
+        assertThat(snapshot).contains("\"sidebarState\":\"expanded\"");
         webSocket.abort();
     }
 
