@@ -1,18 +1,30 @@
 # Lumina examples
 
-Run Hello AI from the repository root:
+## Showcase (recommended)
+
+`ShowcaseApp` is the hero demo for P1.5 UX: wide layout, sidebar rail, page title,
+and styled widgets (columns, progress, expander, text input, button).
+
+```bash
+mvn -q -pl lumina-examples -am install
+mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
+```
+
+Open the printed URL (default [http://localhost:8080](http://localhost:8080)) to
+see the app shell and design system in light or dark mode.
+
+Install dependencies first (`-am install`) so sibling SNAPSHOT artifacts are
+available on a fresh checkout.
+
+## Hello AI
+
+Minimal stateful chat backed by the offline echo client. The module's default
+`mainClass` is `HelloAiMain`, so no `-Dexec.mainClass` override is needed.
 
 ```bash
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java
 ```
-
-The `exec-maven-plugin` in this module sets `mainClass` to
-`io.lumina.examples.helloai.HelloAiMain`, so the second command does not
-need `-Dexec.mainClass`. Install dependencies first (`-am install`) so
-sibling SNAPSHOT artifacts are available on a fresh checkout; a single-line
-`… install exec:java` runs `exec:java` on the parent aggregator as well and
-fails without a `mainClass` there.
 
 ## Streaming chat
 
@@ -25,13 +37,10 @@ mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.streaming.StreamingChatMain
 ```
 
-Since this module's default `mainClass` is `HelloAiMain`, running the
-streaming example overrides it with `-Dexec.mainClass`.
-
 ## Layout demo
 
-`LayoutDemoApp` demonstrates nested layout primitives: sidebar, equal-width
-columns, container, and expander.
+`LayoutDemoApp` demonstrates nested layout primitives for integration tests:
+sidebar, equal-width columns, container, and expander.
 
 ```bash
 mvn -q -pl lumina-examples -am install

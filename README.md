@@ -20,18 +20,18 @@ status matrix.
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current system
 architecture, module boundaries, and design decisions.
 
-## Hello AI quickstart
+## Showcase quickstart
 
-From the repository root, build and run the included Hello AI application:
+From the repository root, build and run the P1.5 showcase demo:
 
 ```bash
 mvn -q -pl lumina-examples -am install
-mvn -q -pl lumina-examples exec:java
+mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
 ```
 
-Open [http://localhost:8080](http://localhost:8080), enter a prompt, and the
-built-in offline chat client will echo it. The example entry point is
-`io.lumina.examples.helloai.HelloAiMain`.
+Open [http://localhost:8080](http://localhost:8080) to see the wide layout,
+sidebar rail, dashboard columns, and styled widgets. The entry point is
+`io.lumina.examples.showcase.ShowcaseMain`.
 
 By default the embedded server binds to `127.0.0.1` (loopback only) so it is
 not reachable from other machines on the network. Pass a
@@ -41,7 +41,19 @@ not reachable from other machines on the network. Pass a
 The two commands are intentionally separate: the first builds and installs the
 example and its reactor dependencies into the local Maven repository (required
 on a fresh checkout so sibling SNAPSHOT artifacts resolve), while the second
-runs the example module's configured main class.
+runs the showcase main class.
+
+## Hello AI
+
+Minimal stateful chat using the built-in offline echo client:
+
+```bash
+mvn -q -pl lumina-examples -am install
+mvn -q -pl lumina-examples exec:java
+```
+
+Enter a prompt and the echo client replies. Default entry point:
+`io.lumina.examples.helloai.HelloAiMain`.
 
 ## Streaming chat
 
@@ -67,8 +79,8 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.streami
 - `lumina-spring-ai` — optional Spring AI `ChatClient` adapter that streams
   replies through `TokenStream` via a Reactor `Flux` bridge.
 - `lumina-cli` — command-line launcher for `LuminaApp` implementations.
-- `lumina-examples` — runnable applications, including Hello AI and the
-  streaming chat example.
+- `lumina-examples` — runnable applications, including the P1.5 showcase,
+  Hello AI, and the streaming chat example.
 
 ## Design
 

@@ -11,6 +11,9 @@
   <artifactId>lumina-examples</artifactId>
   <packaging>jar</packaging>
   <name>Lumina Examples</name>
+  <properties>
+    <exec.mainClass>io.lumina.examples.helloai.HelloAiMain</exec.mainClass>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>io.lumina</groupId>
@@ -34,7 +37,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.5.0</version>
         <configuration>
-          <mainClass>io.lumina.examples.helloai.HelloAiMain</mainClass>
+          <mainClass>${exec.mainClass}</mainClass>
         </configuration>
       </plugin>
     </plugins>
