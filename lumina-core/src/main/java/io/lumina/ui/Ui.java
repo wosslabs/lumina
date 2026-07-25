@@ -14,6 +14,14 @@ import java.util.function.Function;
  */
 public interface Ui {
     /**
+     * Configures page title and layout shell. Must be invoked before any other {@code Ui} method in
+     * this {@code build()} run.
+     *
+     * @param config page configuration; never null
+     */
+    void pageConfig(PageConfig config);
+
+    /**
      * Renders a page or section heading.
      *
      * @param text heading text; never null

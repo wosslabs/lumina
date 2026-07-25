@@ -24,6 +24,12 @@ public final class ComponentSpecs {
     public static final String INDEX = "index";
     /** Property containing whether an expander is open. */
     public static final String OPEN = "open";
+    /** Property containing the browser tab title for the page. */
+    public static final String PAGE_TITLE = "pageTitle";
+    /** Property containing the main content layout mode. */
+    public static final String LAYOUT = "layout";
+    /** Property containing the sidebar visual state. */
+    public static final String SIDEBAR_STATE = "sidebarState";
 
     private ComponentSpecs() {}
 }

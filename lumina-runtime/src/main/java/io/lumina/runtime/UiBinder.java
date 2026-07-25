@@ -5,8 +5,11 @@ import static io.lumina.components.ComponentSpecs.COUNT;
 import static io.lumina.components.ComponentSpecs.INDEX;
 import static io.lumina.components.ComponentSpecs.LABEL;
 import static io.lumina.components.ComponentSpecs.LANGUAGE;
+import static io.lumina.components.ComponentSpecs.LAYOUT;
 import static io.lumina.components.ComponentSpecs.OPEN;
+import static io.lumina.components.ComponentSpecs.PAGE_TITLE;
 import static io.lumina.components.ComponentSpecs.ROWS;
+import static io.lumina.components.ComponentSpecs.SIDEBAR_STATE;
 import static io.lumina.components.ComponentSpecs.SOURCE;
 import static io.lumina.components.ComponentSpecs.SRC;
 import static io.lumina.components.ComponentSpecs.VALUE;
@@ -17,6 +20,7 @@ import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import io.lumina.state.StateStore;
+import io.lumina.ui.PageConfig;
 import io.lumina.ui.Ui;
 import io.lumina.ui.UploadedFile;
 import java.util.ArrayDeque;
@@ -60,6 +64,8 @@ public final class UiBinder implements Ui {
     private final Set<String> streamedIds = new LinkedHashSet<>();
     private OpenColumns openColumns;
     private boolean sidebarUsed;
+    private PageConfig pageConfig;
+    private boolean pageConfigLocked;
 
     /**
      * Creates a binder backed by the supplied session state.
@@ -86,28 +92,42 @@ public final class UiBinder implements Ui {
     }
 
     @Override
+    public void pageConfig(PageConfig config) {
+        Objects.requireNonNull(config, "config");
+        if (pageConfigLocked) {
+            throw new LuminaException("pageConfig() must be the first Ui call in build()");
+        }
+        this.pageConfig = config;
+    }
+
+    @Override
     public void title(String text) {
+        lockPageConfig();
         addNode(ComponentTypes.TITLE, Map.of(CONTENT, text));
     }
 
     @Override
     public void markdown(String md) {
+        lockPageConfig();
         addNode(ComponentTypes.MARKDOWN, Map.of(CONTENT, md));
     }
 
     @Override
     public void text(String text) {
+        lockPageConfig();
         addNode(ComponentTypes.TEXT, Map.of(CONTENT, text));
     }
 
     @Override
     public boolean button(String label) {
+        lockPageConfig();
         String key = addNode(ComponentTypes.BUTTON, Map.of(LABEL, label));
         return session.widgets().consumeClick(key);
     }
 
     @Override
     public String textInput(String label) {
+        lockPageConfig();
         String key = nextKey(ComponentTypes.TEXT_INPUT);
         Object stored = session.widgets().value(key);
         String value = stored instanceof String text ? text : "";
@@ -117,22 +137,26 @@ public final class UiBinder implements Ui {
 
     @Override
     public String chatInput() {
+        lockPageConfig();
         String key = addNode(ComponentTypes.CHAT_INPUT, Map.of());
         return session.widgets().consumeChatSubmit(key);
     }
 
     @Override
     public void user(String message) {
+        lockPageConfig();
         addNode(ComponentTypes.USER_MESSAGE, Map.of(CONTENT, message));
     }
 
     @Override
     public void ai(String message) {
+        lockPageConfig();
         addNode(ComponentTypes.AI_MESSAGE, Map.of(CONTENT, message));
     }
 
     @Override
     public String ai(TokenStream tokens) {
+        lockPageConfig();
         Objects.requireNonNull(tokens, "tokens");
         String key = nextKey(ComponentTypes.AI_MESSAGE);
         List<ComponentNode> current = targetChildren();
@@ -156,26 +180,31 @@ public final class UiBinder implements Ui {
 
     @Override
     public void code(String language, String source) {
+        lockPageConfig();
         addNode(ComponentTypes.CODE, Map.of(LANGUAGE, language, SOURCE, source));
     }
 
     @Override
     public void json(Object value) {
+        lockPageConfig();
         addNode(ComponentTypes.JSON, Map.of(VALUE, snapshotJsonValue(value)));
     }
 
     @Override
     public void table(List<Map<String, Object>> rows) {
+        lockPageConfig();
         addNode(ComponentTypes.TABLE, Map.of(ROWS, snapshotJsonValue(rows)));
     }
 
     @Override
     public void image(String urlOrResource) {
+        lockPageConfig();
         addNode(ComponentTypes.IMAGE, Map.of(SRC, urlOrResource));
     }
 
     @Override
     public Optional<UploadedFile> fileUpload(String label) {
+        lockPageConfig();
         String key = nextKey(ComponentTypes.FILE_UPLOAD);
         Object stored = session.widgets().value(key);
         session.widgets().set(key, null);
@@ -185,6 +214,7 @@ public final class UiBinder implements Ui {
 
     @Override
     public void progress(double value) {
+        lockPageConfig();
         if (!Double.isFinite(value) || value < 0.0 || value > 1.0) {
             throw new IllegalArgumentException("progress must be between 0.0 and 1.0 inclusive");
         }
@@ -193,11 +223,13 @@ public final class UiBinder implements Ui {
 
     @Override
     public StateStore state() {
+        lockPageConfig();
         return session.store();
     }
 
     @Override
     public <T> T withKey(String key, Function<Ui, T> block) {
+        lockPageConfig();
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(block, "block");
         paths.push(paths.peek() + "/" + key);
@@ -212,6 +244,7 @@ public final class UiBinder implements Ui {
 
     @Override
     public void container(Consumer<Ui> body) {
+        lockPageConfig();
         Objects.requireNonNull(body, "body");
         String id = nextKey(ComponentTypes.CONTAINER);
         List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.CONTAINER, Map.of(), () -> body.accept(this));
@@ -220,6 +253,7 @@ public final class UiBinder implements Ui {
 
     @Override
     public void columns(int n, Consumer<Ui[]> cols) {
+        lockPageConfig();
         if (n < 1) {
             throw new IllegalArgumentException("columns requires n >= 1");
         }
@@ -251,6 +285,7 @@ public final class UiBinder implements Ui {
 
     @Override
     public void sidebar(Consumer<Ui> body) {
+        lockPageConfig();
         Objects.requireNonNull(body, "body");
         if (sidebarUsed) {
             throw new LuminaException("Only one sidebar is allowed per build()");
@@ -263,6 +298,7 @@ public final class UiBinder implements Ui {
 
     @Override
     public boolean expander(String label, Consumer<Ui> body) {
+        lockPageConfig();
         Objects.requireNonNull(label, "label");
         Objects.requireNonNull(body, "body");
         String key = nextKey(ComponentTypes.EXPANDER);
@@ -281,7 +317,20 @@ public final class UiBinder implements Ui {
      * @return root of the completed component tree
      */
     public ComponentNode buildRoot() {
-        return new ComponentNode("root", ComponentTypes.ROOT, Map.of(), List.copyOf(frames.peek().children()));
+        Map<String, Object> props = new LinkedHashMap<>();
+        if (pageConfig != null) {
+            if (!pageConfig.title().isBlank()) {
+                props.put(PAGE_TITLE, pageConfig.title());
+            }
+            props.put(LAYOUT, pageConfig.layout().wireValue());
+            props.put(SIDEBAR_STATE, pageConfig.sidebarState().wireValue());
+        }
+        return new ComponentNode("root", ComponentTypes.ROOT, Map.copyOf(props),
+                List.copyOf(frames.peek().children()));
+    }
+
+    private void lockPageConfig() {
+        pageConfigLocked = true;
     }
 
     /**
@@ -471,6 +520,11 @@ public final class UiBinder implements Ui {
 
         private <T> T call(Supplier<T> action) {
             return parent.withinColumnScope(columnKey, frame, action);
+        }
+
+        @Override
+        public void pageConfig(PageConfig config) {
+            parent.pageConfig(config);
         }
 
         @Override
