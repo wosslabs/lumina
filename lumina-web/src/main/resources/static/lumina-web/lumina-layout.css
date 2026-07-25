@@ -60,6 +60,11 @@ lumina-column, .lumina-column {
 
 lumina-container, .lumina-container {
   padding: var(--lumina-space-4);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-lg);
+  background: var(--lumina-color-bg);
+  box-shadow: var(--lumina-shadow-sm);
+  margin-block: var(--lumina-space-2);
 }
 
 lumina-expander details,
@@ -71,4 +76,62 @@ lumina-expander details,
   background: var(--lumina-color-bg-subtle);
   box-shadow: var(--lumina-shadow-sm);
   padding: var(--lumina-space-2) var(--lumina-space-4);
+}
+
+lumina-expander details summary,
+.lumina-expander summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--lumina-color-text);
+  padding-block: var(--lumina-space-1);
+  list-style: none;
+}
+
+lumina-expander details summary::-webkit-details-marker,
+.lumina-expander summary::-webkit-details-marker {
+  display: none;
+}
+
+lumina-expander details summary::before,
+.lumina-expander summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: var(--lumina-space-2);
+  transition: transform 0.15s ease;
+}
+
+lumina-expander details[open] > summary::before,
+.lumina-expander[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+lumina-sidebar > lumina-markdown {
+  margin-block: var(--lumina-space-2) var(--lumina-space-4);
+}
+
+lumina-sidebar lumina-button {
+  display: block;
+  margin-block: var(--lumina-space-1);
+}
+
+lumina-sidebar lumina-button button {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 2.25rem;
+  padding: var(--lumina-space-2) var(--lumina-space-3);
+  border: none;
+  background: transparent;
+  color: var(--lumina-color-text);
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+lumina-sidebar lumina-button button:hover {
+  background: color-mix(in srgb, var(--lumina-color-primary) 10%, transparent);
+  color: var(--lumina-color-primary);
+}
+
+lumina-sidebar lumina-button button:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
 }

@@ -1,0 +1,392 @@
+/* ------------------------------------------------------------------ */
+/* Block rhythm                                                       */
+/* ------------------------------------------------------------------ */
+
+lumina-title,
+lumina-text,
+lumina-markdown,
+lumina-button,
+lumina-text-input,
+lumina-chat-input,
+lumina-code,
+lumina-json,
+lumina-table,
+lumina-image,
+lumina-file-upload,
+lumina-progress {
+  display: block;
+  margin-block: var(--lumina-space-4);
+}
+
+/* ------------------------------------------------------------------ */
+/* Title                                                              */
+/* ------------------------------------------------------------------ */
+
+lumina-title h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--lumina-color-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Text & markdown                                                    */
+/* ------------------------------------------------------------------ */
+
+lumina-text p {
+  margin: 0;
+  color: var(--lumina-color-text);
+  line-height: 1.6;
+}
+
+lumina-markdown {
+  color: var(--lumina-color-text);
+  line-height: 1.6;
+}
+
+lumina-markdown h1,
+lumina-markdown h2,
+lumina-markdown h3,
+lumina-markdown h4,
+lumina-markdown h5,
+lumina-markdown h6 {
+  margin: var(--lumina-space-4) 0 var(--lumina-space-2);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--lumina-color-text);
+}
+
+lumina-markdown h1 { font-size: 1.75rem; }
+lumina-markdown h2 { font-size: 1.5rem; }
+lumina-markdown h3 { font-size: 1.25rem; }
+lumina-markdown h4 { font-size: var(--lumina-text-lg); }
+lumina-markdown h5 { font-size: var(--lumina-text-base); }
+lumina-markdown h6 {
+  font-size: var(--lumina-text-sm);
+  color: var(--lumina-color-text-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Button                                                             */
+/* ------------------------------------------------------------------ */
+
+lumina-button button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 var(--lumina-space-4);
+  border: none;
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-primary);
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+lumina-button button:hover {
+  background: var(--lumina-color-primary-hover);
+}
+
+lumina-button button:active:not(:disabled) {
+  background: var(--lumina-color-primary-hover);
+}
+
+lumina-button button:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+
+lumina-button button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Text input & file upload                                           */
+/* ------------------------------------------------------------------ */
+
+lumina-text-input label,
+lumina-file-upload label {
+  display: grid;
+  gap: var(--lumina-space-2);
+}
+
+lumina-text-input label span,
+lumina-file-upload label span {
+  font-size: var(--lumina-text-sm);
+  font-weight: 500;
+  color: var(--lumina-color-text);
+}
+
+lumina-text-input input,
+lumina-file-upload input[type="file"] {
+  min-height: 2.5rem;
+  padding: var(--lumina-space-2) var(--lumina-space-3);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+  font: inherit;
+  transition: border-color 0.15s ease;
+}
+
+lumina-text-input input:hover,
+lumina-file-upload input[type="file"]:hover {
+  border-color: var(--lumina-color-text-muted);
+}
+
+lumina-text-input input:focus-visible,
+lumina-file-upload input:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 0;
+  border-color: var(--lumina-color-primary);
+}
+
+/* ------------------------------------------------------------------ */
+/* Chat input                                                         */
+/* ------------------------------------------------------------------ */
+
+lumina-chat-input {
+  margin-top: var(--lumina-space-6);
+}
+
+lumina-chat-input form {
+  display: flex;
+  gap: var(--lumina-space-2);
+  align-items: stretch;
+}
+
+lumina-chat-input input {
+  min-width: 0;
+  flex: 1;
+  min-height: 2.5rem;
+  padding: var(--lumina-space-2) var(--lumina-space-3);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+  font: inherit;
+  transition: border-color 0.15s ease;
+}
+
+lumina-chat-input input:hover {
+  border-color: var(--lumina-color-text-muted);
+}
+
+lumina-chat-input input:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 0;
+  border-color: var(--lumina-color-primary);
+}
+
+lumina-chat-input button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 var(--lumina-space-4);
+  border: none;
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-primary);
+  color: #FFFFFF;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+lumina-chat-input button:hover {
+  background: var(--lumina-color-primary-hover);
+}
+
+lumina-chat-input button:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Chat messages                                                      */
+/* ------------------------------------------------------------------ */
+
+lumina-user-message,
+lumina-ai-message {
+  display: block;
+  max-width: 80%;
+  margin-block: var(--lumina-space-3);
+}
+
+lumina-user-message {
+  margin-left: auto;
+}
+
+lumina-user-message .message,
+lumina-ai-message .message {
+  padding: var(--lumina-space-3) var(--lumina-space-4);
+  border-radius: var(--lumina-radius-lg);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+lumina-user-message .message {
+  background: var(--lumina-color-primary);
+  color: #FFFFFF;
+}
+
+lumina-ai-message .message {
+  background: var(--lumina-color-bg-subtle);
+  color: var(--lumina-color-text);
+  border: 1px solid var(--lumina-color-border);
+}
+
+lumina-ai-message.streaming .message::after {
+  content: "▍";
+  margin-left: var(--lumina-space-1);
+  animation: lumina-blink 1s step-start infinite;
+}
+
+@keyframes lumina-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Code & JSON                                                        */
+/* ------------------------------------------------------------------ */
+
+lumina-code pre,
+lumina-json pre {
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg-subtle);
+}
+
+lumina-code code {
+  display: block;
+  padding: var(--lumina-space-4);
+  font-family: var(--lumina-font-mono);
+  font-size: var(--lumina-text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--lumina-color-text);
+}
+
+lumina-code code[data-language]:not([data-language=""])::before {
+  content: attr(data-language);
+  display: block;
+  margin: calc(-1 * var(--lumina-space-4)) calc(-1 * var(--lumina-space-4)) var(--lumina-space-3);
+  padding: var(--lumina-space-2) var(--lumina-space-4);
+  font-family: var(--lumina-font-sans);
+  font-size: var(--lumina-text-sm);
+  font-weight: 500;
+  color: var(--lumina-color-text-muted);
+  background: var(--lumina-color-bg);
+  border-bottom: 1px solid var(--lumina-color-border);
+  text-transform: lowercase;
+}
+
+lumina-json pre {
+  padding: var(--lumina-space-4);
+  font-family: var(--lumina-font-mono);
+  font-size: var(--lumina-text-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: var(--lumina-color-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Table                                                              */
+/* ------------------------------------------------------------------ */
+
+lumina-table {
+  overflow-x: auto;
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+}
+
+lumina-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--lumina-text-sm);
+}
+
+lumina-table th,
+lumina-table td {
+  padding: var(--lumina-space-2) var(--lumina-space-3);
+  border-bottom: 1px solid var(--lumina-color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+lumina-table th {
+  font-weight: 600;
+  color: var(--lumina-color-text);
+  background: var(--lumina-color-bg-subtle);
+}
+
+lumina-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+lumina-table tbody tr:nth-child(even) {
+  background: var(--lumina-color-bg-subtle);
+}
+
+/* ------------------------------------------------------------------ */
+/* Image                                                              */
+/* ------------------------------------------------------------------ */
+
+lumina-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+}
+
+/* ------------------------------------------------------------------ */
+/* Progress                                                           */
+/* ------------------------------------------------------------------ */
+
+lumina-progress progress {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border: none;
+  border-radius: var(--lumina-radius-sm);
+  background: var(--lumina-color-border);
+  overflow: hidden;
+}
+
+lumina-progress progress::-webkit-progress-bar {
+  background: var(--lumina-color-border);
+  border-radius: var(--lumina-radius-sm);
+}
+
+lumina-progress progress::-webkit-progress-value {
+  background: var(--lumina-color-primary);
+  border-radius: var(--lumina-radius-sm);
+  transition: width 0.2s ease;
+}
+
+lumina-progress progress::-moz-progress-bar {
+  background: var(--lumina-color-primary);
+  border-radius: var(--lumina-radius-sm);
+}
+
+/* ------------------------------------------------------------------ */
+/* Status line                                                        */
+/* ------------------------------------------------------------------ */
+
+.lumina-status {
+  margin-block: var(--lumina-space-2);
+  color: var(--lumina-color-text-muted);
+  font-size: var(--lumina-text-sm);
+}
