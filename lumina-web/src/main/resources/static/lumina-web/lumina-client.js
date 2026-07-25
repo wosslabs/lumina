@@ -432,6 +432,7 @@
     }
 
     render() {
+      this.applyPageConfig(this.tree?.props ?? {});
       const status = this.querySelector(":scope > .lumina-status");
       const fragment = document.createDocumentFragment();
       for (const child of this.tree?.children ?? []) {
@@ -440,6 +441,22 @@
       this.replaceChildren(fragment);
       if (status?.textContent) {
         this.append(status);
+      }
+    }
+
+    applyPageConfig(props) {
+      const layout = props.layout === "centered" ? "centered" : "wide";
+      const sidebarState = props.sidebarState === "collapsed" ? "collapsed" : "expanded";
+      this.classList.remove("lumina-layout-wide", "lumina-layout-centered",
+          "lumina-sidebar-expanded", "lumina-sidebar-collapsed", "lumina-has-sidebar");
+      this.classList.add(layout === "centered" ? "lumina-layout-centered" : "lumina-layout-wide");
+      this.classList.add(sidebarState === "collapsed" ? "lumina-sidebar-collapsed" : "lumina-sidebar-expanded");
+      const hasSidebar = (this.tree?.children ?? []).some((c) => c.type === "sidebar");
+      if (hasSidebar) {
+        this.classList.add("lumina-has-sidebar");
+      }
+      if (props.pageTitle) {
+        document.title = String(props.pageTitle);
       }
     }
 

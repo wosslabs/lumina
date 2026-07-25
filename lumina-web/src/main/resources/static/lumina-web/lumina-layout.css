@@ -1,0 +1,74 @@
+lumina-app {
+  display: block;
+  min-height: 100dvh;
+  padding: var(--lumina-content-padding);
+}
+
+lumina-app.lumina-layout-wide {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+lumina-app.lumina-layout-centered {
+  max-width: var(--lumina-content-max-centered);
+  margin: 0 auto;
+}
+
+lumina-app.lumina-has-sidebar {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--lumina-space-6);
+  max-width: none;
+  width: 100%;
+}
+
+lumina-app.lumina-has-sidebar > :not(lumina-sidebar):not(.lumina-status) {
+  flex: 1;
+  min-width: 0;
+}
+
+lumina-sidebar, .lumina-sidebar {
+  flex: 0 0 var(--lumina-sidebar-width);
+  background: var(--lumina-color-sidebar);
+  border-right: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-lg);
+  padding: var(--lumina-space-4);
+  min-height: calc(100dvh - 2 * var(--lumina-content-padding));
+}
+
+lumina-app.lumina-sidebar-collapsed lumina-sidebar {
+  flex-basis: 0;
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+}
+
+lumina-columns, .lumina-columns {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--lumina-space-4);
+}
+
+lumina-column, .lumina-column {
+  flex: 1;
+  min-width: 0;
+}
+
+lumina-container, .lumina-container {
+  padding: var(--lumina-space-4);
+}
+
+lumina-expander details,
+.lumina-expander {
+  display: block;
+  margin-block: var(--lumina-space-2);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-lg);
+  background: var(--lumina-color-bg-subtle);
+  box-shadow: var(--lumina-shadow-sm);
+  padding: var(--lumina-space-2) var(--lumina-space-4);
+}
