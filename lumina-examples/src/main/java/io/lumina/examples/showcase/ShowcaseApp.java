@@ -31,14 +31,27 @@ public final class ShowcaseApp implements LuminaApp {
         });
 
         ui.title("Dashboard");
+
         ui.columns(3, cols -> {
-            cols[0].markdown("### Users\n**1,284**");
-            cols[1].markdown("### Revenue\n**$48.2k**");
-            cols[2].progress(0.72);
+            cols[0].container(box -> {
+                box.markdown("### Users");
+                box.markdown("**1,284**");
+            });
+            cols[1].container(box -> {
+                box.markdown("### Revenue");
+                box.markdown("**$48.2k**");
+            });
+            cols[2].container(box -> {
+                box.markdown("### Goal");
+                box.progress(0.72);
+            });
         });
 
         ui.expander("Advanced", body -> body.code("java", "ui.pageConfig(...);"));
-        ui.textInput("Filter");
-        ui.button("Apply");
+
+        ui.columns(2, cols -> {
+            cols[0].textInput("Filter");
+            cols[1].button("Apply");
+        });
     }
 }

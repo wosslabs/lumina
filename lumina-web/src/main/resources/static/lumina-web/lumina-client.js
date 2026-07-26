@@ -59,16 +59,33 @@
         const heading = /^(#{1,6})\s+(.*)$/.exec(line);
         if (heading) {
           const element = document.createElement(`h${heading[1].length}`);
-          element.textContent = heading[2];
+          appendInlineMarkdown(element, heading[2]);
           fragment.append(element);
-        } else {
-          fragment.append(document.createTextNode(line));
-          if (index < lines.length - 1) {
-            fragment.append(document.createElement("br"));
-          }
+        } else if (line.length > 0) {
+          const paragraph = document.createElement("p");
+          appendInlineMarkdown(paragraph, line);
+          fragment.append(paragraph);
+        } else if (index < lines.length - 1) {
+          fragment.append(document.createElement("br"));
         }
       });
       this.replaceChildren(fragment);
+    }
+  }
+
+  function appendInlineMarkdown(parent, line) {
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    for (const part of parts) {
+      if (!part) {
+        continue;
+      }
+      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+        const strong = document.createElement("strong");
+        strong.textContent = part.slice(2, -2);
+        parent.append(strong);
+      } else {
+        parent.append(document.createTextNode(part));
+      }
     }
   }
 
@@ -435,9 +452,23 @@
       this.applyPageConfig(this.tree?.props ?? {});
       const status = this.querySelector(":scope > .lumina-status");
       const fragment = document.createDocumentFragment();
-      for (const child of this.tree?.children ?? []) {
+      const children = this.tree?.children ?? [];
+      const sidebarNodes = children.filter((child) => child.type === "sidebar");
+      const mainNodes = children.filter((child) => child.type !== "sidebar");
+
+      for (const child of sidebarNodes) {
         fragment.append(renderNode(child));
       }
+
+      if (mainNodes.length > 0) {
+        const main = document.createElement("main");
+        main.className = "lumina-main";
+        for (const child of mainNodes) {
+          main.append(renderNode(child));
+        }
+        fragment.append(main);
+      }
+
       this.replaceChildren(fragment);
       if (status?.textContent) {
         this.append(status);

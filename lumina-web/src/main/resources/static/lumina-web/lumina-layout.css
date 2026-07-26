@@ -18,19 +18,29 @@ lumina-app.lumina-layout-centered {
 lumina-app.lumina-has-sidebar {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--lumina-space-6);
   max-width: none;
   width: 100%;
 }
 
-lumina-app.lumina-has-sidebar > :not(lumina-sidebar):not(.lumina-status) {
+lumina-app.lumina-has-sidebar > lumina-main {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+lumina-app > lumina-main {
+  display: block;
+  width: 100%;
+}
+
+lumina-app.lumina-has-sidebar > lumina-sidebar {
+  flex: 0 0 var(--lumina-sidebar-width);
 }
 
 lumina-sidebar, .lumina-sidebar {
-  flex: 0 0 var(--lumina-sidebar-width);
   background: var(--lumina-color-sidebar);
   border-right: 1px solid var(--lumina-color-border);
   border-radius: var(--lumina-radius-lg);
@@ -58,7 +68,37 @@ lumina-column, .lumina-column {
   min-width: 0;
 }
 
+lumina-column > lumina-container {
+  height: 100%;
+}
+
+lumina-column > lumina-container lumina-markdown h3 {
+  margin-top: 0;
+  font-size: var(--lumina-text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lumina-color-text-muted);
+}
+
+lumina-column > lumina-container lumina-markdown strong {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+lumina-column:has(> lumina-button:only-child) {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+lumina-column > lumina-button:only-child {
+  margin-block: var(--lumina-space-4);
+}
+
 lumina-container, .lumina-container {
+  display: block;
   padding: var(--lumina-space-4);
   border: 1px solid var(--lumina-color-border);
   border-radius: var(--lumina-radius-lg);

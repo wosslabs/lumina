@@ -68,6 +68,15 @@ lumina-markdown h6 {
   color: var(--lumina-color-text-muted);
 }
 
+lumina-markdown strong {
+  font-weight: 700;
+  color: var(--lumina-color-text);
+}
+
+lumina-markdown p {
+  margin: 0;
+}
+
 /* ------------------------------------------------------------------ */
 /* Button                                                             */
 /* ------------------------------------------------------------------ */
