@@ -149,6 +149,43 @@ lumina-sidebar > lumina-markdown {
   margin-block: var(--lumina-space-2) var(--lumina-space-4);
 }
 
+lumina-sidebar > lumina-markdown h3 {
+  margin-top: var(--lumina-space-4);
+  font-size: var(--lumina-text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lumina-color-text-muted);
+}
+
+lumina-sidebar > lumina-markdown:first-of-type h2 {
+  margin-top: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--lumina-color-primary);
+  letter-spacing: -0.02em;
+}
+
+lumina-main > lumina-markdown h3 {
+  margin-top: var(--lumina-space-8);
+  padding-top: var(--lumina-space-6);
+  border-top: 1px solid var(--lumina-color-border);
+}
+
+lumina-main > lumina-markdown h3:first-of-type {
+  margin-top: var(--lumina-space-6);
+}
+
+lumina-main > lumina-title + lumina-markdown {
+  margin-top: calc(-1 * var(--lumina-space-2));
+}
+
+lumina-main > lumina-title + lumina-markdown p {
+  font-size: var(--lumina-text-lg);
+  color: var(--lumina-color-text-muted);
+  line-height: 1.6;
+  max-width: 42rem;
+}
+
 lumina-sidebar lumina-button {
   display: block;
   margin-block: var(--lumina-space-1);
