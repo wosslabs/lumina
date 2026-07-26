@@ -2,16 +2,16 @@
 
 ## Showcase (recommended)
 
-`ShowcaseApp` is the hero demo for P1.5 UX: wide layout, sidebar rail, page title,
-and styled widgets (columns, progress, expander, text input, button).
+`ShowcaseApp` is the recommended first run: an **interactive Streamlit-style demo**
+(counter, progress, session state, layout, expander) — not a static dashboard.
 
 ```bash
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
 ```
 
-Open the printed URL (default [http://localhost:8080](http://localhost:8080)) to
-see the app shell and design system in light or dark mode.
+Open [http://localhost:8080](http://localhost:8080), click **Increment** or **Say hello**,
+and watch the server rerun the Java `build()` method.
 
 Install dependencies first (`-am install`) so sibling SNAPSHOT artifacts are
 available on a fresh checkout.

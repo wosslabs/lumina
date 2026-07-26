@@ -2,8 +2,8 @@
   color-scheme: light dark;
 
   /* Color */
-  --lumina-color-primary: #2563EB;
-  --lumina-color-primary-hover: #1D4ED8;
+  --lumina-color-primary: #FF4B4B;
+  --lumina-color-primary-hover: #E83636;
   --lumina-color-bg: #FFFFFF;
   --lumina-color-bg-subtle: #F8FAFC;
   --lumina-color-sidebar: #F0F2F6;
@@ -41,8 +41,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --lumina-color-primary: #3B82F6;
-    --lumina-color-primary-hover: #60A5FA;
+    --lumina-color-primary: #FF4B4B;
+    --lumina-color-primary-hover: #FF6B6B;
     --lumina-color-bg: #0F172A;
     --lumina-color-bg-subtle: #1E293B;
     --lumina-color-sidebar: #172033;
