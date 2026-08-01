@@ -54,8 +54,8 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P1 | Component tree | ✅ | Nested `ComponentNode` tree (ADR-007, `0.4.0`) |
 | P1 | Rendering engine | ✅ | Server-driven nested layout + diff patches |
 | P1 | Diff engine | ✅ | `TreeDiffer` + patch ops (ADR-003) |
-| P1 | Session state | ◐ | `StateStore` + `WidgetState`; not typed; no routing |
-| P1 | Routing | ❌ | ADR-008 accepted, not implemented |
+| P1 | Session state | ◐ | `StateStore` + `WidgetState`; not typed |
+| P1 | Routing | ✅ | `ui.path()` / `ui.navigate()`; `__lumina.path` in session store (`0.6.0`) |
 | P1 | Basic layout | ✅ | `container`, `columns`, `sidebar`, `expander` (`0.4.0`) |
 | P1 | Hot reload | ❌ | `NoOpReloader` stub only |
 | P1 | WebSocket transport | ✅ | `LuminaWebSocketEndpoint` + backpressure |
@@ -74,7 +74,7 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P4 | LangChain4j, Bedrock, OpenAI, Azure, Vertex, Ollama | ❌ | — |
 | P5–P10 | all | ❌ | Not started |
 
-**Resume point:** P1 gaps (routing, hot reload, SSE) → P2 widgets.
+**Resume point:** P1 gaps (hot reload, SSE) → P2 widgets.
 
 ## Guiding principles
 

@@ -55,7 +55,7 @@ final class AppRunner {
         Objects.requireNonNull(intent, "intent");
         Objects.requireNonNull(sink, "sink");
 
-        applyIntent(session.widgets(), intent);
+        applyIntent(session, intent);
 
         StreamBridge bridge = new StreamBridge() {
             @Override
@@ -152,17 +152,23 @@ final class AppRunner {
         return descended ? current.id() : null;
     }
 
-    private void applyIntent(WidgetState widgets, Intent intent) {
+    private void applyIntent(SessionState session, Intent intent) {
         switch (intent.name()) {
-            case "connect" -> { }
-            case "click" -> widgets.set(requireTarget(intent), true);
-            case "input" -> widgets.set(requireTarget(intent), intent.payload().get("value"));
-            case "submit_chat" -> widgets.setChatSubmit(requireTarget(intent), (String) intent.payload().get("value"));
-            case "file_upload" -> widgets.set(requireTarget(intent), intent.payload().get("file"));
+            case "connect" -> {
+                Object path = intent.payload().get("path");
+                if (path instanceof String text) {
+                    SessionRoutes.set(session.store(), text);
+                }
+            }
+            case "navigate" -> SessionRoutes.set(session.store(), SessionRoutes.requirePayloadPath(intent));
+            case "click" -> session.widgets().set(requireTarget(intent), true);
+            case "input" -> session.widgets().set(requireTarget(intent), intent.payload().get("value"));
+            case "submit_chat" -> session.widgets().setChatSubmit(requireTarget(intent), (String) intent.payload().get("value"));
+            case "file_upload" -> session.widgets().set(requireTarget(intent), intent.payload().get("file"));
             case "expander_toggle" -> {
                 String key = requireTarget(intent);
-                boolean open = Boolean.TRUE.equals(widgets.value(key));
-                widgets.set(key, !open);
+                boolean open = Boolean.TRUE.equals(session.widgets().value(key));
+                session.widgets().set(key, !open);
             }
             default -> throw new LuminaException("Unknown intent: " + intent.name());
         }

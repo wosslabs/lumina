@@ -16,9 +16,10 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketOpen;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 /**
- * One WebSocket connection at {@code /ws}: creates a session on open, sends the initial
- * connect snapshot, and thereafter decodes each incoming message as an {@link Intent}, submits
- * it, and replies with the resulting patch or an error (ADR-003, ADR-005).
+ * One WebSocket connection at {@code /ws}: creates a session on open; the client sends a
+ * {@code connect} intent with the browser path to receive the initial snapshot, and thereafter
+ * decodes each incoming message as an {@link Intent}, submits it, and replies with the resulting
+ * patch or an error (ADR-003, ADR-005).
  *
  * <p>A new instance is created per connection by {@link JettyLuminaHttpServer}, so
  * {@link #sessionHandle} is confined to this connection's session.
@@ -42,7 +43,8 @@ public final class LuminaWebSocketEndpoint {
     }
 
     /**
-     * Opens a Lumina session and sends its initial component-tree snapshot.
+     * Opens a Lumina session; the client must send a {@code connect} intent to receive the
+     * initial component-tree snapshot.
      *
      * @param session newly opened WebSocket session
      */
@@ -50,8 +52,6 @@ public final class LuminaWebSocketEndpoint {
     public void onOpen(Session session) {
         this.session = session;
         sessionHandle = sessionManager.create();
-        sessionHandle.submit(Intent.connect(), sinkFor())
-                .whenComplete((result, error) -> reply(result, error));
     }
 
     /**

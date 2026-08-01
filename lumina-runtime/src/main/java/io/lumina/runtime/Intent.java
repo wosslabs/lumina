@@ -5,8 +5,8 @@ import java.util.Map;
 /**
  * One client-originated action submitted to a {@link SessionHandle} for the next rerun.
  *
- * @param name intent kind: {@code connect}, {@code click}, {@code input}, {@code submit_chat},
- *     {@code file_upload}, or {@code expander_toggle}
+ * @param name intent kind: {@code connect}, {@code navigate}, {@code click}, {@code input},
+ *     {@code submit_chat}, {@code file_upload}, or {@code expander_toggle}
  * @param targetId widget key this intent applies to, or {@code null} for {@code connect}
  * @param payload intent-specific data, e.g. {@code value} for text intents or {@code file} for an
  *     upload
@@ -26,6 +26,26 @@ public record Intent(String name, String targetId, Map<String, Object> payload) 
      */
     public static Intent connect() {
         return new Intent("connect", null, Map.of());
+    }
+
+    /**
+     * Creates the initial connect intent with a browser path.
+     *
+     * @param path absolute route path from the client
+     * @return connect intent carrying the path payload
+     */
+    public static Intent connectWithPath(String path) {
+        return new Intent("connect", null, Map.of("path", SessionRoutes.normalize(path)));
+    }
+
+    /**
+     * Creates a server-side navigation intent.
+     *
+     * @param path absolute route path
+     * @return navigate intent
+     */
+    public static Intent navigate(String path) {
+        return new Intent("navigate", null, Map.of("path", SessionRoutes.normalize(path)));
     }
 
     /**
