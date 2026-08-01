@@ -58,9 +58,32 @@ Prefer `sidebar.brand` / `sidebar.nav` / `sidebar.footer` and optional `ui.heade
 
 *(P2 fills this section.)*
 
-## AI
+## AI and agents
 
-*(P3–P5 fill this section.)*
+Use `AiProvider` for provider-neutral streaming. The built-in `EchoAiProvider` works without keys:
+
+```java
+AiProvider provider = new EchoAiProvider();
+ui.ai(provider.stream("Summarize Lumina"));
+ui.citation("Architecture", "docs/ARCHITECTURE.md", "Server-driven component trees.");
+ui.usage(120, 48, 0.001, 80L);
+```
+
+`lumina-spring-ai` provides `SpringAiChatClientProvider` for an application-managed Spring AI
+`ChatClient`. Configure `lumina.ai.provider=echo`, `openai`, or `ollama`; echo is the safe default.
+Agent views use `agentTimeline`, `toolInvocation`, `approval`, and `memoryPanel`.
+
+## Advanced UX
+
+Use `tabs`, `dialog`, `notify`, and `themeToggle` for framework-owned interactions. Tabs provide
+tablist/tab/tabpanel semantics, notifications use a polite live region, and the theme preference is
+stored in session state under `__lumina.theme`.
+
+## Enterprise hooks
+
+Store authenticated role names under `__lumina.roles` to use `ui.rolesAllowed(roles, body)`.
+`AuditLogger` receives only session and intent names; payloads are deliberately excluded. Store
+translation maps under `__lumina.messages` and resolve them with `ui.t(key)`.
 
 ## UX standards
 

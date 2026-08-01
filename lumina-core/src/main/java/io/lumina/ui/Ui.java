@@ -5,6 +5,7 @@ import io.lumina.state.StateStore;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -159,6 +160,22 @@ public interface Ui {
      */
     String ai(TokenStream tokens);
 
+    void citation(String title, String urlOrRef, String snippet);
+
+    void ragSources(List<Map<String, Object>> sources);
+
+    void toolCall(String name, String status, Object input, Object output);
+
+    void usage(long promptTokens, long completionTokens, Double costUsd, Long latencyMs);
+
+    void agentTimeline(List<Map<String, Object>> steps);
+
+    void toolInvocation(String toolName, String status, String detail);
+
+    boolean approval(String prompt);
+
+    void memoryPanel(List<Map<String, Object>> entries);
+
     /**
      * Renders a syntax-highlighted code block.
      *
@@ -231,6 +248,18 @@ public interface Ui {
      * @param cols callback receiving one {@code Ui} per column; never null
      */
     void columns(int n, Consumer<Ui[]> cols);
+
+    void tabs(List<String> labels, Consumer<Ui[]> panels);
+
+    void dialog(String title, Consumer<Ui> body);
+
+    void notify(String message);
+
+    void themeToggle();
+
+    void rolesAllowed(Set<String> roles, Consumer<Ui> body);
+
+    String t(String key);
 
     /**
      * Renders a left sidebar rail (at most once per {@code build()}). Prefer structured

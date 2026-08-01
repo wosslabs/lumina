@@ -21,7 +21,7 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 3. **Thin client** — framework-owned Web Components + design system
 4. **AI-native** — chat, streaming, and agent surfaces are first-class
 
-## Feature map (target after P2–P10)
+## Shipped feature map (1.0 MVP)
 
 | Area | Capabilities |
 |------|----------------|
@@ -38,6 +38,7 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 
 - [Vision & roadmap](VISION.md)
 - [Architecture](ARCHITECTURE.md)
-- [Author guide](GUIDE.md) *(filled as phases land)*
-- [Extensions](EXTENSIONS.md) *(P8)*
+- [Author guide](GUIDE.md)
+- [Extensions](EXTENSIONS.md)
+- [Migration to 1.0](MIGRATION.md)
 - [UX constitution checklist](superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md)

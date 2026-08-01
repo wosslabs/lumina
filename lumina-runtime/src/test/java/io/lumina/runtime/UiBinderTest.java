@@ -300,6 +300,48 @@ class UiBinderTest {
                 .isInstanceOf(LuminaException.class);
     }
 
+    @Test
+    void aiAndAgentExtrasEmitFrameworkComponentNodes() {
+        SessionState session = new SessionState();
+        session.widgets().set("auto:/approval#0", true);
+        UiBinder ui = new UiBinder(session);
+
+        ui.citation("Guide", "guide", "snippet");
+        ui.ragSources(List.of(Map.of("title", "Guide")));
+        ui.toolCall("search", "complete", Map.of("q", "x"), Map.of("count", 1));
+        ui.usage(4, 2, null, 10L);
+        ui.agentTimeline(List.of(Map.of("label", "Plan", "status", "complete")));
+        ui.toolInvocation("search", "complete", "done");
+        assertThat(ui.approval("Continue?")).isTrue();
+        ui.memoryPanel(List.of(Map.of("topic", "Lumina")));
+
+        assertThat(ui.buildRoot().children()).extracting(ComponentNode::type).containsExactly(
+                ComponentTypes.CITATION,
+                ComponentTypes.RAG_SOURCES,
+                ComponentTypes.TOOL_CALL,
+                ComponentTypes.USAGE,
+                ComponentTypes.AGENT_TIMELINE,
+                ComponentTypes.TOOL_INVOCATION,
+                ComponentTypes.APPROVAL,
+                ComponentTypes.MEMORY_PANEL);
+    }
+
+    @Test
+    void tabsThemeAndRoleGateUseSessionState() {
+        SessionState session = new SessionState();
+        session.store().set("__lumina.roles", java.util.Set.of("admin"));
+        session.widgets().set("auto:/theme_toggle#0", "dark");
+        UiBinder ui = new UiBinder(session);
+
+        ui.tabs(List.of("One", "Two"), panels -> panels[0].text("first"));
+        ui.themeToggle();
+        ui.rolesAllowed(java.util.Set.of("admin"), body -> body.text("allowed"));
+
+        assertThat(ui.buildRoot().children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.TABS, ComponentTypes.THEME_TOGGLE, ComponentTypes.TEXT);
+        assertThat((String) session.store().get("__lumina.theme")).isEqualTo("dark");
+    }
+
     private record NamedValue(String value) {
         @Override
         public String toString() {
