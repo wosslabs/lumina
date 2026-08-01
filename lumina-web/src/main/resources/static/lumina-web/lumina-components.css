@@ -15,7 +15,7 @@ lumina-image,
 lumina-file-upload,
 lumina-progress {
   display: block;
-  margin-block: var(--lumina-space-4);
+  margin-block: var(--lumina-space-3);
 }
 
 /* ------------------------------------------------------------------ */
@@ -24,7 +24,7 @@ lumina-progress {
 
 lumina-title h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -43,7 +43,7 @@ lumina-text p {
 
 lumina-markdown {
   color: var(--lumina-color-text);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 lumina-markdown h1,
@@ -123,12 +123,8 @@ lumina-text-input label,
 lumina-file-upload label {
   display: grid;
   gap: var(--lumina-space-2);
-}
-
-lumina-text-input label span,
-lumina-file-upload label span {
   font-size: var(--lumina-text-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--lumina-color-text);
 }
 
@@ -214,6 +210,12 @@ lumina-chat-input button:hover {
 }
 
 lumina-chat-input button:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+
+lumina-expander summary:focus-visible,
+lumina-file-upload input[type="file"]::file-selector-button:focus-visible {
   outline: 2px solid var(--lumina-color-primary);
   outline-offset: 2px;
 }
@@ -338,6 +340,7 @@ lumina-table th {
   font-weight: 600;
   color: var(--lumina-color-text);
   background: var(--lumina-color-bg-subtle);
+  white-space: nowrap;
 }
 
 lumina-table tbody tr:last-child td {
@@ -398,4 +401,19 @@ lumina-progress progress::-moz-progress-bar {
   margin-block: var(--lumina-space-2);
   color: var(--lumina-color-text-muted);
   font-size: var(--lumina-text-sm);
+}
+
+lumina-button button,
+lumina-chat-input button,
+lumina-text-input input,
+lumina-file-upload input[type="file"],
+lumina-chat-input input {
+  box-shadow: none;
+}
+
+lumina-code pre,
+lumina-json pre,
+lumina-table,
+lumina-image img {
+  box-shadow: none;
 }
