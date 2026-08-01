@@ -27,6 +27,7 @@ class HelloAiAppTest {
                     .newWebSocketBuilder()
                     .buildAsync(URI.create("ws://localhost:" + server.port() + "/ws"), listener)
                     .get(5, TimeUnit.SECONDS);
+            webSocket.sendText("{\"type\":\"intent\",\"name\":\"connect\",\"payload\":{\"path\":\"/\"}}", true);
             String snapshot = listener.nextMessage();
             String chatId = findId(MAPPER.readTree(snapshot).path("root"), "chat_input");
 

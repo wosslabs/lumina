@@ -31,5 +31,8 @@ public final class ComponentSpecs {
     /** Property containing the sidebar visual state. */
     public static final String SIDEBAR_STATE = "sidebarState";
 
+    /** Property containing the server-side route path for this session. */
+    public static final String PATH = "path";
+
     private ComponentSpecs() {}
 }

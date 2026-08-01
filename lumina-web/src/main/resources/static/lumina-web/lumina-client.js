@@ -297,11 +297,13 @@
   class LuminaExpander extends LuminaNodeElement {
     connectedCallback() {
       this._ensureDetails();
-      if (!this._toggleBound) {
-        this._details.addEventListener("toggle", () => {
+      if (!this._clickBound) {
+        const summary = this._details.querySelector("summary");
+        summary.addEventListener("click", (event) => {
+          event.preventDefault();
           this.closest("lumina-app")?.sendIntent("expander_toggle", this._node?.id);
         });
-        this._toggleBound = true;
+        this._clickBound = true;
       }
     }
 
@@ -329,7 +331,9 @@
 
     render() {
       const details = this._ensureDetails();
+      this._syncingOpen = true;
       details.open = this._node?.props?.open === true;
+      this._syncingOpen = false;
       details.querySelector("summary").textContent = String(this._node?.props?.label ?? "");
     }
   }
@@ -343,7 +347,10 @@
       const scheme = window.location.protocol === "https:" ? "wss:" : "ws:";
       this.socket = new WebSocket(`${scheme}//${window.location.host}/ws`);
       this.socket.addEventListener("message", (event) => this.onMessage(event.data));
-      this.socket.addEventListener("open", () => this.setStatus(""));
+      this.socket.addEventListener("open", () => {
+        this.setStatus("");
+        this.sendIntent("connect", null, { path: window.location.pathname || "/" });
+      });
       this.socket.addEventListener("close", () => this.setStatus("Disconnected"));
       this.socket.addEventListener("error", () => this.setStatus("Connection error"));
     }
@@ -488,6 +495,9 @@
       }
       if (props.pageTitle) {
         document.title = String(props.pageTitle);
+      }
+      if (props.path && props.path !== window.location.pathname) {
+        history.replaceState(null, "", props.path);
       }
     }
 

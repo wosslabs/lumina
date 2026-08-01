@@ -272,6 +272,7 @@ class LuminaServerIT {
                 .header("Origin", "http://127.0.0.1:" + server.port())
                 .buildAsync(wsUri, listener)
                 .get(5, TimeUnit.SECONDS);
+        webSocket.sendText("{\"type\":\"intent\",\"name\":\"connect\",\"payload\":{\"path\":\"/\"}}", true);
 
         assertThat(listener.nextMessage()).contains("\"type\":\"snapshot\"");
         webSocket.abort();
@@ -351,12 +352,46 @@ class LuminaServerIT {
         first.abort();
     }
 
+    @Test
+    void websocketConnectAndNavigateUpdatePath() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    if (ui.button("Go About")) {
+                        ui.navigate("/about");
+                    }
+                    ui.title("At " + ui.path());
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = HttpClient.newHttpClient()
+                .newWebSocketBuilder()
+                .buildAsync(URI.create("ws://127.0.0.1:" + server.port() + "/ws"), listener)
+                .get(5, TimeUnit.SECONDS);
+        webSocket.sendText("{\"type\":\"intent\",\"name\":\"connect\",\"payload\":{\"path\":\"/docs\"}}", true);
+        String snapshot = listener.nextMessage();
+
+        assertThat(snapshot).contains("\"type\":\"snapshot\"");
+        assertThat(snapshot).contains("\"path\":\"/docs\"");
+        assertThat(snapshot).contains("\"content\":\"At /docs\"");
+
+        String buttonId = findId(MAPPER.readTree(snapshot).path("root"), "button");
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"click\",\"targetId\":\"" + buttonId + "\",\"payload\":{}}", true);
+        String patch = listener.nextMessage();
+
+        assertThat(patch).contains("\"path\":\"/about\"");
+        assertThat(patch).contains("\"content\":\"At /about\"");
+        webSocket.abort();
+    }
+
     private WebSocket openWebSocket(CollectingListener listener) throws Exception {
         URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
-        return HttpClient.newHttpClient()
+        WebSocket webSocket = HttpClient.newHttpClient()
                 .newWebSocketBuilder()
                 .buildAsync(wsUri, listener)
                 .get(5, TimeUnit.SECONDS);
+        webSocket.sendText("{\"type\":\"intent\",\"name\":\"connect\",\"payload\":{\"path\":\"/\"}}", true);
+        return webSocket;
     }
 
     private static String findId(JsonNode node, String type) {

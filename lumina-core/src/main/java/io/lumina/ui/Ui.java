@@ -22,6 +22,20 @@ public interface Ui {
     void pageConfig(PageConfig config);
 
     /**
+     * Returns the current server-side route path for this session (default {@code "/"}).
+     *
+     * @return normalized path, never null
+     */
+    String path();
+
+    /**
+     * Navigates to {@code path} for subsequent rendering in this run and future reruns.
+     *
+     * @param path absolute path starting with {@code /}; never null
+     */
+    void navigate(String path);
+
+    /**
      * Renders a page or section heading.
      *
      * @param text heading text; never null

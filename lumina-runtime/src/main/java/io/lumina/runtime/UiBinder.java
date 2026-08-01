@@ -8,6 +8,7 @@ import static io.lumina.components.ComponentSpecs.LANGUAGE;
 import static io.lumina.components.ComponentSpecs.LAYOUT;
 import static io.lumina.components.ComponentSpecs.OPEN;
 import static io.lumina.components.ComponentSpecs.PAGE_TITLE;
+import static io.lumina.components.ComponentSpecs.PATH;
 import static io.lumina.components.ComponentSpecs.ROWS;
 import static io.lumina.components.ComponentSpecs.SIDEBAR_STATE;
 import static io.lumina.components.ComponentSpecs.SOURCE;
@@ -98,6 +99,17 @@ public final class UiBinder implements Ui {
             throw new LuminaException("pageConfig() must be the first Ui call in build()");
         }
         this.pageConfig = config;
+    }
+
+    @Override
+    public String path() {
+        return SessionRoutes.current(session.store());
+    }
+
+    @Override
+    public void navigate(String routePath) {
+        Objects.requireNonNull(routePath, "path");
+        SessionRoutes.set(session.store(), routePath);
     }
 
     @Override
@@ -322,10 +334,11 @@ public final class UiBinder implements Ui {
     }
 
     private Map<String, Object> rootProps() {
-        if (pageConfig == null) {
-            return Map.of();
-        }
         Map<String, Object> props = new LinkedHashMap<>();
+        props.put(PATH, SessionRoutes.current(session.store()));
+        if (pageConfig == null) {
+            return Map.copyOf(props);
+        }
         if (!pageConfig.title().isBlank()) {
             props.put(PAGE_TITLE, pageConfig.title());
         }
@@ -530,6 +543,16 @@ public final class UiBinder implements Ui {
         @Override
         public void pageConfig(PageConfig config) {
             parent.pageConfig(config);
+        }
+
+        @Override
+        public String path() {
+            return parent.path();
+        }
+
+        @Override
+        public void navigate(String routePath) {
+            parent.navigate(routePath);
         }
 
         @Override

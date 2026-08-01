@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 class UiSignatureTest {
     private static final class FakeUi implements Ui {
         @Override public void pageConfig(PageConfig config) {}
+        @Override public String path() { return "/"; }
+        @Override public void navigate(String routePath) {}
         @Override public void title(String text) {}
         @Override public void markdown(String md) {}
         @Override public void text(String text) {}

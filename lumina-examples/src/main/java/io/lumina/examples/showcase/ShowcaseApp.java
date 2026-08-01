@@ -7,7 +7,7 @@ import io.lumina.ui.SidebarState;
 import io.lumina.ui.Ui;
 
 /**
- * Interactive hero demo: Streamlit-style rerun loop, session state, layout, and widgets — in pure Java.
+ * Interactive hero demo: Streamlit-style reruns, multi-page routing, session state, and layout.
  */
 public final class ShowcaseApp implements LuminaApp {
 
@@ -30,15 +30,15 @@ public final class ShowcaseApp implements LuminaApp {
 
         ui.sidebar(sidebar -> {
             sidebar.markdown("## Lumina");
-            sidebar.markdown(
-                    "Build **interactive web apps in pure Java** — the Streamlit model for the JVM: "
-                            + "declare UI, rerun on every interaction, keep state on the server.");
-            sidebar.markdown("### How it works");
-            sidebar.markdown(
-                    "1. You write `build(Ui ui)` in Java\n"
-                            + "2. Lumina renders a component tree\n"
-                            + "3. Clicks and inputs trigger a **rerun**\n"
-                            + "4. No HTML, CSS, or JavaScript from you");
+            sidebar.markdown("Pure Java · server-driven · Streamlit-style reruns.");
+            sidebar.markdown("### Pages");
+            if (sidebar.button("Home")) {
+                ui.navigate("/");
+            }
+            if (sidebar.button("About")) {
+                ui.navigate("/about");
+            }
+            sidebar.markdown("### Session");
             if (sidebar.button("Reset demo")) {
                 state.remove("count");
                 state.remove("progress");
@@ -46,14 +46,20 @@ public final class ShowcaseApp implements LuminaApp {
             }
         });
 
+        switch (ui.path()) {
+            case "/about" -> buildAbout(ui);
+            default -> buildHome(ui, state, countValue, progressValue);
+        }
+    }
+
+    private void buildHome(Ui ui, io.lumina.state.StateStore state, int countValue, double progressValue) {
         ui.title("Streamlit-style apps in Java");
         ui.markdown(
-                "Lumina is an open-source framework for **server-driven, interactive UIs**. "
-                        + "Like Streamlit, you compose widgets in the host language and the runtime "
-                        + "handles rendering, WebSocket updates, and session state.");
+                "Lumina is an open-source framework for **interactive, server-driven UIs**. "
+                        + "Declare widgets in Java, rerun on every interaction, keep state on the server.");
 
         ui.markdown("### Try the rerun loop");
-        ui.text("Click a button — the server reruns `build()` and patches the UI in real time.");
+        ui.text("Click a button — the server reruns `build()` and patches the UI.");
 
         ui.columns(2, cols -> {
             cols[0].container(box -> {
@@ -75,33 +81,32 @@ public final class ShowcaseApp implements LuminaApp {
             });
         });
 
-        ui.markdown("### Inputs & layout");
+        ui.markdown("### Inputs");
         String name = ui.textInput("Your name");
         if (ui.button("Say hello")) {
             state.set("greeting", name.isBlank() ? "stranger" : name.trim());
         }
         String greeting = state.get("greeting");
         if (greeting != null) {
-            ui.markdown("Hello, **" + greeting + "**! Session state remembered that across reruns.");
+            ui.markdown("Hello, **" + greeting + "**!");
         }
+    }
 
-        ui.expander("View the Java source", body -> body.code(
+    private void buildAbout(Ui ui) {
+        ui.title("About Lumina");
+        ui.markdown(
+                "Lumina targets Java teams who want **Streamlit-like productivity** without Python or "
+                        + "author-written HTML/CSS/JS.");
+        ui.markdown("### Routing");
+        ui.text("You clicked About in the sidebar. The app called ui.navigate(\"/about\") and reran on the server.");
+        ui.markdown("Current path: **" + ui.path() + "**");
+        ui.expander("Example", body -> body.code(
                 "java",
                 """
-                ui.columns(2, cols -> {
-                    cols[0].container(box -> {
-                        if (box.button("Increment")) {
-                            state.set("count", count + 1);
-                        }
-                        box.markdown("Count: **" + count + "**");
-                    });
-                    cols[1].progress(progress);
-                });"""));
-
-        ui.markdown("### Next examples");
-        ui.markdown(
-                "- **Hello AI** — stateful chat with `ui.chatInput()`\n"
-                        + "- **Streaming chat** — token streaming with `ui.ai(TokenStream)`\n"
-                        + "- Run: `mvn -pl lumina-examples exec:java -Dexec.mainClass=...`");
+                if (sidebar.button("About")) ui.navigate("/about");
+                switch (ui.path()) {
+                    case "/about" -> buildAbout(ui);
+                    default -> buildHome(ui);
+                }"""));
     }
 }
