@@ -45,6 +45,16 @@ public final class ComponentTypes {
     public static final String SIDEBAR = "sidebar";
     /** Collapsible section with persisted open state. */
     public static final String EXPANDER = "expander";
+    /** Sidebar brand / product identity region. */
+    public static final String SIDEBAR_BRAND = "sidebar_brand";
+    /** Sidebar primary navigation region. */
+    public static final String SIDEBAR_NAV = "sidebar_nav";
+    /** Single navigable page entry inside {@link #SIDEBAR_NAV}. */
+    public static final String NAV_PAGE = "nav_page";
+    /** Sidebar footer / utilities region. */
+    public static final String SIDEBAR_FOOTER = "sidebar_footer";
+    /** Optional app header context line (not the page H1). */
+    public static final String APP_HEADER = "app_header";
 
     private ComponentTypes() {}
 }
