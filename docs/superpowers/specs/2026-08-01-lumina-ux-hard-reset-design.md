@@ -46,7 +46,7 @@ Non-negotiable for this epic and later phases:
 7. **Contrast** — WCAG AA for text/icons on light and dark tokens.
 8. **Thin client** — zero author HTML/CSS/JS; framework owns chrome and widgets.
 
-Deliverable: `docs/superpowers/specs/` constitution doc or section + short PR checklist.
+Deliverable: constitution checklist committed under `docs/superpowers/specs/` (can live as §4 of this spec plus a short PR checklist file).
 
 ## 5. Shell & author APIs (W1)
 
@@ -114,7 +114,7 @@ number, checkbox, select, radio, slider, spinner, download — **P2**, after mer
 
 ## 7. Wire / tree
 
-- New component types for shell regions and `nav_page` (path + label + current flag or current derived client-side from root `path` prop).
+- New component types for shell regions and `nav_page` (props: `label`, `path`). Client sets `aria-current` by comparing each item’s path to root `path`.
 - Root continues to carry `path`, pageConfig props.
 - Routing intents unchanged (`connect` with path, `navigate`, widget `click`/`input`).
 
