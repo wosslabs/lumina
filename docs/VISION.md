@@ -61,20 +61,21 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P1 | WebSocket transport | ✅ | `LuminaWebSocketEndpoint` + backpressure |
 | P1 | SSE transport | ❌ | — |
 | P1 | Hello World | ✅ | `lumina-examples` |
-| P1.5 | Design system / tokens | ✅ | `lumina-tokens.css`, ADR-013 (`0.5.0`) |
-| P1.5 | App shell (wide/centered) | ✅ | `PageConfig` API + client shell CSS |
-| P1.5 | Widget visual polish | ✅ | All existing types restyled |
+| P1.5 | Design system / tokens | ✅ | Superseded visually by UX hard-reset (`0.7.0`) |
+| P1.5 | App shell (wide/centered) | ✅ | Superseded by enterprise shell (`0.7.0`) |
+| P1.5 | Widget visual polish | ✅ | Rebuilt under UX constitution (`0.7.0`) |
 | P1.5 | Dark mode baseline | ✅ | `prefers-color-scheme` tokens |
-| P1.5 | Showcase demo | ✅ | `ShowcaseApp` hero demo |
-| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | `lumina-components` — P1.5 polish applied |
-| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | Next P2 widgets |
+| P1.5 | Showcase demo | ✅ | Enterprise shell Showcase (`0.7.0`) |
+| UX | Hard-reset W0–W2 | ✅ | Constitution, structured sidebar, banner/header, widget a11y (`0.7.0`) |
+| P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | Existing widgets; enterprise restyle in `0.7.0` |
+| P2 | number/checkbox/select/radio/slider/spinner/download | ❌ | Next — build on UX constitution |
 | P3 | chat UI, streaming tokens, history, markdown, code highlight | ✅ | Phase 2 delivered |
 | P3 | citations, RAG sources, tool-call viz, token usage, cost, latency | ❌ | — |
 | P4 | Spring AI ChatClient auto-config | ◐ | `lumina-spring-ai`; echo-tested only, no real model wired |
 | P4 | LangChain4j, Bedrock, OpenAI, Azure, Vertex, Ollama | ❌ | — |
 | P5–P10 | all | ❌ | Not started |
 
-**Resume point:** P1 gaps (hot reload, SSE) → P2 widgets.
+**Resume point:** P2 widgets (under UX constitution) → P1 gaps (hot reload, SSE).
 
 ## Guiding principles
 
