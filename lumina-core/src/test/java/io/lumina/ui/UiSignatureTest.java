@@ -21,6 +21,20 @@ class UiSignatureTest {
         @Override public void text(String text) {}
         @Override public boolean button(String label) { return false; }
         @Override public String textInput(String label) { return ""; }
+        @Override public boolean checkbox(String label) { return false; }
+        @Override public boolean checkbox(String label, boolean value) { return value; }
+        @Override public double numberInput(String label) { return 0.0; }
+        @Override public double numberInput(String label, double value) { return value; }
+        @Override public double numberInput(String label, double value, double min, double max, double step) { return value; }
+        @Override public String selectbox(String label, List<String> options) { return options.getFirst(); }
+        @Override public String selectbox(String label, List<String> options, int index) { return options.get(index); }
+        @Override public String radio(String label, List<String> options) { return options.getFirst(); }
+        @Override public String radio(String label, List<String> options, int index) { return options.get(index); }
+        @Override public double slider(String label, double min, double max) { return min; }
+        @Override public double slider(String label, double min, double max, double value) { return value; }
+        @Override public double slider(String label, double min, double max, double value, double step) { return value; }
+        @Override public void spinner(String label, Runnable body) { body.run(); }
+        @Override public boolean downloadButton(String label, byte[] data, String fileName) { return false; }
         @Override public String chatInput() { return null; }
         @Override public void user(String message) {}
         @Override public void ai(String message) {}
@@ -67,5 +81,17 @@ class UiSignatureTest {
     void aiTokenStreamReturnsAccumulatedText() {
         Ui ui = new FakeUi();
         assertThat(ui.ai(TokenStream.fromIterable(List.of("a", "b")))).isEqualTo("ab");
+    }
+
+    @Test
+    void widgetMethodsExposeExpectedReturnValues() {
+        Ui ui = new FakeUi();
+
+        assertThat(ui.checkbox("Enabled", true)).isTrue();
+        assertThat(ui.numberInput("Retries", 2.0, 0.0, 5.0, 1.0)).isEqualTo(2.0);
+        assertThat(ui.selectbox("Region", List.of("US", "EU"), 1)).isEqualTo("EU");
+        assertThat(ui.radio("Plan", List.of("Free", "Pro"), 1)).isEqualTo("Pro");
+        assertThat(ui.slider("Volume", 0.0, 10.0, 4.0, 0.5)).isEqualTo(4.0);
+        assertThat(ui.downloadButton("Export", new byte[] {1}, "export.bin")).isFalse();
     }
 }

@@ -2,17 +2,24 @@ package io.lumina.runtime;
 
 import static io.lumina.components.ComponentSpecs.CONTENT;
 import static io.lumina.components.ComponentSpecs.COUNT;
+import static io.lumina.components.ComponentSpecs.DATA;
+import static io.lumina.components.ComponentSpecs.FILENAME;
+import static io.lumina.components.ComponentSpecs.ACTIVE;
 import static io.lumina.components.ComponentSpecs.INDEX;
 import static io.lumina.components.ComponentSpecs.LABEL;
 import static io.lumina.components.ComponentSpecs.LANGUAGE;
 import static io.lumina.components.ComponentSpecs.LAYOUT;
+import static io.lumina.components.ComponentSpecs.MAX;
+import static io.lumina.components.ComponentSpecs.MIN;
 import static io.lumina.components.ComponentSpecs.OPEN;
+import static io.lumina.components.ComponentSpecs.OPTIONS;
 import static io.lumina.components.ComponentSpecs.PAGE_TITLE;
 import static io.lumina.components.ComponentSpecs.PATH;
 import static io.lumina.components.ComponentSpecs.ROWS;
 import static io.lumina.components.ComponentSpecs.SIDEBAR_STATE;
 import static io.lumina.components.ComponentSpecs.SOURCE;
 import static io.lumina.components.ComponentSpecs.SRC;
+import static io.lumina.components.ComponentSpecs.STEP;
 import static io.lumina.components.ComponentSpecs.VALUE;
 
 import io.lumina.LuminaException;
@@ -29,6 +36,7 @@ import io.lumina.ui.Ui;
 import io.lumina.ui.UploadedFile;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -149,6 +157,130 @@ public final class UiBinder implements Ui {
         String value = stored instanceof String text ? text : "";
         addNode(key, ComponentTypes.TEXT_INPUT, Map.of(LABEL, label, VALUE, value));
         return value;
+    }
+
+    @Override
+    public boolean checkbox(String label) {
+        return checkbox(label, false);
+    }
+
+    @Override
+    public boolean checkbox(String label, boolean value) {
+        lockPageConfig();
+        String key = nextKey(ComponentTypes.CHECKBOX);
+        boolean current = session.widgets().value(key) instanceof Boolean stored ? stored : value;
+        addNode(key, ComponentTypes.CHECKBOX, Map.of(LABEL, label, VALUE, current));
+        return current;
+    }
+
+    @Override
+    public double numberInput(String label) {
+        return numberInput(label, 0.0);
+    }
+
+    @Override
+    public double numberInput(String label, double value) {
+        lockPageConfig();
+        requireFinite(value, "value");
+        String key = nextKey(ComponentTypes.NUMBER_INPUT);
+        double current = storedNumber(key, value);
+        addNode(key, ComponentTypes.NUMBER_INPUT, Map.of(LABEL, label, VALUE, current));
+        return current;
+    }
+
+    @Override
+    public double numberInput(String label, double value, double min, double max, double step) {
+        lockPageConfig();
+        validateRange(value, min, max, step);
+        String key = nextKey(ComponentTypes.NUMBER_INPUT);
+        double current = storedNumber(key, value);
+        addNode(
+                key,
+                ComponentTypes.NUMBER_INPUT,
+                Map.of(LABEL, label, VALUE, current, MIN, min, MAX, max, STEP, step));
+        return current;
+    }
+
+    @Override
+    public String selectbox(String label, List<String> options) {
+        return selectbox(label, options, 0);
+    }
+
+    @Override
+    public String selectbox(String label, List<String> options, int index) {
+        lockPageConfig();
+        List<String> values = validateOptions(options, index);
+        String key = nextKey(ComponentTypes.SELECTBOX);
+        String current = storedOption(key, values, index);
+        addNode(key, ComponentTypes.SELECTBOX, Map.of(LABEL, label, OPTIONS, values, VALUE, current));
+        return current;
+    }
+
+    @Override
+    public String radio(String label, List<String> options) {
+        return radio(label, options, 0);
+    }
+
+    @Override
+    public String radio(String label, List<String> options, int index) {
+        lockPageConfig();
+        List<String> values = validateOptions(options, index);
+        String key = nextKey(ComponentTypes.RADIO);
+        String current = storedOption(key, values, index);
+        addNode(key, ComponentTypes.RADIO, Map.of(LABEL, label, OPTIONS, values, VALUE, current));
+        return current;
+    }
+
+    @Override
+    public double slider(String label, double min, double max) {
+        return slider(label, min, max, min);
+    }
+
+    @Override
+    public double slider(String label, double min, double max, double value) {
+        return slider(label, min, max, value, 1.0);
+    }
+
+    @Override
+    public double slider(String label, double min, double max, double value, double step) {
+        lockPageConfig();
+        validateRange(value, min, max, step);
+        String key = nextKey(ComponentTypes.SLIDER);
+        double current = storedNumber(key, value);
+        addNode(key, ComponentTypes.SLIDER, Map.of(LABEL, label, VALUE, current, MIN, min, MAX, max, STEP, step));
+        return current;
+    }
+
+    @Override
+    public void spinner(String label, Runnable body) {
+        lockPageConfig();
+        Objects.requireNonNull(body, "body");
+        String key = nextKey(ComponentTypes.SPINNER);
+        List<ComponentNode> current = targetChildren();
+        int spinnerIndex = current.size();
+        current.add(new ComponentNode(key, ComponentTypes.SPINNER, Map.of(LABEL, label, ACTIVE, true), List.of()));
+        stream.flushBefore(snapshotInterimRoot());
+        try {
+            body.run();
+        } finally {
+            current.remove(spinnerIndex);
+        }
+    }
+
+    @Override
+    public boolean downloadButton(String label, byte[] data, String fileName) {
+        lockPageConfig();
+        Objects.requireNonNull(data, "data");
+        Objects.requireNonNull(fileName, "fileName");
+        if (data.length > 1024 * 1024) {
+            throw new LuminaException("download data exceeds the 1 MiB limit");
+        }
+        String key = nextKey(ComponentTypes.DOWNLOAD_BUTTON);
+        addNode(
+                key,
+                ComponentTypes.DOWNLOAD_BUTTON,
+                Map.of(LABEL, label, DATA, Base64.getEncoder().encodeToString(data), FILENAME, fileName));
+        return session.widgets().consumeClick(key);
     }
 
     @Override
@@ -431,6 +563,55 @@ public final class UiBinder implements Ui {
         return paths.peek() + "/" + type + "#" + index;
     }
 
+    private double storedNumber(String key, double defaultValue) {
+        Object stored = session.widgets().value(key);
+        return stored instanceof Number number && Double.isFinite(number.doubleValue())
+                ? number.doubleValue()
+                : defaultValue;
+    }
+
+    private String storedOption(String key, List<String> options, int index) {
+        Object stored = session.widgets().value(key);
+        return stored instanceof String option && options.contains(option) ? option : options.get(index);
+    }
+
+    private List<String> validateOptions(List<String> options, int index) {
+        Objects.requireNonNull(options, "options");
+        if (options.isEmpty()) {
+            throw new LuminaException("options must not be empty");
+        }
+        if (index < 0 || index >= options.size()) {
+            throw new LuminaException("option index must be within options");
+        }
+        List<String> values = List.copyOf(options);
+        if (values.stream().anyMatch(Objects::isNull)) {
+            throw new LuminaException("options must not contain null");
+        }
+        return values;
+    }
+
+    private void validateRange(double value, double min, double max, double step) {
+        requireFinite(value, "value");
+        requireFinite(min, "min");
+        requireFinite(max, "max");
+        requireFinite(step, "step");
+        if (min > max) {
+            throw new LuminaException("min must be less than or equal to max");
+        }
+        if (value < min || value > max) {
+            throw new LuminaException("value must be between min and max");
+        }
+        if (step <= 0.0) {
+            throw new LuminaException("step must be greater than zero");
+        }
+    }
+
+    private void requireFinite(double value, String name) {
+        if (!Double.isFinite(value)) {
+            throw new LuminaException(name + " must be finite");
+        }
+    }
+
     private List<ComponentNode> withLayoutFrame(
             String id, String type, Map<String, Object> props, Runnable block) {
         Frame frame = new Frame();
@@ -632,6 +813,43 @@ public final class UiBinder implements Ui {
             return call(() -> parent.textInput(label));
         }
 
+        @Override public boolean checkbox(String label) { return call(() -> parent.checkbox(label)); }
+        @Override public boolean checkbox(String label, boolean value) {
+            return call(() -> parent.checkbox(label, value));
+        }
+        @Override public double numberInput(String label) { return call(() -> parent.numberInput(label)); }
+        @Override public double numberInput(String label, double value) {
+            return call(() -> parent.numberInput(label, value));
+        }
+        @Override public double numberInput(String label, double value, double min, double max, double step) {
+            return call(() -> parent.numberInput(label, value, min, max, step));
+        }
+        @Override public String selectbox(String label, List<String> options) {
+            return call(() -> parent.selectbox(label, options));
+        }
+        @Override public String selectbox(String label, List<String> options, int index) {
+            return call(() -> parent.selectbox(label, options, index));
+        }
+        @Override public String radio(String label, List<String> options) {
+            return call(() -> parent.radio(label, options));
+        }
+        @Override public String radio(String label, List<String> options, int index) {
+            return call(() -> parent.radio(label, options, index));
+        }
+        @Override public double slider(String label, double min, double max) {
+            return call(() -> parent.slider(label, min, max));
+        }
+        @Override public double slider(String label, double min, double max, double value) {
+            return call(() -> parent.slider(label, min, max, value));
+        }
+        @Override public double slider(String label, double min, double max, double value, double step) {
+            return call(() -> parent.slider(label, min, max, value, step));
+        }
+        @Override public void spinner(String label, Runnable body) { run(() -> parent.spinner(label, body)); }
+        @Override public boolean downloadButton(String label, byte[] data, String fileName) {
+            return call(() -> parent.downloadButton(label, data, fileName));
+        }
+
         @Override
         public String chatInput() {
             return call(parent::chatInput);
@@ -781,6 +999,33 @@ public final class UiBinder implements Ui {
         @Override
         public String textInput(String label) {
             return parent.textInput(label);
+        }
+
+        @Override public boolean checkbox(String label) { return parent.checkbox(label); }
+        @Override public boolean checkbox(String label, boolean value) { return parent.checkbox(label, value); }
+        @Override public double numberInput(String label) { return parent.numberInput(label); }
+        @Override public double numberInput(String label, double value) { return parent.numberInput(label, value); }
+        @Override public double numberInput(String label, double value, double min, double max, double step) {
+            return parent.numberInput(label, value, min, max, step);
+        }
+        @Override public String selectbox(String label, List<String> options) { return parent.selectbox(label, options); }
+        @Override public String selectbox(String label, List<String> options, int index) {
+            return parent.selectbox(label, options, index);
+        }
+        @Override public String radio(String label, List<String> options) { return parent.radio(label, options); }
+        @Override public String radio(String label, List<String> options, int index) {
+            return parent.radio(label, options, index);
+        }
+        @Override public double slider(String label, double min, double max) { return parent.slider(label, min, max); }
+        @Override public double slider(String label, double min, double max, double value) {
+            return parent.slider(label, min, max, value);
+        }
+        @Override public double slider(String label, double min, double max, double value, double step) {
+            return parent.slider(label, min, max, value, step);
+        }
+        @Override public void spinner(String label, Runnable body) { parent.spinner(label, body); }
+        @Override public boolean downloadButton(String label, byte[] data, String fileName) {
+            return parent.downloadButton(label, data, fileName);
         }
 
         @Override

@@ -10,6 +10,20 @@ public final class ComponentSpecs {
     public static final String LABEL = "label";
     /** Property containing a control or display value. */
     public static final String VALUE = "value";
+    /** Property containing a numeric control's inclusive minimum. */
+    public static final String MIN = "min";
+    /** Property containing a numeric control's inclusive maximum. */
+    public static final String MAX = "max";
+    /** Property containing a numeric control's increment. */
+    public static final String STEP = "step";
+    /** Property containing a single-choice control's available values. */
+    public static final String OPTIONS = "options";
+    /** Property containing a download file name. */
+    public static final String FILENAME = "fileName";
+    /** Property containing base64-encoded download data. */
+    public static final String DATA = "data";
+    /** Property containing an activity indicator's state. */
+    public static final String ACTIVE = "active";
     /** Property containing a code block's language identifier. */
     public static final String LANGUAGE = "language";
     /** Property containing code block source text. */

@@ -17,6 +17,20 @@ public final class ComponentTypes {
     public static final String BUTTON = "button";
     /** Single-line text entry field. */
     public static final String TEXT_INPUT = "text_input";
+    /** Boolean selection control. */
+    public static final String CHECKBOX = "checkbox";
+    /** Numeric entry control. */
+    public static final String NUMBER_INPUT = "number_input";
+    /** Single-choice dropdown control. */
+    public static final String SELECTBOX = "selectbox";
+    /** Single-choice radio group. */
+    public static final String RADIO = "radio";
+    /** Numeric range control. */
+    public static final String SLIDER = "slider";
+    /** Transient activity indicator. */
+    public static final String SPINNER = "spinner";
+    /** Client-side file download action. */
+    public static final String DOWNLOAD_BUTTON = "download_button";
     /** Chat-style message input. */
     public static final String CHAT_INPUT = "chat_input";
     /** End-user chat message bubble. */
