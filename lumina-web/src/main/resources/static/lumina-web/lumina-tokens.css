@@ -2,14 +2,14 @@
   color-scheme: light dark;
 
   /* Color */
-  --lumina-color-primary: #FF4B4B;
-  --lumina-color-primary-hover: #E83636;
+  --lumina-color-primary: #2563EB;
+  --lumina-color-primary-hover: #1D4ED8;
   --lumina-color-bg: #FFFFFF;
   --lumina-color-bg-subtle: #F8FAFC;
-  --lumina-color-sidebar: #F0F2F6;
-  --lumina-color-border: #E2E8F0;
+  --lumina-color-sidebar: #F1F5F9;
+  --lumina-color-border: #CBD5E1;
   --lumina-color-text: #0F172A;
-  --lumina-color-text-muted: #64748B;
+  --lumina-color-text-muted: #475569;
 
   /* Typography */
   --lumina-font-sans: "Inter", system-ui, -apple-system, sans-serif;
@@ -41,14 +41,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --lumina-color-primary: #FF4B4B;
-    --lumina-color-primary-hover: #FF6B6B;
+    --lumina-color-primary: #60A5FA;
+    --lumina-color-primary-hover: #93C5FD;
     --lumina-color-bg: #0F172A;
     --lumina-color-bg-subtle: #1E293B;
     --lumina-color-sidebar: #172033;
-    --lumina-color-border: #334155;
+    --lumina-color-border: #475569;
     --lumina-color-text: #F8FAFC;
-    --lumina-color-text-muted: #94A3B8;
+    --lumina-color-text-muted: #CBD5E1;
     --lumina-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.24);
     --lumina-shadow-md: 0 4px 12px rgb(0 0 0 / 0.32);
   }
