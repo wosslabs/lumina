@@ -7,6 +7,13 @@ lumina-text,
 lumina-markdown,
 lumina-button,
 lumina-text-input,
+lumina-checkbox,
+lumina-number-input,
+lumina-selectbox,
+lumina-radio,
+lumina-slider,
+lumina-spinner,
+lumina-download-button,
 lumina-chat-input,
 lumina-code,
 lumina-json,
@@ -120,6 +127,9 @@ lumina-button button:disabled {
 /* ------------------------------------------------------------------ */
 
 lumina-text-input label,
+lumina-number-input label,
+lumina-selectbox label,
+lumina-slider label,
 lumina-file-upload label {
   display: grid;
   gap: var(--lumina-space-2);
@@ -129,6 +139,9 @@ lumina-file-upload label {
 }
 
 lumina-text-input input,
+lumina-number-input input,
+lumina-selectbox select,
+lumina-slider input,
 lumina-file-upload input[type="file"] {
   min-height: 2.5rem;
   padding: var(--lumina-space-2) var(--lumina-space-3);
@@ -141,15 +154,105 @@ lumina-file-upload input[type="file"] {
 }
 
 lumina-text-input input:hover,
+lumina-number-input input:hover,
+lumina-selectbox select:hover,
+lumina-slider input:hover,
 lumina-file-upload input[type="file"]:hover {
   border-color: var(--lumina-color-text-muted);
 }
 
 lumina-text-input input:focus-visible,
+lumina-number-input input:focus-visible,
+lumina-selectbox select:focus-visible,
+lumina-slider input:focus-visible,
 lumina-file-upload input:focus-visible {
   outline: 2px solid var(--lumina-color-primary);
   outline-offset: 0;
   border-color: var(--lumina-color-primary);
+}
+
+lumina-checkbox label,
+lumina-radio label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lumina-space-2);
+  min-height: 2.5rem;
+  color: var(--lumina-color-text);
+  cursor: pointer;
+}
+
+lumina-checkbox input,
+lumina-radio input {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  accent-color: var(--lumina-color-primary);
+}
+
+lumina-checkbox input:focus-visible,
+lumina-radio input:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+
+lumina-radio fieldset {
+  display: grid;
+  gap: var(--lumina-space-1);
+  margin: 0;
+  padding: var(--lumina-space-2) 0 0;
+  border: 0;
+}
+
+lumina-radio legend {
+  padding: 0;
+  font-size: var(--lumina-text-sm);
+  font-weight: 600;
+  color: var(--lumina-color-text);
+}
+
+lumina-slider output {
+  color: var(--lumina-color-text-muted);
+  font-size: var(--lumina-text-sm);
+}
+
+lumina-download-button button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 var(--lumina-space-4);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+lumina-download-button button:hover {
+  background: var(--lumina-color-bg-subtle);
+}
+
+lumina-download-button button:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+
+lumina-spinner [role="status"] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lumina-space-2);
+  min-height: 2.5rem;
+  color: var(--lumina-color-text-muted);
+}
+
+.lumina-spinner-indicator {
+  inline-size: 1rem;
+  block-size: 1rem;
+  border: 2px solid var(--lumina-color-border);
+  border-top-color: var(--lumina-color-primary);
+  border-radius: 50%;
+  animation: lumina-spin 0.75s linear infinite;
 }
 
 /* ------------------------------------------------------------------ */
@@ -263,6 +366,12 @@ lumina-ai-message.streaming .message::after {
 @keyframes lumina-blink {
   50% {
     opacity: 0;
+  }
+}
+
+@keyframes lumina-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

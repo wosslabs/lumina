@@ -93,4 +93,18 @@ class UiBinderStreamingTest {
         assertThat(bridge.lastInterimRoot.props()).containsEntry(PAGE_TITLE, "Stream Dashboard");
         assertThat(bridge.lastInterimRoot.props()).containsEntry("layout", "wide");
     }
+
+    @Test
+    void spinnerFlushesInterimNodeThenOmitsItFromFinalTree() {
+        RecordingBridge bridge = new RecordingBridge();
+        UiBinder ui = new UiBinder(new SessionState(), bridge);
+
+        ui.spinner("Loading", () -> ui.text("Ready"));
+
+        assertThat(bridge.flushes).isEqualTo(1);
+        assertThat(bridge.lastInterimRoot.children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.SPINNER);
+        assertThat(ui.buildRoot().children()).extracting(ComponentNode::type)
+                .containsExactly(ComponentTypes.TEXT);
+    }
 }

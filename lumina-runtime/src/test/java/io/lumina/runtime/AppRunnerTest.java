@@ -173,6 +173,36 @@ class AppRunnerTest {
         assertThat(flattenTypes(next.root())).doesNotContain(ComponentTypes.TEXT);
     }
 
+    @Test
+    void numericInputIntentAcceptsJsonNumberValues() {
+        LuminaApp app = ui -> ui.text("retries:" + ui.numberInput("Retries", 1.0, 0.0, 5.0, 1.0));
+        SessionHandle session = new SessionManager(app).create();
+        RunResult initial = session.submit(Intent.connect()).join();
+        String inputId = findType(initial.root(), ComponentTypes.NUMBER_INPUT).id();
+
+        RunResult after = session.submit(new Intent("input", inputId, Map.of("value", 3))).join();
+
+        assertThat(findType(after.root(), ComponentTypes.TEXT).props().get("content")).isEqualTo("retries:3.0");
+    }
+
+    @Test
+    void downloadClickIsConsumedForOneRun() {
+        LuminaApp app = ui -> {
+            if (ui.downloadButton("Export", new byte[] {1}, "export.bin")) {
+                ui.text("downloaded");
+            }
+        };
+        SessionHandle session = new SessionManager(app).create();
+        RunResult initial = session.submit(Intent.connect()).join();
+        String downloadId = findType(initial.root(), ComponentTypes.DOWNLOAD_BUTTON).id();
+
+        RunResult clicked = session.submit(Intent.click(downloadId)).join();
+        RunResult next = session.submit(Intent.connect()).join();
+
+        assertThat(flattenTypes(clicked.root())).contains(ComponentTypes.TEXT);
+        assertThat(flattenTypes(next.root())).doesNotContain(ComponentTypes.TEXT);
+    }
+
     private static ComponentNode findType(ComponentNode root, String type) {
         Deque<ComponentNode> stack = new ArrayDeque<>();
         stack.push(root);

@@ -74,6 +74,13 @@ class LuminaServerIT {
                 .contains("lumina-markdown")
                 .contains("lumina-button")
                 .contains("lumina-text-input")
+                .contains("lumina-checkbox")
+                .contains("lumina-number-input")
+                .contains("lumina-selectbox")
+                .contains("lumina-radio")
+                .contains("lumina-slider")
+                .contains("lumina-spinner")
+                .contains("lumina-download-button")
                 .contains("lumina-code")
                 .contains("lumina-json")
                 .contains("lumina-table")
@@ -407,6 +414,38 @@ class LuminaServerIT {
         String patch = listener.nextMessage();
 
         assertThat(patch).contains("\"path\":\"/about\"", "\"content\":\"At /about\"");
+        webSocket.abort();
+    }
+
+    @Test
+    void widgetsPageSupportsCheckboxSliderDownloadAndNavigation() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    ui.sidebar(sidebar -> sidebar.nav(nav -> nav.page("Widgets", "/widgets")));
+                    if ("/widgets".equals(ui.path())) {
+                        ui.title("Widgets");
+                        ui.checkbox("Enabled");
+                        ui.slider("Volume", 0.0, 10.0, 5.0, 0.5);
+                        ui.downloadButton("Export", new byte[] {1, 2}, "export.bin");
+                    }
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        listener.nextMessage();
+
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"navigate\",\"targetId\":null,\"payload\":{\"path\":\"/widgets\"}}",
+                true);
+        String widgets = listener.nextMessage();
+
+        assertThat(widgets).contains(
+                "\"path\":\"/widgets\"",
+                "\"type\":\"checkbox\"",
+                "\"type\":\"slider\"",
+                "\"type\":\"download_button\"",
+                "\"fileName\":\"export.bin\"",
+                "\"data\":\"AQI=\"");
         webSocket.abort();
     }
 

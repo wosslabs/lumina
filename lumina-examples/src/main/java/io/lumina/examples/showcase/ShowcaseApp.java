@@ -35,6 +35,7 @@ public final class ShowcaseApp implements LuminaApp {
             });
             sidebar.nav(nav -> {
                 nav.page("Home", "/");
+                nav.page("Widgets", "/widgets");
                 nav.page("About", "/about");
             });
             sidebar.footer(footer -> {
@@ -49,6 +50,7 @@ public final class ShowcaseApp implements LuminaApp {
 
         switch (ui.path()) {
             case "/about" -> buildAbout(ui);
+            case "/widgets" -> buildWidgets(ui);
             default -> buildHome(ui, state, countValue, progressValue);
         }
     }
@@ -111,5 +113,24 @@ public final class ShowcaseApp implements LuminaApp {
                     case "/about" -> buildAbout(ui);
                     default -> buildHome(ui);
                 }"""));
+    }
+
+    private void buildWidgets(Ui ui) {
+        ui.header(header -> header.title("Showcase / Widgets"));
+        ui.title("Core widgets");
+        ui.text("Each control keeps its value on the server and reruns this page when it changes.");
+
+        boolean enabled = ui.checkbox("Enable notifications", true);
+        double retries = ui.numberInput("Retries", 3.0, 0.0, 10.0, 1.0);
+        String region = ui.selectbox("Region", java.util.List.of("US East", "EU West", "Asia Pacific"), 0);
+        String plan = ui.radio("Plan", java.util.List.of("Free", "Team", "Enterprise"), 1);
+        double volume = ui.slider("Volume", 0.0, 100.0, 50.0, 5.0);
+
+        ui.markdown("Current settings: **" + enabled + "** · " + retries + " retries · " + region + " · " + plan
+                + " · volume " + volume);
+        ui.spinner("Refreshing widget preview", () -> ui.text("Preview refreshed."));
+        if (ui.downloadButton("Download example", "Lumina widgets\n".getBytes(java.nio.charset.StandardCharsets.UTF_8), "widgets.txt")) {
+            ui.text("Your download has started.");
+        }
     }
 }

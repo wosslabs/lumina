@@ -257,6 +257,49 @@ class UiBinderTest {
         assertThat(ui.buildRoot().children().getFirst().props()).containsEntry("open", true);
     }
 
+    @Test
+    void remainingWidgetsReadStateAndEmitValidatedProps() {
+        SessionState session = new SessionState();
+        session.widgets().set("auto:/checkbox#0", true);
+        session.widgets().set("auto:/number_input#0", 2);
+        session.widgets().set("auto:/selectbox#0", "EU");
+        session.widgets().set("auto:/radio#0", "Pro");
+        session.widgets().set("auto:/slider#0", 7.5);
+        session.widgets().set("auto:/download_button#0", true);
+        UiBinder ui = new UiBinder(session);
+
+        assertThat(ui.checkbox("Enabled")).isTrue();
+        assertThat(ui.numberInput("Retries", 1.0, 0.0, 5.0, 0.5)).isEqualTo(2.0);
+        assertThat(ui.selectbox("Region", List.of("US", "EU"))).isEqualTo("EU");
+        assertThat(ui.radio("Plan", List.of("Free", "Pro"))).isEqualTo("Pro");
+        assertThat(ui.slider("Volume", 0.0, 10.0, 5.0, 0.5)).isEqualTo(7.5);
+        assertThat(ui.downloadButton("Export", new byte[] {1, 2}, "export.bin")).isTrue();
+
+        assertThat(ui.buildRoot().children()).extracting(ComponentNode::type).containsExactly(
+                ComponentTypes.CHECKBOX,
+                ComponentTypes.NUMBER_INPUT,
+                ComponentTypes.SELECTBOX,
+                ComponentTypes.RADIO,
+                ComponentTypes.SLIDER,
+                ComponentTypes.DOWNLOAD_BUTTON);
+        assertThat(ui.buildRoot().children().get(1).props()).containsEntry("min", 0.0).containsEntry("step", 0.5);
+        assertThat(ui.buildRoot().children().get(5).props())
+                .containsEntry("fileName", "export.bin")
+                .containsEntry("data", "AQI=");
+        assertThat(ui.downloadButton("Next", new byte[0], "next.bin")).isFalse();
+    }
+
+    @Test
+    void remainingWidgetsRejectInvalidConfiguration() {
+        UiBinder ui = new UiBinder(new SessionState());
+
+        assertThatThrownBy(() -> ui.selectbox("Empty", List.of())).isInstanceOf(LuminaException.class);
+        assertThatThrownBy(() -> ui.radio("Plan", List.of("Free"), 1)).isInstanceOf(LuminaException.class);
+        assertThatThrownBy(() -> ui.slider("Volume", 2.0, 1.0)).isInstanceOf(LuminaException.class);
+        assertThatThrownBy(() -> ui.downloadButton("Large", new byte[1024 * 1024 + 1], "large.bin"))
+                .isInstanceOf(LuminaException.class);
+    }
+
     private record NamedValue(String value) {
         @Override
         public String toString() {

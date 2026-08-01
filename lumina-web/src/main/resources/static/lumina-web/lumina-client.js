@@ -7,6 +7,13 @@
     text: "lumina-text",
     button: "lumina-button",
     text_input: "lumina-text-input",
+    checkbox: "lumina-checkbox",
+    number_input: "lumina-number-input",
+    selectbox: "lumina-selectbox",
+    radio: "lumina-radio",
+    slider: "lumina-slider",
+    spinner: "lumina-spinner",
+    download_button: "lumina-download-button",
     chat_input: "lumina-chat-input",
     user_message: "lumina-user-message",
     ai_message: "lumina-ai-message",
@@ -118,6 +125,142 @@
         this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value }));
       label.append(input);
       this.replaceChildren(label);
+    }
+  }
+
+  class LuminaCheckbox extends LuminaNodeElement {
+    render() {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      const text = document.createElement("span");
+      input.id = `lumina-checkbox-${this._node.id}`;
+      input.type = "checkbox";
+      input.checked = this._node?.props?.value === true;
+      text.textContent = String(this._node?.props?.label ?? "");
+      label.htmlFor = input.id;
+      input.addEventListener("change", () =>
+        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.checked }));
+      label.append(input, text);
+      this.replaceChildren(label);
+    }
+  }
+
+  class LuminaNumberInput extends LuminaNodeElement {
+    render() {
+      const { label, input } = labeledInput(this, "number", "number");
+      const props = this._node?.props ?? {};
+      input.value = String(props.value ?? 0);
+      setNumericAttributes(input, props);
+      input.addEventListener("change", () => {
+        if (input.validity.valid && input.value !== "") {
+          this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: Number(input.value) });
+        }
+      });
+      this.replaceChildren(label);
+    }
+  }
+
+  class LuminaSelectbox extends LuminaNodeElement {
+    render() {
+      const label = document.createElement("label");
+      const select = document.createElement("select");
+      select.id = `lumina-select-${this._node.id}`;
+      label.htmlFor = select.id;
+      label.append(document.createTextNode(String(this._node?.props?.label ?? "")), select);
+      const options = Array.isArray(this._node?.props?.options) ? this._node.props.options : [];
+      const selected = String(this._node?.props?.value ?? "");
+      options.forEach((value) => {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = String(value);
+        option.selected = option.value === selected;
+        select.append(option);
+      });
+      select.addEventListener("change", () =>
+        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: select.value }));
+      this.replaceChildren(label);
+    }
+  }
+
+  class LuminaRadio extends LuminaNodeElement {
+    render() {
+      const fieldset = document.createElement("fieldset");
+      const legend = document.createElement("legend");
+      legend.textContent = String(this._node?.props?.label ?? "");
+      fieldset.append(legend);
+      const options = Array.isArray(this._node?.props?.options) ? this._node.props.options : [];
+      const selected = String(this._node?.props?.value ?? "");
+      options.forEach((value, index) => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        const id = `lumina-radio-${this._node.id}-${index}`;
+        input.id = id;
+        input.type = "radio";
+        input.name = `lumina-radio-${this._node.id}`;
+        input.value = String(value);
+        input.checked = input.value === selected;
+        label.htmlFor = id;
+        label.append(input, document.createTextNode(input.value));
+        input.addEventListener("change", () => {
+          if (input.checked) {
+            this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value });
+          }
+        });
+        fieldset.append(label);
+      });
+      this.replaceChildren(fieldset);
+    }
+  }
+
+  class LuminaSlider extends LuminaNodeElement {
+    render() {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      const readout = document.createElement("output");
+      const props = this._node?.props ?? {};
+      input.id = `lumina-slider-${this._node.id}`;
+      readout.id = `${input.id}-value`;
+      label.htmlFor = input.id;
+      label.append(document.createTextNode(String(props.label ?? "")), input, readout);
+      input.type = "range";
+      input.value = String(props.value ?? 0);
+      setNumericAttributes(input, props);
+      input.setAttribute("aria-describedby", readout.id);
+      readout.htmlFor = input.id;
+      readout.textContent = input.value;
+      input.addEventListener("input", () => { readout.textContent = input.value; });
+      input.addEventListener("change", () =>
+        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: Number(input.value) }));
+      this.replaceChildren(label);
+    }
+  }
+
+  class LuminaSpinner extends LuminaNodeElement {
+    render() {
+      const status = document.createElement("div");
+      status.setAttribute("role", "status");
+      status.setAttribute("aria-live", "polite");
+      const indicator = document.createElement("span");
+      indicator.className = "lumina-spinner-indicator";
+      indicator.setAttribute("aria-hidden", "true");
+      const text = document.createElement("span");
+      text.textContent = String(this._node?.props?.label ?? "Loading");
+      status.append(indicator, text);
+      this.replaceChildren(status);
+    }
+  }
+
+  class LuminaDownloadButton extends LuminaNodeElement {
+    render() {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = String(this._node?.props?.label ?? "");
+      button.addEventListener("click", () => {
+        const props = this._node?.props ?? {};
+        downloadBase64(String(props.data ?? ""), String(props.fileName ?? "download"));
+        this.closest("lumina-app")?.sendIntent("click", this._node.id);
+      });
+      this.replaceChildren(button);
     }
   }
 
@@ -613,6 +756,38 @@
     });
   }
 
+  function labeledInput(element, type, prefix) {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.id = `lumina-${prefix}-${element._node.id}`;
+    input.type = type;
+    label.htmlFor = input.id;
+    label.append(document.createTextNode(String(element._node?.props?.label ?? "")), input);
+    return { label, input };
+  }
+
+  function setNumericAttributes(input, props) {
+    for (const name of ["min", "max", "step"]) {
+      if (typeof props[name] === "number") {
+        input[name] = String(props[name]);
+      }
+    }
+  }
+
+  function downloadBase64(data, fileName) {
+    const binary = atob(data);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
   function findNodeById(root, id) {
     if (!root) {
       return null;
@@ -722,6 +897,13 @@
   customElements.define("lumina-text", LuminaText);
   customElements.define("lumina-button", LuminaButton);
   customElements.define("lumina-text-input", LuminaTextInput);
+  customElements.define("lumina-checkbox", LuminaCheckbox);
+  customElements.define("lumina-number-input", LuminaNumberInput);
+  customElements.define("lumina-selectbox", LuminaSelectbox);
+  customElements.define("lumina-radio", LuminaRadio);
+  customElements.define("lumina-slider", LuminaSlider);
+  customElements.define("lumina-spinner", LuminaSpinner);
+  customElements.define("lumina-download-button", LuminaDownloadButton);
   customElements.define("lumina-chat-input", LuminaChatInput);
   customElements.define("lumina-user-message", LuminaUserMessage);
   customElements.define("lumina-ai-message", LuminaAiMessage);

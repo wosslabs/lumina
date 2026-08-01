@@ -74,6 +74,61 @@ public interface Ui {
     String textInput(String label);
 
     /**
+     * Renders a checkbox with an unchecked default.
+     *
+     * @param label visible control label; never null
+     * @return current checked state
+     */
+    boolean checkbox(String label);
+
+    /**
+     * Renders a checkbox with the supplied initial state.
+     *
+     * @param label visible control label; never null
+     * @param value initial checked state
+     * @return current checked state
+     */
+    boolean checkbox(String label, boolean value);
+
+    double numberInput(String label);
+
+    double numberInput(String label, double value);
+
+    double numberInput(String label, double value, double min, double max, double step);
+
+    String selectbox(String label, List<String> options);
+
+    String selectbox(String label, List<String> options, int index);
+
+    String radio(String label, List<String> options);
+
+    String radio(String label, List<String> options, int index);
+
+    double slider(String label, double min, double max);
+
+    double slider(String label, double min, double max, double value);
+
+    double slider(String label, double min, double max, double value, double step);
+
+    /**
+     * Shows a transient activity indicator while the body executes.
+     *
+     * @param label activity label; never null
+     * @param body operation to execute; never null
+     */
+    void spinner(String label, Runnable body);
+
+    /**
+     * Renders a download action.
+     *
+     * @param label button label; never null
+     * @param data file contents; no more than 1 MiB
+     * @param fileName download filename; never null
+     * @return whether the action was clicked in this run
+     */
+    boolean downloadButton(String label, byte[] data, String fileName);
+
+    /**
      * Renders a chat-style composer and returns a newly submitted prompt, if any.
      *
      * @return submitted prompt for this run, or {@code null} if the user did not submit
