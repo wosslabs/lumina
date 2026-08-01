@@ -15,11 +15,13 @@ public final class LayoutDemoApp implements LuminaApp {
 
     @Override
     public void build(Ui ui) {
-        ui.sidebar(nav -> {
-            nav.markdown("## Nav");
-            if (nav.button("Refresh")) {
-                /* rerun */
-            }
+        ui.sidebar(sidebar -> {
+            sidebar.brand(brand -> brand.markdown("## Layout demo"));
+            sidebar.footer(footer -> {
+                if (footer.button("Refresh")) {
+                    /* rerun */
+                }
+            });
         });
         ui.columns(2, cols -> {
             cols[0].markdown("### Left");

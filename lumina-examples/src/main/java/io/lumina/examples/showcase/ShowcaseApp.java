@@ -29,21 +29,22 @@ public final class ShowcaseApp implements LuminaApp {
         double progressValue = state.computeIfAbsent("progress", key -> 0.0);
 
         ui.sidebar(sidebar -> {
-            sidebar.markdown("## Lumina");
-            sidebar.markdown("Pure Java · server-driven · Streamlit-style reruns.");
-            sidebar.markdown("### Pages");
-            if (sidebar.button("Home")) {
-                ui.navigate("/");
-            }
-            if (sidebar.button("About")) {
-                ui.navigate("/about");
-            }
-            sidebar.markdown("### Session");
-            if (sidebar.button("Reset demo")) {
-                state.remove("count");
-                state.remove("progress");
-                state.remove("greeting");
-            }
+            sidebar.brand(brand -> {
+                brand.markdown("## Lumina");
+                brand.text("Pure Java · server-driven · Streamlit-style reruns.");
+            });
+            sidebar.nav(nav -> {
+                nav.page("Home", "/");
+                nav.page("About", "/about");
+            });
+            sidebar.footer(footer -> {
+                footer.markdown("### Session");
+                if (footer.button("Reset demo")) {
+                    state.remove("count");
+                    state.remove("progress");
+                    state.remove("greeting");
+                }
+            });
         });
 
         switch (ui.path()) {
@@ -53,6 +54,7 @@ public final class ShowcaseApp implements LuminaApp {
     }
 
     private void buildHome(Ui ui, io.lumina.state.StateStore state, int countValue, double progressValue) {
+        ui.header(header -> header.title("Showcase / Home"));
         ui.title("Streamlit-style apps in Java");
         ui.markdown(
                 "Lumina is an open-source framework for **interactive, server-driven UIs**. "
@@ -93,6 +95,7 @@ public final class ShowcaseApp implements LuminaApp {
     }
 
     private void buildAbout(Ui ui) {
+        ui.header(header -> header.title("Showcase / About"));
         ui.title("About Lumina");
         ui.markdown(
                 "Lumina targets Java teams who want **Streamlit-like productivity** without Python or "
@@ -103,7 +106,7 @@ public final class ShowcaseApp implements LuminaApp {
         ui.expander("Example", body -> body.code(
                 "java",
                 """
-                if (sidebar.button("About")) ui.navigate("/about");
+                sidebar.nav(nav -> nav.page("About", "/about"));
                 switch (ui.path()) {
                     case "/about" -> buildAbout(ui);
                     default -> buildHome(ui);
