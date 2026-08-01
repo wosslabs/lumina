@@ -178,12 +178,20 @@ public interface Ui {
     void columns(int n, Consumer<Ui[]> cols);
 
     /**
-     * Renders a left sidebar rail (at most once per {@code build()}). Widgets declared in
-     * {@code body} appear in the sidebar.
+     * Renders a left sidebar rail (at most once per {@code build()}). Prefer structured
+     * {@link SidebarUi#brand}, {@link SidebarUi#nav}, and {@link SidebarUi#footer} slots; freeform
+     * widgets on {@code body} remain supported for legacy apps.
      *
      * @param body sidebar content declarations; never null
      */
-    void sidebar(Consumer<Ui> body);
+    void sidebar(Consumer<SidebarUi> body);
+
+    /**
+     * Optional app header context line for the current view (not the page H1).
+     *
+     * @param body header declarations; never null
+     */
+    void header(Consumer<HeaderUi> body);
 
     /**
      * Collapsible section with {@code label}. Returns whether the expander is open after this run

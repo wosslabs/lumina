@@ -12,7 +12,7 @@ import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class UiSignatureTest {
-    private static final class FakeUi implements Ui {
+    private static final class FakeUi implements Ui, SidebarUi, HeaderUi, NavUi {
         @Override public void pageConfig(PageConfig config) {}
         @Override public String path() { return "/"; }
         @Override public void navigate(String routePath) {}
@@ -45,7 +45,12 @@ class UiSignatureTest {
             java.util.Arrays.fill(array, this);
             cols.accept(array);
         }
-        @Override public void sidebar(Consumer<Ui> body) { body.accept(this); }
+        @Override public void sidebar(Consumer<SidebarUi> body) { body.accept(this); }
+        @Override public void header(Consumer<HeaderUi> body) { body.accept(this); }
+        @Override public void brand(Consumer<Ui> body) { body.accept(this); }
+        @Override public void nav(Consumer<NavUi> body) { body.accept(this); }
+        @Override public void footer(Consumer<Ui> body) { body.accept(this); }
+        @Override public void page(String label, String path) {}
         @Override public boolean expander(String label, Consumer<Ui> body) {
             body.accept(this);
             return false;

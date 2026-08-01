@@ -21,7 +21,10 @@ import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import io.lumina.state.StateStore;
+import io.lumina.ui.HeaderUi;
+import io.lumina.ui.NavUi;
 import io.lumina.ui.PageConfig;
+import io.lumina.ui.SidebarUi;
 import io.lumina.ui.Ui;
 import io.lumina.ui.UploadedFile;
 import java.util.ArrayDeque;
@@ -65,6 +68,7 @@ public final class UiBinder implements Ui {
     private final Set<String> streamedIds = new LinkedHashSet<>();
     private OpenColumns openColumns;
     private boolean sidebarUsed;
+    private boolean headerUsed;
     private PageConfig pageConfig;
     private boolean pageConfigLocked;
 
@@ -296,7 +300,7 @@ public final class UiBinder implements Ui {
     }
 
     @Override
-    public void sidebar(Consumer<Ui> body) {
+    public void sidebar(Consumer<SidebarUi> body) {
         lockPageConfig();
         Objects.requireNonNull(body, "body");
         if (sidebarUsed) {
@@ -304,8 +308,56 @@ public final class UiBinder implements Ui {
         }
         sidebarUsed = true;
         String id = nextKey(ComponentTypes.SIDEBAR);
-        List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.SIDEBAR, Map.of(), () -> body.accept(this));
+        List<ComponentNode> children = withLayoutFrame(
+                id, ComponentTypes.SIDEBAR, Map.of(), () -> body.accept(new SidebarScopedUi(this)));
         frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR, Map.of(), children));
+    }
+
+    @Override
+    public void header(Consumer<HeaderUi> body) {
+        lockPageConfig();
+        Objects.requireNonNull(body, "body");
+        if (headerUsed) {
+            throw new LuminaException("Only one header is allowed per build()");
+        }
+        headerUsed = true;
+        String[] title = {""};
+        body.accept(text -> {
+            Objects.requireNonNull(text, "text");
+            title[0] = text;
+        });
+        addNode(ComponentTypes.APP_HEADER, Map.of(CONTENT, title[0]));
+    }
+
+    void sidebarBrand(Consumer<Ui> body) {
+        Objects.requireNonNull(body, "body");
+        String id = nextKey(ComponentTypes.SIDEBAR_BRAND);
+        List<ComponentNode> children =
+                withLayoutFrame(id, ComponentTypes.SIDEBAR_BRAND, Map.of(), () -> body.accept(this));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR_BRAND, Map.of(), children));
+    }
+
+    void sidebarNav(Consumer<NavUi> body) {
+        Objects.requireNonNull(body, "body");
+        String id = nextKey(ComponentTypes.SIDEBAR_NAV);
+        List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.SIDEBAR_NAV, Map.of(), () -> body.accept(
+                (label, path) -> {
+                    Objects.requireNonNull(label, "label");
+                    Objects.requireNonNull(path, "path");
+                    if (path.isBlank()) {
+                        throw new LuminaException("nav.page path must not be blank");
+                    }
+                    addNode(ComponentTypes.NAV_PAGE, Map.of(LABEL, label, PATH, SessionRoutes.normalize(path)));
+                }));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR_NAV, Map.of(), children));
+    }
+
+    void sidebarFooter(Consumer<Ui> body) {
+        Objects.requireNonNull(body, "body");
+        String id = nextKey(ComponentTypes.SIDEBAR_FOOTER);
+        List<ComponentNode> children =
+                withLayoutFrame(id, ComponentTypes.SIDEBAR_FOOTER, Map.of(), () -> body.accept(this));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.SIDEBAR_FOOTER, Map.of(), children));
     }
 
     @Override
@@ -651,13 +703,169 @@ public final class UiBinder implements Ui {
         }
 
         @Override
-        public void sidebar(Consumer<Ui> body) {
+        public void sidebar(Consumer<SidebarUi> body) {
             run(() -> parent.sidebar(body));
+        }
+
+        @Override
+        public void header(Consumer<HeaderUi> body) {
+            run(() -> parent.header(body));
         }
 
         @Override
         public boolean expander(String label, Consumer<Ui> body) {
             return call(() -> parent.expander(label, body));
+        }
+    }
+
+    /**
+     * Sidebar-scoped {@link SidebarUi} used while the sidebar layout frame is active.
+     */
+    private static final class SidebarScopedUi implements SidebarUi {
+        private final UiBinder parent;
+
+        SidebarScopedUi(UiBinder parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public void brand(Consumer<Ui> body) {
+            parent.sidebarBrand(body);
+        }
+
+        @Override
+        public void nav(Consumer<NavUi> body) {
+            parent.sidebarNav(body);
+        }
+
+        @Override
+        public void footer(Consumer<Ui> body) {
+            parent.sidebarFooter(body);
+        }
+
+        @Override
+        public void pageConfig(PageConfig config) {
+            parent.pageConfig(config);
+        }
+
+        @Override
+        public String path() {
+            return parent.path();
+        }
+
+        @Override
+        public void navigate(String routePath) {
+            parent.navigate(routePath);
+        }
+
+        @Override
+        public void title(String text) {
+            parent.title(text);
+        }
+
+        @Override
+        public void markdown(String md) {
+            parent.markdown(md);
+        }
+
+        @Override
+        public void text(String text) {
+            parent.text(text);
+        }
+
+        @Override
+        public boolean button(String label) {
+            return parent.button(label);
+        }
+
+        @Override
+        public String textInput(String label) {
+            return parent.textInput(label);
+        }
+
+        @Override
+        public String chatInput() {
+            return parent.chatInput();
+        }
+
+        @Override
+        public void user(String message) {
+            parent.user(message);
+        }
+
+        @Override
+        public void ai(String message) {
+            parent.ai(message);
+        }
+
+        @Override
+        public String ai(TokenStream tokens) {
+            return parent.ai(tokens);
+        }
+
+        @Override
+        public void code(String language, String source) {
+            parent.code(language, source);
+        }
+
+        @Override
+        public void json(Object value) {
+            parent.json(value);
+        }
+
+        @Override
+        public void table(List<Map<String, Object>> rows) {
+            parent.table(rows);
+        }
+
+        @Override
+        public void image(String urlOrResource) {
+            parent.image(urlOrResource);
+        }
+
+        @Override
+        public Optional<UploadedFile> fileUpload(String label) {
+            return parent.fileUpload(label);
+        }
+
+        @Override
+        public void progress(double value) {
+            parent.progress(value);
+        }
+
+        @Override
+        public StateStore state() {
+            return parent.state();
+        }
+
+        @Override
+        public <T> T withKey(String key, Function<Ui, T> block) {
+            return parent.withKey(key, block);
+        }
+
+        @Override
+        public void container(Consumer<Ui> body) {
+            parent.container(body);
+        }
+
+        @Override
+        public void columns(int n, Consumer<Ui[]> cols) {
+            parent.columns(n, cols);
+        }
+
+        @Override
+        public void sidebar(Consumer<SidebarUi> body) {
+            throw new LuminaException("Nested sidebar is not allowed");
+        }
+
+        @Override
+        public void header(Consumer<HeaderUi> body) {
+            parent.header(body);
+        }
+
+        @Override
+        public boolean expander(String label, Consumer<Ui> body) {
+            return parent.expander(label, body);
         }
     }
 }
