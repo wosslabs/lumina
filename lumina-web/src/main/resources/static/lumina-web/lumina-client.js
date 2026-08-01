@@ -20,6 +20,11 @@
     columns: "lumina-columns",
     column: "lumina-column",
     sidebar: "lumina-sidebar",
+    sidebar_brand: "lumina-sidebar-brand",
+    sidebar_nav: "lumina-sidebar-nav",
+    nav_page: "lumina-nav-page",
+    sidebar_footer: "lumina-sidebar-footer",
+    app_header: "lumina-app-header",
     expander: "lumina-expander"
   };
   const MAX_UPLOAD_BYTES = 1024 * 1024;
@@ -103,14 +108,15 @@
   class LuminaTextInput extends LuminaNodeElement {
     render() {
       const label = document.createElement("label");
-      const caption = document.createElement("span");
       const input = document.createElement("input");
-      caption.textContent = String(this._node?.props?.label ?? "");
+      input.id = `lumina-input-${this._node.id}`;
+      label.htmlFor = input.id;
+      label.textContent = String(this._node?.props?.label ?? "");
       input.type = "text";
       input.value = String(this._node?.props?.value ?? "");
       input.addEventListener("change", () =>
         this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value }));
-      label.append(caption, input);
+      label.append(input);
       this.replaceChildren(label);
     }
   }
@@ -119,13 +125,20 @@
     render() {
       const message = document.createElement("div");
       message.className = "message";
+      if (this.live) {
+        message.setAttribute("aria-live", this.live);
+      }
       message.textContent = this.content;
       this.replaceChildren(message);
     }
   }
 
   class LuminaUserMessage extends LuminaMessage {}
-  class LuminaAiMessage extends LuminaMessage {}
+  class LuminaAiMessage extends LuminaMessage {
+    get live() {
+      return "polite";
+    }
+  }
 
   class LuminaChatInput extends LuminaNodeElement {
     render() {
@@ -219,9 +232,10 @@
   class LuminaFileUpload extends LuminaNodeElement {
     render() {
       const label = document.createElement("label");
-      const caption = document.createElement("span");
       const input = document.createElement("input");
-      caption.textContent = String(this._node?.props?.label ?? "");
+      input.id = `lumina-upload-${this._node.id}`;
+      label.htmlFor = input.id;
+      label.textContent = String(this._node?.props?.label ?? "");
       input.type = "file";
       input.addEventListener("change", async () => {
         const file = input.files?.[0];
@@ -246,7 +260,7 @@
         }
         input.value = "";
       });
-      label.append(caption, input);
+      label.append(input);
       this.replaceChildren(label);
     }
   }
@@ -291,6 +305,47 @@
     render() {
       super.render();
       this.className = "lumina-sidebar";
+      this.setAttribute("role", "complementary");
+    }
+  }
+
+  class LuminaSidebarBrand extends LuminaLayoutElement {}
+
+  class LuminaSidebarNav extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.setAttribute("role", "navigation");
+      this.setAttribute("aria-label", "Primary");
+    }
+  }
+
+  class LuminaNavPage extends LuminaNodeElement {
+    connectedCallback() {
+      this.render();
+    }
+
+    render() {
+      const button = document.createElement("button");
+      const path = String(this._node?.props?.path ?? "");
+      button.type = "button";
+      button.textContent = String(this._node?.props?.label ?? "");
+      if (path === this.closest("lumina-app")?.tree?.props?.path) {
+        button.setAttribute("aria-current", "page");
+      }
+      button.addEventListener("click", () =>
+        this.closest("lumina-app")?.sendIntent("navigate", null, { path }));
+      this.replaceChildren(button);
+    }
+  }
+
+  class LuminaSidebarFooter extends LuminaLayoutElement {}
+
+  class LuminaAppHeader extends LuminaNodeElement {
+    render() {
+      const title = document.createElement("p");
+      title.className = "lumina-header-title";
+      title.textContent = this.content;
+      this.replaceChildren(title);
     }
   }
 
@@ -460,16 +515,25 @@
       const status = this.querySelector(":scope > .lumina-status");
       const fragment = document.createDocumentFragment();
       const children = this.tree?.children ?? [];
+      const banner = document.createElement("header");
+      banner.className = "lumina-banner";
+      banner.setAttribute("role", "banner");
+      banner.textContent = String(this.tree?.props?.pageTitle ?? "Lumina");
       const sidebarNodes = children.filter((child) => child.type === "sidebar");
-      const mainNodes = children.filter((child) => child.type !== "sidebar");
+      const headerNodes = children.filter((child) => child.type === "app_header");
+      const mainNodes = children.filter((child) => child.type !== "sidebar" && child.type !== "app_header");
 
+      fragment.append(banner);
       for (const child of sidebarNodes) {
         fragment.append(renderNode(child));
       }
 
-      if (mainNodes.length > 0) {
+      if (headerNodes.length > 0 || mainNodes.length > 0) {
         const main = document.createElement("main");
         main.className = "lumina-main";
+        for (const child of headerNodes) {
+          main.append(renderNode(child));
+        }
         for (const child of mainNodes) {
           main.append(renderNode(child));
         }
@@ -671,6 +735,11 @@
   customElements.define("lumina-columns", LuminaColumns);
   customElements.define("lumina-column", LuminaColumn);
   customElements.define("lumina-sidebar", LuminaSidebar);
+  customElements.define("lumina-sidebar-brand", LuminaSidebarBrand);
+  customElements.define("lumina-sidebar-nav", LuminaSidebarNav);
+  customElements.define("lumina-nav-page", LuminaNavPage);
+  customElements.define("lumina-sidebar-footer", LuminaSidebarFooter);
+  customElements.define("lumina-app-header", LuminaAppHeader);
   customElements.define("lumina-expander", LuminaExpander);
   customElements.define("lumina-app", LuminaApp);
 })();

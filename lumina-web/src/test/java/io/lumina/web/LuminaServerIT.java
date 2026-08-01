@@ -384,6 +384,32 @@ class LuminaServerIT {
         webSocket.abort();
     }
 
+    @Test
+    void structuredSidebarSnapshotContainsNavPagesAndNavigateUpdatesPath() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    ui.sidebar(sidebar -> sidebar.nav(nav -> {
+                        nav.page("Home", "/");
+                        nav.page("About", "/about");
+                    }));
+                    ui.title("At " + ui.path());
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+
+        assertThat(snapshot).contains("\"type\":\"sidebar_nav\"", "\"type\":\"nav_page\"");
+
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"navigate\",\"targetId\":null,\"payload\":{\"path\":\"/about\"}}",
+                true);
+        String patch = listener.nextMessage();
+
+        assertThat(patch).contains("\"path\":\"/about\"", "\"content\":\"At /about\"");
+        webSocket.abort();
+    }
+
     private WebSocket openWebSocket(CollectingListener listener) throws Exception {
         URI wsUri = URI.create("ws://127.0.0.1:" + server.port() + "/ws");
         WebSocket webSocket = HttpClient.newHttpClient()
