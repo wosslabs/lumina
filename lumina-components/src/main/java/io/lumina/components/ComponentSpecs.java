@@ -47,6 +47,14 @@ public final class ComponentSpecs {
 
     /** Property containing the server-side route path for this session. */
     public static final String PATH = "path";
+    /** Property containing a component status value. */
+    public static final String STATUS = "status";
+    /** Property containing a collection of structured entries. */
+    public static final String ENTRIES = "entries";
+    /** Property containing tab labels. */
+    public static final String LABELS = "labels";
+    /** Property containing a theme preference. */
+    public static final String THEME = "theme";
 
     private ComponentSpecs() {}
 }

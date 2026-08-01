@@ -7,6 +7,7 @@ import io.lumina.state.StateStore;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,14 @@ class UiSignatureTest {
             tokens.forEach(sb::append);
             return sb.toString();
         }
+        @Override public void citation(String title, String urlOrRef, String snippet) {}
+        @Override public void ragSources(List<Map<String, Object>> sources) {}
+        @Override public void toolCall(String name, String status, Object input, Object output) {}
+        @Override public void usage(long promptTokens, long completionTokens, Double costUsd, Long latencyMs) {}
+        @Override public void agentTimeline(List<Map<String, Object>> steps) {}
+        @Override public void toolInvocation(String toolName, String status, String detail) {}
+        @Override public boolean approval(String prompt) { return false; }
+        @Override public void memoryPanel(List<Map<String, Object>> entries) {}
         @Override public void code(String language, String source) {}
         @Override public void json(Object value) {}
         @Override public void table(List<Map<String, Object>> rows) {}
@@ -59,6 +68,12 @@ class UiSignatureTest {
             java.util.Arrays.fill(array, this);
             cols.accept(array);
         }
+        @Override public void tabs(List<String> labels, Consumer<Ui[]> panels) { columns(labels.size(), panels); }
+        @Override public void dialog(String title, Consumer<Ui> body) { body.accept(this); }
+        @Override public void notify(String message) {}
+        @Override public void themeToggle() {}
+        @Override public void rolesAllowed(Set<String> roles, Consumer<Ui> body) { body.accept(this); }
+        @Override public String t(String key) { return key; }
         @Override public void sidebar(Consumer<SidebarUi> body) { body.accept(this); }
         @Override public void header(Consumer<HeaderUi> body) { body.accept(this); }
         @Override public void brand(Consumer<Ui> body) { body.accept(this); }

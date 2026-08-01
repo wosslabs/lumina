@@ -32,7 +32,20 @@
     nav_page: "lumina-nav-page",
     sidebar_footer: "lumina-sidebar-footer",
     app_header: "lumina-app-header",
-    expander: "lumina-expander"
+    expander: "lumina-expander",
+    citation: "lumina-citation",
+    rag_sources: "lumina-rag-sources",
+    tool_call: "lumina-tool-call",
+    usage: "lumina-usage",
+    agent_timeline: "lumina-agent-timeline",
+    tool_invocation: "lumina-tool-invocation",
+    approval: "lumina-approval",
+    memory_panel: "lumina-memory-panel",
+    tabs: "lumina-tabs",
+    tab_panel: "lumina-tab-panel",
+    dialog: "lumina-dialog",
+    notification: "lumina-notification",
+    theme_toggle: "lumina-theme-toggle"
   };
   const MAX_UPLOAD_BYTES = 1024 * 1024;
 
@@ -536,6 +549,158 @@
     }
   }
 
+  class LuminaCitation extends LuminaNodeElement {
+    render() {
+      const props = this._node?.props ?? {};
+      const link = document.createElement("a");
+      link.href = String(props.uri ?? "#");
+      link.textContent = String(props.title ?? props.uri ?? "Source");
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      const snippet = document.createElement("p");
+      snippet.textContent = String(props.snippet ?? "");
+      this.replaceChildren(link, snippet);
+    }
+  }
+
+  class LuminaEntries extends LuminaNodeElement {
+    render() {
+      const entries = Array.isArray(this._node?.props?.entries) ? this._node.props.entries : [];
+      const list = document.createElement("ul");
+      entries.forEach((entry) => {
+        const item = document.createElement("li");
+        item.textContent = typeof entry === "object" ? Object.values(entry ?? {}).join(" · ") : String(entry);
+        list.append(item);
+      });
+      this.replaceChildren(list);
+    }
+  }
+
+  class LuminaToolCall extends LuminaNodeElement {
+    render() {
+      const props = this._node?.props ?? {};
+      const name = document.createElement("strong");
+      name.textContent = String(props.name ?? "Tool");
+      const status = document.createElement("span");
+      status.className = "lumina-status-badge";
+      status.textContent = String(props.status ?? "");
+      const details = document.createElement("pre");
+      details.textContent = JSON.stringify({ input: props.input, output: props.output }, null, 2);
+      this.replaceChildren(name, status, details);
+    }
+  }
+
+  class LuminaUsage extends LuminaNodeElement {
+    render() {
+      const p = this._node?.props ?? {};
+      const metrics = [
+        `Prompt ${p.promptTokens ?? 0}`,
+        `Completion ${p.completionTokens ?? 0}`,
+        p.costUsd != null ? `Cost $${p.costUsd}` : null,
+        p.latencyMs != null ? `${p.latencyMs} ms` : null
+      ].filter(Boolean);
+      this.textContent = metrics.join(" · ");
+    }
+  }
+
+  class LuminaToolInvocation extends LuminaNodeElement {
+    render() {
+      const p = this._node?.props ?? {};
+      this.textContent = `${p.name ?? "Tool"} · ${p.status ?? ""}${p.detail ? ` · ${p.detail}` : ""}`;
+    }
+  }
+
+  class LuminaApproval extends LuminaNodeElement {
+    render() {
+      const p = this._node?.props ?? {};
+      const prompt = document.createElement("p");
+      prompt.textContent = String(p.prompt ?? "Approve?");
+      const approve = document.createElement("button");
+      approve.type = "button";
+      approve.textContent = "Approve";
+      const reject = document.createElement("button");
+      reject.type = "button";
+      reject.textContent = "Reject";
+      approve.addEventListener("click", () => this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: true }));
+      reject.addEventListener("click", () => this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: false }));
+      this.replaceChildren(prompt, approve, reject);
+    }
+  }
+
+  class LuminaTabs extends LuminaNodeElement {
+    render() {
+      const labels = Array.isArray(this._node?.props?.labels) ? this._node.props.labels : [];
+      const tabs = document.createElement("div");
+      tabs.setAttribute("role", "tablist");
+      labels.forEach((label, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.setAttribute("role", "tab");
+        button.textContent = String(label);
+        button.setAttribute("aria-selected", index === 0 ? "true" : "false");
+        button.addEventListener("click", () => {
+          const panels = Array.from(this.querySelectorAll(":scope > lumina-tab-panel"));
+          tabs.querySelectorAll("[role=tab]").forEach((tab, i) => tab.setAttribute("aria-selected", String(i === index)));
+          panels.forEach((panel, i) => { panel.hidden = i !== index; });
+        });
+        tabs.append(button);
+      });
+      this.prepend(tabs);
+    }
+    append(...nodes) {
+      for (const node of nodes) {
+        if (node.tagName === "LUMINA-TAB-PANEL") {
+          node.setAttribute("role", "tabpanel");
+          node.hidden = this.querySelectorAll(":scope > lumina-tab-panel").length > 0;
+        }
+        super.append(node);
+      }
+      return this;
+    }
+  }
+
+  class LuminaDialog extends LuminaNodeElement {
+    render() {
+      const dialog = document.createElement("dialog");
+      dialog.open = true;
+      const title = document.createElement("h2");
+      title.textContent = String(this._node?.props?.title ?? "");
+      dialog.append(title);
+      dialog.addEventListener("cancel", (event) => event.preventDefault());
+      this.replaceChildren(dialog);
+      this._dialog = dialog;
+    }
+    append(...nodes) {
+      (this._dialog ?? this).append(...nodes);
+      return this;
+    }
+  }
+
+  class LuminaNotification extends LuminaNodeElement {
+    render() {
+      this.setAttribute("role", "status");
+      this.setAttribute("aria-live", "polite");
+      this.textContent = this.content;
+    }
+  }
+
+  class LuminaThemeToggle extends LuminaNodeElement {
+    render() {
+      const select = document.createElement("select");
+      select.setAttribute("aria-label", "Color theme");
+      ["system", "light", "dark"].forEach((theme) => {
+        const option = document.createElement("option");
+        option.value = theme;
+        option.textContent = theme[0].toUpperCase() + theme.slice(1);
+        option.selected = theme === this._node?.props?.theme;
+        select.append(option);
+      });
+      select.addEventListener("change", () =>
+        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: select.value }));
+      this.replaceChildren(select);
+    }
+  }
+
   class LuminaApp extends HTMLElement {
     connectedCallback() {
       if (this.socket) {
@@ -703,6 +868,8 @@
       if (props.pageTitle) {
         document.title = String(props.pageTitle);
       }
+      const toggle = findNodeByType(this.tree, "theme_toggle");
+      document.documentElement.dataset.theme = String(toggle?.props?.theme ?? "system");
       if (props.path && props.path !== window.location.pathname) {
         history.replaceState(null, "", props.path);
       }
@@ -800,6 +967,16 @@
       if (found) {
         return found;
       }
+    }
+    return null;
+  }
+
+  function findNodeByType(root, type) {
+    if (!root) return null;
+    if (root.type === type) return root;
+    for (const child of root.children ?? []) {
+      const found = findNodeByType(child, type);
+      if (found) return found;
     }
     return null;
   }
@@ -923,5 +1100,18 @@
   customElements.define("lumina-sidebar-footer", LuminaSidebarFooter);
   customElements.define("lumina-app-header", LuminaAppHeader);
   customElements.define("lumina-expander", LuminaExpander);
+  customElements.define("lumina-citation", LuminaCitation);
+  customElements.define("lumina-rag-sources", LuminaEntries);
+  customElements.define("lumina-tool-call", LuminaToolCall);
+  customElements.define("lumina-usage", LuminaUsage);
+  customElements.define("lumina-agent-timeline", LuminaEntries);
+  customElements.define("lumina-tool-invocation", LuminaToolInvocation);
+  customElements.define("lumina-approval", LuminaApproval);
+  customElements.define("lumina-memory-panel", LuminaEntries);
+  customElements.define("lumina-tabs", LuminaTabs);
+  customElements.define("lumina-tab-panel", LuminaLayoutElement);
+  customElements.define("lumina-dialog", LuminaDialog);
+  customElements.define("lumina-notification", LuminaNotification);
+  customElements.define("lumina-theme-toggle", LuminaThemeToggle);
   customElements.define("lumina-app", LuminaApp);
 })();

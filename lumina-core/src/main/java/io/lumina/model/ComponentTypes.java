@@ -37,6 +37,14 @@ public final class ComponentTypes {
     public static final String USER_MESSAGE = "user_message";
     /** AI assistant chat message bubble. */
     public static final String AI_MESSAGE = "ai_message";
+    public static final String CITATION = "citation";
+    public static final String RAG_SOURCES = "rag_sources";
+    public static final String TOOL_CALL = "tool_call";
+    public static final String USAGE = "usage";
+    public static final String AGENT_TIMELINE = "agent_timeline";
+    public static final String TOOL_INVOCATION = "tool_invocation";
+    public static final String APPROVAL = "approval";
+    public static final String MEMORY_PANEL = "memory_panel";
     /** Syntax-highlighted code block. */
     public static final String CODE = "code";
     /** Structured JSON viewer. */
@@ -55,6 +63,11 @@ public final class ComponentTypes {
     public static final String COLUMNS = "columns";
     /** Single column slot inside a {@link #COLUMNS} row. */
     public static final String COLUMN = "column";
+    public static final String TABS = "tabs";
+    public static final String TAB_PANEL = "tab_panel";
+    public static final String DIALOG = "dialog";
+    public static final String NOTIFICATION = "notification";
+    public static final String THEME_TOGGLE = "theme_toggle";
     /** Left navigation rail (at most one per build). */
     public static final String SIDEBAR = "sidebar";
     /** Collapsible section with persisted open state. */

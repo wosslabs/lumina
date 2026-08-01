@@ -6,7 +6,9 @@ import static io.lumina.components.ComponentSpecs.DATA;
 import static io.lumina.components.ComponentSpecs.FILENAME;
 import static io.lumina.components.ComponentSpecs.ACTIVE;
 import static io.lumina.components.ComponentSpecs.INDEX;
+import static io.lumina.components.ComponentSpecs.ENTRIES;
 import static io.lumina.components.ComponentSpecs.LABEL;
+import static io.lumina.components.ComponentSpecs.LABELS;
 import static io.lumina.components.ComponentSpecs.LANGUAGE;
 import static io.lumina.components.ComponentSpecs.LAYOUT;
 import static io.lumina.components.ComponentSpecs.MAX;
@@ -20,6 +22,8 @@ import static io.lumina.components.ComponentSpecs.SIDEBAR_STATE;
 import static io.lumina.components.ComponentSpecs.SOURCE;
 import static io.lumina.components.ComponentSpecs.SRC;
 import static io.lumina.components.ComponentSpecs.STEP;
+import static io.lumina.components.ComponentSpecs.STATUS;
+import static io.lumina.components.ComponentSpecs.THEME;
 import static io.lumina.components.ComponentSpecs.VALUE;
 
 import io.lumina.LuminaException;
@@ -327,6 +331,63 @@ public final class UiBinder implements Ui {
     }
 
     @Override
+    public void citation(String title, String urlOrRef, String snippet) {
+        lockPageConfig();
+        addNode(ComponentTypes.CITATION, Map.of("title", title, "uri", urlOrRef, "snippet", snippet));
+    }
+
+    @Override
+    public void ragSources(List<Map<String, Object>> sources) {
+        lockPageConfig();
+        addNode(ComponentTypes.RAG_SOURCES, Map.of(ENTRIES, snapshotJsonValue(sources)));
+    }
+
+    @Override
+    public void toolCall(String name, String status, Object input, Object output) {
+        lockPageConfig();
+        addNode(ComponentTypes.TOOL_CALL, Map.of(
+                "name", name, STATUS, status, "input", snapshotJsonValue(input), "output", snapshotJsonValue(output)));
+    }
+
+    @Override
+    public void usage(long promptTokens, long completionTokens, Double costUsd, Long latencyMs) {
+        lockPageConfig();
+        Map<String, Object> props = new LinkedHashMap<>();
+        props.put("promptTokens", promptTokens);
+        props.put("completionTokens", completionTokens);
+        if (costUsd != null) props.put("costUsd", costUsd);
+        if (latencyMs != null) props.put("latencyMs", latencyMs);
+        addNode(ComponentTypes.USAGE, Map.copyOf(props));
+    }
+
+    @Override
+    public void agentTimeline(List<Map<String, Object>> steps) {
+        lockPageConfig();
+        addNode(ComponentTypes.AGENT_TIMELINE, Map.of(ENTRIES, snapshotJsonValue(steps)));
+    }
+
+    @Override
+    public void toolInvocation(String toolName, String status, String detail) {
+        lockPageConfig();
+        addNode(ComponentTypes.TOOL_INVOCATION, Map.of("name", toolName, STATUS, status, "detail", detail));
+    }
+
+    @Override
+    public boolean approval(String prompt) {
+        lockPageConfig();
+        String key = nextKey(ComponentTypes.APPROVAL);
+        Object value = session.widgets().value(key);
+        addNode(key, ComponentTypes.APPROVAL, Map.of("prompt", prompt, VALUE, value));
+        return Boolean.TRUE.equals(value);
+    }
+
+    @Override
+    public void memoryPanel(List<Map<String, Object>> entries) {
+        lockPageConfig();
+        addNode(ComponentTypes.MEMORY_PANEL, Map.of(ENTRIES, snapshotJsonValue(entries)));
+    }
+
+    @Override
     public void code(String language, String source) {
         lockPageConfig();
         addNode(ComponentTypes.CODE, Map.of(LANGUAGE, language, SOURCE, source));
@@ -429,6 +490,83 @@ public final class UiBinder implements Ui {
         frames.peek()
                 .children()
                 .add(new ComponentNode(columnsId, ComponentTypes.COLUMNS, Map.of(COUNT, n), columnNodes));
+    }
+
+    @Override
+    public void tabs(List<String> labels, Consumer<Ui[]> panels) {
+        lockPageConfig();
+        Objects.requireNonNull(labels, "labels");
+        Objects.requireNonNull(panels, "panels");
+        if (labels.isEmpty() || labels.stream().anyMatch(Objects::isNull)) {
+            throw new LuminaException("tabs requires non-empty labels");
+        }
+        String tabsId = nextKey(ComponentTypes.TABS);
+        Frame[] panelFrames = new Frame[labels.size()];
+        Ui[] scopes = new Ui[labels.size()];
+        String[] panelIds = new String[labels.size()];
+        for (int i = 0; i < labels.size(); i++) {
+            String panelId = nextKey(ComponentTypes.TAB_PANEL);
+            panelIds[i] = panelId;
+            panelFrames[i] = new Frame();
+            scopes[i] = new ColumnScopedUi(this, panelFrames[i], panelId);
+        }
+        panels.accept(scopes);
+        List<ComponentNode> panelsNodes = new ArrayList<>(labels.size());
+        for (int i = 0; i < labels.size(); i++) {
+            panelsNodes.add(new ComponentNode(
+                    panelIds[i], ComponentTypes.TAB_PANEL, Map.of(INDEX, i), panelFrames[i].children()));
+        }
+        frames.peek().children().add(new ComponentNode(
+                tabsId, ComponentTypes.TABS, Map.of(LABELS, List.copyOf(labels)), panelsNodes));
+    }
+
+    @Override
+    public void dialog(String title, Consumer<Ui> body) {
+        lockPageConfig();
+        Objects.requireNonNull(body, "body");
+        String id = nextKey(ComponentTypes.DIALOG);
+        List<ComponentNode> children = withLayoutFrame(id, ComponentTypes.DIALOG, Map.of("title", title), () -> body.accept(this));
+        frames.peek().children().add(new ComponentNode(id, ComponentTypes.DIALOG, Map.of("title", title), children));
+    }
+
+    @Override
+    public void notify(String message) {
+        lockPageConfig();
+        addNode(ComponentTypes.NOTIFICATION, Map.of(CONTENT, message));
+    }
+
+    @Override
+    public void themeToggle() {
+        lockPageConfig();
+        String key = nextKey(ComponentTypes.THEME_TOGGLE);
+        String theme = session.store().get("__lumina.theme");
+        if (theme == null) theme = "system";
+        Object stored = session.widgets().value(key);
+        if (stored instanceof String next && Set.of("light", "dark", "system").contains(next)) {
+            theme = next;
+            session.store().set("__lumina.theme", theme);
+        }
+        addNode(key, ComponentTypes.THEME_TOGGLE, Map.of(THEME, theme));
+    }
+
+    @Override
+    public void rolesAllowed(Set<String> roles, Consumer<Ui> body) {
+        lockPageConfig();
+        Objects.requireNonNull(roles, "roles");
+        Objects.requireNonNull(body, "body");
+        @SuppressWarnings("unchecked")
+        Set<String> current = session.store().get("__lumina.roles") instanceof Set<?> stored
+                ? (Set<String>) stored : Set.of();
+        if (current.stream().anyMatch(roles::contains)) body.accept(this);
+    }
+
+    @Override
+    public String t(String key) {
+        lockPageConfig();
+        @SuppressWarnings("unchecked")
+        Map<String, String> messages = session.store().get("__lumina.messages") instanceof Map<?, ?> stored
+                ? (Map<String, String>) stored : Map.of();
+        return messages.getOrDefault(key, key);
     }
 
     @Override
@@ -870,6 +1008,15 @@ public final class UiBinder implements Ui {
             return call(() -> parent.ai(tokens));
         }
 
+        @Override public void citation(String title, String uri, String snippet) { run(() -> parent.citation(title, uri, snippet)); }
+        @Override public void ragSources(List<Map<String, Object>> sources) { run(() -> parent.ragSources(sources)); }
+        @Override public void toolCall(String name, String status, Object input, Object output) { run(() -> parent.toolCall(name, status, input, output)); }
+        @Override public void usage(long promptTokens, long completionTokens, Double costUsd, Long latencyMs) { run(() -> parent.usage(promptTokens, completionTokens, costUsd, latencyMs)); }
+        @Override public void agentTimeline(List<Map<String, Object>> steps) { run(() -> parent.agentTimeline(steps)); }
+        @Override public void toolInvocation(String toolName, String status, String detail) { run(() -> parent.toolInvocation(toolName, status, detail)); }
+        @Override public boolean approval(String prompt) { return call(() -> parent.approval(prompt)); }
+        @Override public void memoryPanel(List<Map<String, Object>> entries) { run(() -> parent.memoryPanel(entries)); }
+
         @Override
         public void code(String language, String source) {
             run(() -> parent.code(language, source));
@@ -919,6 +1066,13 @@ public final class UiBinder implements Ui {
         public void columns(int n, Consumer<Ui[]> cols) {
             run(() -> parent.columns(n, cols));
         }
+
+        @Override public void tabs(List<String> labels, Consumer<Ui[]> panels) { run(() -> parent.tabs(labels, panels)); }
+        @Override public void dialog(String title, Consumer<Ui> body) { run(() -> parent.dialog(title, body)); }
+        @Override public void notify(String message) { run(() -> parent.notify(message)); }
+        @Override public void themeToggle() { run(parent::themeToggle); }
+        @Override public void rolesAllowed(Set<String> roles, Consumer<Ui> body) { run(() -> parent.rolesAllowed(roles, body)); }
+        @Override public String t(String key) { return call(() -> parent.t(key)); }
 
         @Override
         public void sidebar(Consumer<SidebarUi> body) {
@@ -1048,6 +1202,15 @@ public final class UiBinder implements Ui {
             return parent.ai(tokens);
         }
 
+        @Override public void citation(String title, String uri, String snippet) { parent.citation(title, uri, snippet); }
+        @Override public void ragSources(List<Map<String, Object>> sources) { parent.ragSources(sources); }
+        @Override public void toolCall(String name, String status, Object input, Object output) { parent.toolCall(name, status, input, output); }
+        @Override public void usage(long promptTokens, long completionTokens, Double costUsd, Long latencyMs) { parent.usage(promptTokens, completionTokens, costUsd, latencyMs); }
+        @Override public void agentTimeline(List<Map<String, Object>> steps) { parent.agentTimeline(steps); }
+        @Override public void toolInvocation(String toolName, String status, String detail) { parent.toolInvocation(toolName, status, detail); }
+        @Override public boolean approval(String prompt) { return parent.approval(prompt); }
+        @Override public void memoryPanel(List<Map<String, Object>> entries) { parent.memoryPanel(entries); }
+
         @Override
         public void code(String language, String source) {
             parent.code(language, source);
@@ -1097,6 +1260,13 @@ public final class UiBinder implements Ui {
         public void columns(int n, Consumer<Ui[]> cols) {
             parent.columns(n, cols);
         }
+
+        @Override public void tabs(List<String> labels, Consumer<Ui[]> panels) { parent.tabs(labels, panels); }
+        @Override public void dialog(String title, Consumer<Ui> body) { parent.dialog(title, body); }
+        @Override public void notify(String message) { parent.notify(message); }
+        @Override public void themeToggle() { parent.themeToggle(); }
+        @Override public void rolesAllowed(Set<String> roles, Consumer<Ui> body) { parent.rolesAllowed(roles, body); }
+        @Override public String t(String key) { return parent.t(key); }
 
         @Override
         public void sidebar(Consumer<SidebarUi> body) {

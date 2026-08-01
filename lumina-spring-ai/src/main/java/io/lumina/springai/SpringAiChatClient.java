@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
  * Adapts a Spring AI {@link ChatClient} to Lumina's {@link io.lumina.ai.ChatClient} SPI, bridging
  * Spring AI's reactive {@link Flux} streaming to Lumina's blocking {@link TokenStream}.
  */
-public class SpringAiChatClient implements io.lumina.ai.ChatClient {
+public class SpringAiChatClient implements io.lumina.ai.ChatClient, io.lumina.ai.AiProvider {
 
     private final ChatClient chatClient;
 

@@ -36,6 +36,7 @@ public final class ShowcaseApp implements LuminaApp {
             sidebar.nav(nav -> {
                 nav.page("Home", "/");
                 nav.page("Widgets", "/widgets");
+                nav.page("AI extras", "/ai");
                 nav.page("About", "/about");
             });
             sidebar.footer(footer -> {
@@ -51,6 +52,7 @@ public final class ShowcaseApp implements LuminaApp {
         switch (ui.path()) {
             case "/about" -> buildAbout(ui);
             case "/widgets" -> buildWidgets(ui);
+            case "/ai" -> buildAi(ui);
             default -> buildHome(ui, state, countValue, progressValue);
         }
     }
@@ -132,5 +134,20 @@ public final class ShowcaseApp implements LuminaApp {
         if (ui.downloadButton("Download example", "Lumina widgets\n".getBytes(java.nio.charset.StandardCharsets.UTF_8), "widgets.txt")) {
             ui.text("Your download has started.");
         }
+    }
+
+    private void buildAi(Ui ui) {
+        ui.header(header -> header.title("Showcase / AI extras"));
+        ui.title("AI response metadata");
+        ui.ai("Lumina keeps AI responses and their supporting evidence together.");
+        ui.citation("Lumina guide", "/docs/GUIDE.md", "Use the provider SPI to stream an offline or Spring AI response.");
+        ui.ragSources(java.util.List.of(java.util.Map.of(
+                "title", "Architecture", "uri", "docs/ARCHITECTURE.md", "score", 0.94)));
+        ui.toolCall("searchDocs", "complete", java.util.Map.of("query", "streaming"), java.util.Map.of("matches", 3));
+        ui.usage(128, 64, 0.0012, 142L);
+        ui.agentTimeline(java.util.List.of(
+                java.util.Map.of("label", "Plan", "status", "complete"),
+                java.util.Map.of("label", "Answer", "status", "streaming")));
+        ui.memoryPanel(java.util.List.of(java.util.Map.of("key", "audience", "value", "Java teams")));
     }
 }

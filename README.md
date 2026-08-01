@@ -10,10 +10,14 @@ updates so application code needs no HTML, CSS, or JavaScript.
 - **Java 25+** and **Maven 3.9+**
 - Platform stack: Spring Boot **4.1.0**, Spring AI **2.0.0**, Jetty **12.1.11** (EE11)
 
-## Roadmap
+## Product and roadmap
 
-See [`docs/VISION.md`](docs/VISION.md) for the product vision, phase goals, and
-status matrix.
+- [Product overview](docs/PRODUCT.md)
+- [Vision and shipped roadmap](docs/VISION.md)
+- [Author guide](docs/GUIDE.md)
+- [Extension guide](docs/EXTENSIONS.md)
+- [Migration notes](docs/MIGRATION.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## Architecture
 
@@ -22,16 +26,15 @@ architecture, module boundaries, and design decisions.
 
 ## Showcase quickstart
 
-From the repository root, build and run the P1.5 showcase demo:
+From the repository root, build and run the showcase:
 
 ```bash
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
 ```
 
-Open [http://localhost:8080](http://localhost:8080) to see the wide layout,
-sidebar rail, dashboard columns, and styled widgets. The entry point is
-`io.lumina.examples.showcase.ShowcaseMain`.
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080) for the enterprise shell, routing,
+widgets, and AI demos (`/`, `/about`, `/widgets`, `/ai`).
 
 By default the embedded server binds to `127.0.0.1` (loopback only) so it is
 not reachable from other machines on the network. Pass a

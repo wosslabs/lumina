@@ -526,3 +526,100 @@ lumina-table,
 lumina-image img {
   box-shadow: none;
 }
+
+/* AI, agent, and advanced UX surfaces */
+lumina-citation,
+lumina-rag-sources,
+lumina-tool-call,
+lumina-usage,
+lumina-agent-timeline,
+lumina-tool-invocation,
+lumina-approval,
+lumina-memory-panel,
+lumina-tabs,
+lumina-dialog,
+lumina-notification,
+lumina-theme-toggle {
+  display: block;
+  margin-block: var(--lumina-space-3);
+}
+
+lumina-citation,
+lumina-tool-call,
+lumina-agent-timeline,
+lumina-memory-panel {
+  padding: var(--lumina-space-3);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg-subtle);
+}
+
+lumina-citation a { color: var(--lumina-color-primary); font-weight: 600; }
+lumina-citation p { margin: var(--lumina-space-1) 0 0; color: var(--lumina-color-text-muted); }
+.lumina-status-badge {
+  display: inline-block;
+  margin-left: var(--lumina-space-2);
+  padding: 0 var(--lumina-space-2);
+  border-radius: var(--lumina-radius-sm);
+  background: var(--lumina-color-border);
+  color: var(--lumina-color-text);
+  font-size: var(--lumina-text-sm);
+}
+lumina-tool-call pre { overflow-x: auto; font-size: var(--lumina-text-sm); }
+lumina-usage { color: var(--lumina-color-text-muted); font-size: var(--lumina-text-sm); }
+lumina-rag-sources ul,
+lumina-agent-timeline ul,
+lumina-memory-panel ul { margin: 0; padding-left: var(--lumina-space-5); }
+lumina-approval button,
+lumina-tabs [role="tab"] {
+  min-height: 2.5rem;
+  margin-right: var(--lumina-space-2);
+  padding: 0 var(--lumina-space-3);
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+  font: inherit;
+}
+lumina-approval button:focus-visible,
+lumina-tabs [role="tab"]:focus-visible,
+lumina-theme-toggle select:focus-visible {
+  outline: 2px solid var(--lumina-color-primary);
+  outline-offset: 2px;
+}
+lumina-tabs [role="tab"][aria-selected="true"] {
+  border-color: var(--lumina-color-primary);
+  color: var(--lumina-color-primary);
+}
+lumina-tab-panel { display: block; padding-top: var(--lumina-space-3); }
+lumina-dialog dialog {
+  max-width: min(36rem, calc(100vw - 2rem));
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-lg);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+}
+lumina-notification {
+  padding: var(--lumina-space-3);
+  border-radius: var(--lumina-radius-md);
+  background: var(--lumina-color-primary);
+  color: #fff;
+}
+html[data-theme="dark"] { color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
+
+@media (max-width: 768px) {
+  lumina-app.lumina-has-sidebar .lumina-sidebar {
+    position: fixed;
+    z-index: 10;
+    max-width: min(18rem, 85vw);
+    transform: translateX(-100%);
+  }
+  lumina-app.lumina-has-sidebar.lumina-sidebar-expanded .lumina-sidebar {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

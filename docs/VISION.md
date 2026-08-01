@@ -57,7 +57,7 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P1 | Session state | ◐ | `StateStore` + `WidgetState`; not typed |
 | P1 | Routing | ✅ | `ui.path()` / `ui.navigate()`; `__lumina.path` in session store (`0.6.0`) |
 | P1 | Basic layout | ✅ | `container`, `columns`, `sidebar`, `expander` (`0.4.0`) |
-| P1 | Hot reload | ❌ | `NoOpReloader` stub only |
+| P1 | Hot reload | ✅ | `FileWatchReloader` in `lumina-devtools` (P9) |
 | P1 | WebSocket transport | ✅ | `LuminaWebSocketEndpoint` + backpressure |
 | P1 | SSE transport | ❌ | — |
 | P1 | Hello World | ✅ | `lumina-examples` |
@@ -70,12 +70,20 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P2 | text/markdown/code/button/text-input/table/json/image/progress/file-upload | ✅ | Existing widgets; enterprise restyle in `0.7.0` |
 | P2 | number/checkbox/select/radio/slider/spinner/download | ✅ | Core widgets delivered under UX constitution (`0.8.0`) |
 | P3 | chat UI, streaming tokens, history, markdown, code highlight | ✅ | Phase 2 delivered |
-| P3 | citations, RAG sources, tool-call viz, token usage, cost, latency | ❌ | — |
-| P4 | Spring AI ChatClient auto-config | ◐ | `lumina-spring-ai`; echo-tested only, no real model wired |
+| P3 | citations, RAG sources, tool-call viz, token usage, cost, latency | ✅ | Display components and Showcase AI route |
+| P4 | Spring AI ChatClient auto-config | ✅ | `AiProvider`, echo provider, Spring AI adapter and properties |
 | P4 | LangChain4j, Bedrock, OpenAI, Azure, Vertex, Ollama | ❌ | — |
-| P5–P10 | all | ❌ | Not started |
+| P5 | agent timeline, tool invocation, approval, memory | ✅ | Agent widgets and `AgentDemoApp` |
+| P6 | tabs, dialogs, notifications, themes, responsive sidebar | ✅ | Accessible client components and responsive CSS |
+| P7 | auth hooks, RBAC, audit, i18n | ✅ | Auth context, role helper, audit SPI, message lookup |
+| P8 | component/theme extension SPIs | ✅ | ServiceLoader-oriented contribution and theme contracts |
+| P9 | file-watch reload and CI | ✅ | `FileWatchReloader` and JDK 25 verify workflow |
+| P10 | release package and API freeze | ✅ | Release docs, migration notes, and 1.0.0-SNAPSHOT |
 
-**Resume point:** P1 gaps (hot reload, SSE).
+## 1.0 API freeze and future roadmap
+
+The `Ui`, provider, audit, and extension SPIs are frozen for 1.0. Future work focuses on SSE
+transport, production session clustering, richer provider integrations, and benchmark automation.
 
 ## Guiding principles
 
