@@ -1,0 +1,4 @@
+# Pinned for reproducible Read the Docs / local MkDocs builds
+mkdocs==1.6.1
+mkdocs-material==9.6.14
+pymdown-extensions==10.15

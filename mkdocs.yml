@@ -1,0 +1,91 @@
+site_name: Lumina
+site_description: Pure-Java, server-driven UI framework for interactive and AI-native apps
+site_url: https://lumina.readthedocs.io/
+site_author: Woss Labs
+repo_url: https://github.com/wosslabs/lumina
+repo_name: wosslabs/lumina
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+copyright: Copyright &copy; Lumina contributors — Apache License 2.0
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/wosslabs/lumina
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Developer guide: DEVELOPER_GUIDE.md
+      - Author cheat sheet: GUIDE.md
+      - Product overview: PRODUCT.md
+  - Concepts:
+      - Vision & roadmap: VISION.md
+      - Architecture: ARCHITECTURE.md
+      - UX constitution: UX_CONSTITUTION.md
+  - How-to:
+      - Extensions: EXTENSIONS.md
+      - Migration to 1.0: MIGRATION.md
+      - Releasing: RELEASING.md
+      - Benchmarks: BENCHMARKS.md
+  - Architecture Decision Records:
+      - ADR-001 Module boundaries: adr/ADR-001-module-boundaries.md
+      - ADR-002 Rerun concurrency: adr/ADR-002-rerun-concurrency.md
+      - ADR-003 Wire protocol / diff: adr/ADR-003-wire-protocol-diff.md
+      - ADR-004 State keying: adr/ADR-004-state-keying.md
+      - ADR-005 Embedded server: adr/ADR-005-embedded-server.md
+      - ADR-006 Streaming protocol: adr/ADR-006-streaming-protocol.md
+      - ADR-007 Nested component tree: adr/ADR-007-nested-component-tree.md
+      - ADR-008 State and routing: adr/ADR-008-state-and-routing.md
+      - ADR-009 Extensibility SPIs: adr/ADR-009-extensibility-spis.md
+      - ADR-010 Security & sessions: adr/ADR-010-security-and-session-lifecycle.md
+      - ADR-011 AI capability SPIs: adr/ADR-011-ai-capability-spis.md
+      - ADR-012 Transport evolution: adr/ADR-012-transport-evolution.md
+      - ADR-013 Design system ownership: adr/ADR-013-design-system-ownership.md
