@@ -29,7 +29,8 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 | UX | Enterprise shell, tokens, a11y constitution, theme toggle |
 | Widgets | Text, markdown, inputs, select/radio/slider, tables, files, download, spinner |
 | AI | Chat, streaming, citations, RAG sources, tool calls, usage metrics |
-| Agents | Timeline, approvals, tool rows, memory panel |
+| Agents | Timeline, approvals, tool rows, memory panel + interactive workbench demo |
+| MCP UI | Tool catalog / invoke / history console (bring your MCP client) |
 | Platform | Spring Boot starter, Spring AI bridge, provider SPI, plugins |
 | Enterprise | Auth hooks, RBAC helpers, metrics, audit SPI, i18n hooks |
 | DX | CLI, hot reload, CI, docs, 1.0 packaging |
@@ -37,6 +38,7 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 ## Learn more
 
 - [**Developer guide**](DEVELOPER_GUIDE.md) — Spring Boot, Spring AI, standalone, Jakarta EE
+- [**AI guide**](AI_GUIDE.md) — RAG, agents, MCP cockpit patterns
 - [Vision & roadmap](VISION.md)
 - [Architecture](ARCHITECTURE.md)
 - [Author cheat sheet](GUIDE.md)

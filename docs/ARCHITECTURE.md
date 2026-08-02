@@ -1,6 +1,6 @@
 # Lumina Architecture
 
-Authoritative technical architecture for Lumina (`0.3.0-SNAPSHOT`). Companion to [`VISION.md`](VISION.md). Accepted decisions live in [`docs/adr/`](adr/), including the Phase 0 direction-setting ADRs (007–012).
+Authoritative technical architecture for Lumina (`0.3.0-SNAPSHOT`). Companion to [`VISION.md`](VISION.md). Architecture decisions are summarized in this document (module boundaries, rerun model, wire protocol, streaming, shell, AI SPIs).
 
 ---
 
@@ -84,8 +84,7 @@ C4Component
 
 ## 2. Module boundaries
 
-Lumina is a ten-module Maven reactor. Dependency direction follows Clean Architecture: **API → Service/Runtime → Domain ← Infrastructure**. `lumina-core` depends on **nothing** Lumina-internal. Spring, Jetty, and Servlet APIs stay at the edges. See [ADR-001](adr/ADR-001-module-boundaries.md).
-
+Lumina is a ten-module Maven reactor. Dependency direction follows Clean Architecture: **API → Service/Runtime → Domain ← Infrastructure**. `lumina-core` depends on **nothing** Lumina-internal. Spring, Jetty, and Servlet APIs stay at the edges. 
 | Module | Role |
 |--------|------|
 | `lumina-core` | Public API and domain types: `Ui`, `ComponentNode`, `StateStore`, `ChatClient` / `TokenStream`, SPI packages. No Spring/Jetty. |
@@ -104,7 +103,7 @@ Lumina is a ten-module Maven reactor. Dependency direction follows Clean Archite
 - Domain/public API (`lumina-core`) ← consumed by runtime, session, components, web, Spring modules.
 - Runtime may depend on core, session, and components — never on `lumina-web` or Spring.
 - Infrastructure (`lumina-web`, Spring modules) adapts inward; they must not leak Jetty/Spring types into core or runtime public APIs.
-- Public API packages remain `io.lumina`, `io.lumina.ui`, `io.lumina.state`, `io.lumina.ai`, `io.lumina.spi` ([ADR-001](adr/ADR-001-module-boundaries.md)).
+- Public API packages remain `io.lumina`, `io.lumina.ui`, `io.lumina.state`, `io.lumina.ai`, `io.lumina.spi` (ADR-001).
 
 Scale model: **single-node default** (in-memory sessions). State store and transport are SPIs so Phase 7 clustering can slot in without core rewrites.
 
@@ -114,9 +113,9 @@ Scale model: **single-node default** (in-memory sessions). State store and trans
 
 Today the server builds an immutable [`ComponentNode`](../lumina-core/src/main/java/io/lumina/model/ComponentNode.java) tree (`id`, `type`, `props`, `children`). Children are effectively a **flat** list under the root — sufficient for current widgets, insufficient for nested layout containers.
 
-**Direction (ADR-007):** evolve to a true **nested** `ComponentNode` tree with stable keys so layout containers (columns, tabs, sidebars, …) can hold children. Keying continues to follow [ADR-004](adr/ADR-004-state-keying.md) (`path/type#index`, optional `withKey` path segments).
+**Direction (ADR-007):** evolve to a true **nested** `ComponentNode` tree with stable keys so layout containers (columns, tabs, sidebars, …) can hold children. Keying continues to follow ADR-004 (`path/type#index`, optional `withKey` path segments).
 
-Forward reference: [ADR-007 — Nested component tree & layout containers](adr/ADR-007-nested-component-tree.md).
+Nested component trees and layout containers are implemented (columns, sidebar, expander, tabs).
 
 ---
 
@@ -125,8 +124,8 @@ Forward reference: [ADR-007 — Nested component tree & layout containers](adr/A
 Rendering is **server-driven**:
 
 1. On connect or recovery, the runtime builds a full `ComponentNode` tree and sends a **snapshot**.
-2. On each interaction (and for streaming flushes), `TreeDiffer` compares previous vs new tree and emits ordered **patch** operations ([ADR-003](adr/ADR-003-wire-protocol-diff.md)).
-3. During `ui.ai(TokenStream)`, the runtime may flush an interim structural patch, then emit text-only **stream** frames (`start` / `append` / `end`) via `RunSink` ([ADR-006](adr/ADR-006-streaming-protocol.md)).
+2. On each interaction (and for streaming flushes), `TreeDiffer` compares previous vs new tree and emits ordered **patch** operations (ADR-003).
+3. During `ui.ai(TokenStream)`, the runtime may flush an interim structural patch, then emit text-only **stream** frames (`start` / `append` / `end`) via `RunSink` (ADR-006).
 4. The thin client applies snapshots/patches and appends streamed text by node id — no user-authored HTML/CSS/JS; no client-side app framework.
 
 The client contract stays minimal: interpret protocol messages, maintain a DOM mirror of the tree, and forward intents. Layout/theming may grow the client later without breaking the server-owned tree model.
@@ -135,13 +134,12 @@ The client contract stays minimal: interpret protocol messages, maintain a DOM m
 
 ## 5. State management
 
-Session state is server-scoped and confined to the session execution queue ([ADR-002](adr/ADR-002-rerun-concurrency.md), [ADR-004](adr/ADR-004-state-keying.md)):
+Session state is server-scoped and confined to the session execution queue (ADR-002, ADR-004):
 
 - App-owned values via `StateStore` (session map today; **typed**, session-scoped state is the formalization target).
 - Widget values persist across reruns; one-shot intents (clicks, chat submit) are consumed once.
 - Lifecycle: create on WebSocket open / session start; destroy on close; **TTL / eviction hooks** for idle sessions and memory bounds.
 
-Forward references: [ADR-008 — State model & server-side routing](adr/ADR-008-state-and-routing.md), [ADR-010 — Security & session lifecycle](adr/ADR-010-security-and-session-lifecycle.md).
 
 ---
 
@@ -152,17 +150,15 @@ Routing is **not shipped yet** (status matrix: P1 gap). Target model:
 - Server-side `path → view` mapping (multi-page apps without a client router).
 - URL path and query as **addressable state** — navigable, bookmarkable, and restorable on reconnect alongside session state.
 
-Forward reference: [ADR-008 — State model & server-side routing](adr/ADR-008-state-and-routing.md).
 
 ---
 
 ## 7. Transport protocol
 
-**Today:** JSON over WebSocket (`LuminaWebSocketEndpoint` in `lumina-web`). Message shapes and diff ops are defined in [ADR-003](adr/ADR-003-wire-protocol-diff.md). Streaming frames and `RunSink` delivery are defined in [ADR-006](adr/ADR-006-streaming-protocol.md). Embedded server bootstrap is [ADR-005](adr/ADR-005-embedded-server.md).
+**Today:** JSON over WebSocket (`LuminaWebSocketEndpoint` in `lumina-web`). Message shapes and diff ops are defined in ADR-003. Streaming frames and `RunSink` delivery are defined in ADR-006. Embedded server bootstrap is ADR-005.
 
 **Evolution:** keep WebSocket as the primary transport; add **SSE fallback** and reconnect/resume semantics behind a transport SPI so Phase 7 clustering and alternate clients can plug in without rewriting the runtime.
 
-Forward reference: [ADR-012 — Transport evolution](adr/ADR-012-transport-evolution.md).
 
 ---
 
@@ -175,7 +171,6 @@ Framework-neutral AI types live in `lumina-core`:
 
 Providers ship as **thin adapters** (e.g. `lumina-spring-ai` bridging Spring AI). Optional capability SPIs (tools, embeddings/RAG, usage/cost) extend the seam without forcing every provider to implement everything.
 
-Forward reference: [ADR-011 — AI capability SPIs](adr/ADR-011-ai-capability-spis.md).
 
 ---
 
@@ -191,7 +186,6 @@ Design clean SPI seams now; defer public plugin SDK/packaging to Phase 8:
 | Rendering | Server tree → client presentation hooks |
 | Theme | Theming / dark mode hook points (Phase 6+) |
 
-Forward reference: [ADR-009 — Extensibility SPIs](adr/ADR-009-extensibility-spis.md).
 
 ---
 
@@ -207,7 +201,6 @@ Baseline and planned controls:
 | Upload limits | Bound file upload size and count per session |
 | Session TTL / eviction | Idle timeout and hard caps to prevent unbounded growth |
 
-Forward reference: [ADR-010 — Security & session lifecycle](adr/ADR-010-security-and-session-lifecycle.md).
 
 ---
 
@@ -215,7 +208,6 @@ Forward reference: [ADR-010 — Security & session lifecycle](adr/ADR-010-securi
 
 Each session owns **one serial execution queue**. Initial builds and interaction-triggered reruns run in submission order on **virtual threads**. No two application builds for the same session run concurrently. Sessions are independent and may execute in parallel with one another.
 
-See [ADR-002](adr/ADR-002-rerun-concurrency.md). State and binder classes rely on that confinement rather than internal locking ([ADR-004](adr/ADR-004-state-keying.md)).
 
 ---
 

@@ -344,3 +344,5 @@ pnpm-debug.log*
 
 
 *.code-workspace
+# Local / unpublished architecture decision records
+docs/adr/

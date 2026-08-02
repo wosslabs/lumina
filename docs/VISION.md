@@ -82,7 +82,9 @@ Legend: ✅ done · ◐ partial · ❌ not started
 
 ## 1.0 API freeze and future roadmap
 
-The `Ui`, provider, audit, and extension SPIs are frozen for 1.0. Future work focuses on SSE
+The `Ui`, provider, audit, and extension SPIs are frozen for 1.0. Showcase AI pages cover
+interactive **RAG**, **agent approval**, and **MCP-style tool console** UI patterns
+(orchestration remains in Spring AI / MCP clients / your agent code). Future work focuses on SSE
 transport, production session clustering, richer provider integrations, and benchmark automation.
 
 ## Guiding principles

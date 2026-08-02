@@ -1,19 +1,19 @@
 package io.lumina.examples.showcase;
 
 import io.lumina.LuminaApp;
+import io.lumina.examples.ai.AgentWorkbenchPages;
+import io.lumina.examples.ai.McpConsolePages;
+import io.lumina.examples.ai.RagChatPages;
 import io.lumina.ui.PageConfig;
 import io.lumina.ui.PageLayout;
 import io.lumina.ui.SidebarState;
 import io.lumina.ui.Ui;
 
 /**
- * Interactive hero demo: Streamlit-style reruns, multi-page routing, session state, and layout.
+ * Interactive hero demo: shell, widgets, and complete AI surfaces (RAG / agent / MCP).
  */
 public final class ShowcaseApp implements LuminaApp {
 
-    /**
-     * Creates the showcase application.
-     */
     public ShowcaseApp() {}
 
     @Override
@@ -31,12 +31,15 @@ public final class ShowcaseApp implements LuminaApp {
         ui.sidebar(sidebar -> {
             sidebar.brand(brand -> {
                 brand.markdown("## Lumina");
-                brand.text("Pure Java · server-driven · Streamlit-style reruns.");
+                brand.text("Pure Java · server-driven · AI cockpit.");
             });
             sidebar.nav(nav -> {
                 nav.page("Home", "/");
                 nav.page("Widgets", "/widgets");
                 nav.page("AI extras", "/ai");
+                nav.page("RAG chat", "/rag");
+                nav.page("Agent", "/agent");
+                nav.page("MCP tools", "/mcp");
                 nav.page("About", "/about");
             });
             sidebar.footer(footer -> {
@@ -53,6 +56,18 @@ public final class ShowcaseApp implements LuminaApp {
             case "/about" -> buildAbout(ui);
             case "/widgets" -> buildWidgets(ui);
             case "/ai" -> buildAi(ui);
+            case "/rag" -> {
+                ui.header(header -> header.title("Showcase / RAG"));
+                RagChatPages.build(ui);
+            }
+            case "/agent" -> {
+                ui.header(header -> header.title("Showcase / Agent"));
+                AgentWorkbenchPages.build(ui);
+            }
+            case "/mcp" -> {
+                ui.header(header -> header.title("Showcase / MCP"));
+                McpConsolePages.build(ui);
+            }
             default -> buildHome(ui, state, countValue, progressValue);
         }
     }
@@ -63,6 +78,11 @@ public final class ShowcaseApp implements LuminaApp {
         ui.markdown(
                 "Lumina is an open-source framework for **interactive, server-driven UIs**. "
                         + "Declare widgets in Java, rerun on every interaction, keep state on the server.");
+
+        ui.markdown("### AI cockpit");
+        ui.markdown(
+                "Try **RAG chat**, **Agent**, and **MCP tools** in the sidebar — complete UI patterns "
+                        + "for retrieval, human-in-the-loop agents, and tool consoles.");
 
         ui.markdown("### Try the rerun loop");
         ui.text("Click a button — the server reruns `build()` and patches the UI.");
@@ -103,18 +123,9 @@ public final class ShowcaseApp implements LuminaApp {
         ui.title("About Lumina");
         ui.markdown(
                 "Lumina targets Java teams who want **Streamlit-like productivity** without Python or "
-                        + "author-written HTML/CSS/JS.");
-        ui.markdown("### Routing");
-        ui.text("You clicked About in the sidebar. The app called ui.navigate(\"/about\") and reran on the server.");
+                        + "author-written HTML/CSS/JS. AI orchestration stays in Spring AI / MCP / your "
+                        + "agent framework — Lumina is the UI.");
         ui.markdown("Current path: **" + ui.path() + "**");
-        ui.expander("Example", body -> body.code(
-                "java",
-                """
-                sidebar.nav(nav -> nav.page("About", "/about"));
-                switch (ui.path()) {
-                    case "/about" -> buildAbout(ui);
-                    default -> buildHome(ui);
-                }"""));
     }
 
     private void buildWidgets(Ui ui) {
@@ -131,7 +142,10 @@ public final class ShowcaseApp implements LuminaApp {
         ui.markdown("Current settings: **" + enabled + "** · " + retries + " retries · " + region + " · " + plan
                 + " · volume " + volume);
         ui.spinner("Refreshing widget preview", () -> ui.text("Preview refreshed."));
-        if (ui.downloadButton("Download example", "Lumina widgets\n".getBytes(java.nio.charset.StandardCharsets.UTF_8), "widgets.txt")) {
+        if (ui.downloadButton(
+                "Download example",
+                "Lumina widgets\n".getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                "widgets.txt")) {
             ui.text("Your download has started.");
         }
     }
@@ -139,6 +153,7 @@ public final class ShowcaseApp implements LuminaApp {
     private void buildAi(Ui ui) {
         ui.header(header -> header.title("Showcase / AI extras"));
         ui.title("AI response metadata");
+        ui.markdown("Static preview of AI widgets. For interactive flows open **RAG**, **Agent**, or **MCP**.");
         ui.ai("Lumina keeps AI responses and their supporting evidence together.");
         ui.citation("Lumina guide", "/docs/GUIDE.md", "Use the provider SPI to stream an offline or Spring AI response.");
         ui.ragSources(java.util.List.of(java.util.Map.of(
