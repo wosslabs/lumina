@@ -7,8 +7,9 @@
 Inspired by Streamlit and built for modern Java and AI workloads, it owns rendering,
 session state, and real-time UI updates so application code needs **no HTML, CSS, or JavaScript**.
 
-**Status:** `1.0.0` — first community release (Apache-2.0). Build from source today;
-Maven Central publish requires a Central Portal account for `io.lumina` (see [docs/RELEASING.md](docs/RELEASING.md)).
+**Status:** `1.0.0` — first community release (Apache-2.0).
+Maven coordinates use `io.github.wosslabs` (Central-verified GitHub namespace).
+Java packages remain `io.lumina.*`. See [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Requirements
 
@@ -21,7 +22,7 @@ After Central publish (or from a local `mvn install`):
 
 ```xml
 <dependency>
-  <groupId>io.lumina</groupId>
+  <groupId>io.github.wosslabs</groupId>
   <artifactId>lumina-web</artifactId>
   <version>1.0.0</version>
 </dependency>
@@ -32,7 +33,7 @@ Optional: `lumina-spring-boot-starter`, `lumina-spring-ai`, `lumina-cli`.
 ## Showcase quickstart
 
 ```bash
-git clone https://github.com/twangdi07/lumina.git
+git clone https://github.com/wosslabs/lumina.git
 cd lumina
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
