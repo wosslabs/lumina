@@ -879,7 +879,7 @@ This repository is configured for [Read the Docs](https://readthedocs.org/):
 | [`docs/index.md`](index.md) | Docs home page |
 
 Published site (once the RTD project is linked and the first build succeeds):
-**https://lumina.readthedocs.io/** (or your chosen RTD subdomain).
+**https://wosslabs-lumina.readthedocs.io/**
 
 ### Local preview
 
