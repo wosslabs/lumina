@@ -41,4 +41,4 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 - [Author guide](GUIDE.md)
 - [Extensions](EXTENSIONS.md)
 - [Migration to 1.0](MIGRATION.md)
-- [UX constitution checklist](superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md)
+- [UX constitution checklist](UX_CONSTITUTION.md)
