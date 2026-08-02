@@ -1,33 +1,11 @@
-# Lumina Guide
-
-## Widgets
-
-Lumina renders widgets from Java and reruns `build()` when users interact. Values remain scoped to the current session.
-
-```java
-boolean enabled = ui.checkbox("Enable notifications", true);
-double retries = ui.numberInput("Retries", 3.0, 0.0, 10.0, 1.0);
-String region = ui.selectbox("Region", List.of("US East", "EU West"));
-String plan = ui.radio("Plan", List.of("Free", "Team"), 1);
-double volume = ui.slider("Volume", 0.0, 100.0, 50.0, 5.0);
-```
-
-`spinner` renders during a blocking operation and is removed when the operation completes:
-
-```java
-ui.spinner("Loading report", () -> ui.text("Report ready."));
-```
-
-`downloadButton` begins a browser download immediately and returns `true` for the rerun caused by its click. Downloads are limited to 1 MiB.
-
-```java
-if (ui.downloadButton("Download report", bytes, "report.csv")) {
-    ui.text("Download started.");
-}
-```
 # Lumina Author Guide
 
 Framework-owned UI in pure Java. See also [PRODUCT.md](PRODUCT.md) and [VISION.md](VISION.md).
+
+## Requirements
+
+- Java **25+**
+- Maven **3.9+**
 
 ## App entry
 
@@ -44,23 +22,53 @@ public class MyApp implements LuminaApp {
 }
 ```
 
+Start with the embedded server:
+
+```java
+LuminaServer.start(new MyApp());
+```
+
 ## Routing
 
-- `ui.path()` — current path  
-- `ui.navigate("/x")` — set path this run  
-- Client sends `connect` with `location.pathname`
+- `ui.path()` — current browser path for this run
+- `ui.navigate("/x")` — set path for this run (client syncs via `history.replaceState`)
+- On connect, the client sends `location.pathname`
 
 ## Shell
 
 Prefer `sidebar.brand` / `sidebar.nav` / `sidebar.footer` and optional `ui.header`.
+The framework owns chrome layout and tokens; apps declare structure only.
 
 ## Widgets
 
-*(P2 fills this section.)*
+Values stay scoped to the current session. Interactions rerun `build()`.
+
+```java
+boolean enabled = ui.checkbox("Enable notifications", true);
+double retries = ui.numberInput("Retries", 3.0, 0.0, 10.0, 1.0);
+String region = ui.selectbox("Region", List.of("US East", "EU West"));
+String plan = ui.radio("Plan", List.of("Free", "Team"), 1);
+double volume = ui.slider("Volume", 0.0, 100.0, 50.0, 5.0);
+```
+
+`spinner` shows during a blocking operation and clears when it finishes:
+
+```java
+ui.spinner("Loading report", () -> ui.text("Report ready."));
+```
+
+`downloadButton` starts a browser download and returns `true` on the click rerun
+(downloads capped at 1 MiB):
+
+```java
+if (ui.downloadButton("Download report", bytes, "report.csv")) {
+    ui.text("Download started.");
+}
+```
 
 ## AI and agents
 
-Use `AiProvider` for provider-neutral streaming. The built-in `EchoAiProvider` works without keys:
+Use `AiProvider` for provider-neutral streaming. Built-in `EchoAiProvider` needs no API keys:
 
 ```java
 AiProvider provider = new EchoAiProvider();
@@ -70,21 +78,28 @@ ui.usage(120, 48, 0.001, 80L);
 ```
 
 `lumina-spring-ai` provides `SpringAiChatClientProvider` for an application-managed Spring AI
-`ChatClient`. Configure `lumina.ai.provider=echo`, `openai`, or `ollama`; echo is the safe default.
-Agent views use `agentTimeline`, `toolInvocation`, `approval`, and `memoryPanel`.
+`ChatClient`. Configure `lumina.ai.provider=echo`, `openai`, or `ollama` (echo is the safe default).
+
+Agent surfaces: `agentTimeline`, `toolInvocation`, `approval`, and `memoryPanel`.
 
 ## Advanced UX
 
-Use `tabs`, `dialog`, `notify`, and `themeToggle` for framework-owned interactions. Tabs provide
-tablist/tab/tabpanel semantics, notifications use a polite live region, and the theme preference is
-stored in session state under `__lumina.theme`.
+Use `tabs`, `dialog`, `notify`, and `themeToggle`. Tabs expose tablist/tab/tabpanel semantics;
+notifications use a polite live region; theme preference lives in session under `__lumina.theme`.
 
 ## Enterprise hooks
 
-Store authenticated role names under `__lumina.roles` to use `ui.rolesAllowed(roles, body)`.
-`AuditLogger` receives only session and intent names; payloads are deliberately excluded. Store
-translation maps under `__lumina.messages` and resolve them with `ui.t(key)`.
+Store authenticated role names under `__lumina.roles` for `ui.rolesAllowed(roles, body)`.
+`AuditLogger` receives session and intent names only (payloads excluded). Store translation maps
+under `__lumina.messages` and resolve with `ui.t(key)`.
+
+## Known 1.0 limitations
+
+- OpenAI / Ollama work through Spring AI when configured; cloud provider coverage is not exhaustive.
+- Multi-node session clustering is not shipped.
+- Server-Sent Events (SSE) as an alternate transport is not shipped.
 
 ## UX standards
 
-PRs touching UI must satisfy `docs/superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md`.
+PRs that touch UI must satisfy
+[`docs/superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md`](superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md).

@@ -13,7 +13,7 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 Open [http://localhost:8080](http://localhost:8080), click **Increment** or **Say hello**,
 and watch the server rerun the Java `build()` method.
 
-Install dependencies first (`-am install`) so sibling SNAPSHOT artifacts are
+Install dependencies first (`-am install`) so sibling reactor artifacts are
 available on a fresh checkout.
 
 ## Hello AI

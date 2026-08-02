@@ -1,7 +1,13 @@
 # Changelog
 
-## 1.0.0-SNAPSHOT
+## 1.0.0 — 2026-08-02
 
+First community release (Apache-2.0).
+
+- Community packaging: `LICENSE`, `NOTICE`, `SECURITY.md`, `CODE_OF_CONDUCT.md`,
+  GitHub issue/PR templates, expanded README/GUIDE/CONTRIBUTING, `docs/RELEASING.md`.
+- Parent POM release metadata (`url`, `licenses`, `scm`, `developers`) and `-Prelease`
+  profile (sources, javadoc, GPG, Central Publishing plugin).
 - P2 core widgets, download support, and showcase coverage.
 - P3 AI metadata cards for citations, RAG sources, tool calls, and usage.
 - P4 provider SPI and Spring AI bridge properties.
@@ -10,4 +16,10 @@
 - P7 role-gating, audit SPI, auth context, and message lookup hooks.
 - P8 extension and theme SPIs.
 - P9 file-watch development reload and JDK 25 CI.
-- P10 release documentation and API-freeze preparation.
+- P1 routing (`ui.path` / `ui.navigate`) and P1.5 enterprise shell UX hard reset.
+- Blank-page fixes for layout CSS selectors and custom-element registration.
+
+### Known limitations
+
+- Maven Central publish requires Central Portal credentials for `io.lumina`.
+- No multi-node session clustering; no SSE transport; cloud providers via Spring AI only.

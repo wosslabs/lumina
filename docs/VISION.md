@@ -78,7 +78,7 @@ Legend: ✅ done · ◐ partial · ❌ not started
 | P7 | auth hooks, RBAC, audit, i18n | ✅ | Auth context, role helper, audit SPI, message lookup |
 | P8 | component/theme extension SPIs | ✅ | ServiceLoader-oriented contribution and theme contracts |
 | P9 | file-watch reload and CI | ✅ | `FileWatchReloader` and JDK 25 verify workflow |
-| P10 | release package and API freeze | ✅ | Release docs, migration notes, and 1.0.0-SNAPSHOT |
+| P10 | release package and API freeze | ✅ | Release docs, migration notes, and tagged `1.0.0` |
 
 ## 1.0 API freeze and future roadmap
 

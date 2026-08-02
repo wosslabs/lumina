@@ -1,34 +1,39 @@
 # Lumina
 
-Lumina is an open-source Java framework for building interactive, server-driven
-web applications in pure Java. Inspired by Streamlit and designed for modern
-Java and AI applications, it owns rendering, session state, and real-time UI
-updates so application code needs no HTML, CSS, or JavaScript.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-25%2B-orange.svg)](pom.xml)
+
+**Lumina** is an open-source Java framework for interactive, server-driven web apps.
+Inspired by Streamlit and built for modern Java and AI workloads, it owns rendering,
+session state, and real-time UI updates so application code needs **no HTML, CSS, or JavaScript**.
+
+**Status:** `1.0.0` — first community release (Apache-2.0). Build from source today;
+Maven Central publish requires a Central Portal account for `io.lumina` (see [docs/RELEASING.md](docs/RELEASING.md)).
 
 ## Requirements
 
 - **Java 25+** and **Maven 3.9+**
 - Platform stack: Spring Boot **4.1.0**, Spring AI **2.0.0**, Jetty **12.1.11** (EE11)
 
-## Product and roadmap
+## Maven coordinates
 
-- [Product overview](docs/PRODUCT.md)
-- [Vision and shipped roadmap](docs/VISION.md)
-- [Author guide](docs/GUIDE.md)
-- [Extension guide](docs/EXTENSIONS.md)
-- [Migration notes](docs/MIGRATION.md)
-- [Contributing](CONTRIBUTING.md)
+After Central publish (or from a local `mvn install`):
 
-## Architecture
+```xml
+<dependency>
+  <groupId>io.lumina</groupId>
+  <artifactId>lumina-web</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the current system
-architecture, module boundaries, and design decisions.
+Optional: `lumina-spring-boot-starter`, `lumina-spring-ai`, `lumina-cli`.
 
 ## Showcase quickstart
 
-From the repository root, build and run the showcase:
-
 ```bash
+git clone https://github.com/twangdi07/lumina.git
+cd lumina
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcase.ShowcaseMain
 ```
@@ -36,57 +41,63 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 Open [http://127.0.0.1:8080](http://127.0.0.1:8080) for the enterprise shell, routing,
 widgets, and AI demos (`/`, `/about`, `/widgets`, `/ai`).
 
-By default the embedded server binds to `127.0.0.1` (loopback only) so it is
-not reachable from other machines on the network. Pass a
-`LuminaServerConfig.builder().host("0.0.0.0")...` (or another address) to
-`LuminaServer.start(app, config)` to expose it more broadly.
-
-The two commands are intentionally separate: the first builds and installs the
-example and its reactor dependencies into the local Maven repository (required
-on a fresh checkout so sibling SNAPSHOT artifacts resolve), while the second
-runs the showcase main class.
+The server binds to `127.0.0.1` by default. Use
+`LuminaServerConfig.builder().host("0.0.0.0")...` to expose it on the network.
 
 ## Hello AI
 
-Minimal stateful chat using the built-in offline echo client:
+Minimal stateful chat with the built-in offline echo client:
 
 ```bash
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java
 ```
 
-Enter a prompt and the echo client replies. Default entry point:
-`io.lumina.examples.helloai.HelloAiMain`.
+Default entry point: `io.lumina.examples.helloai.HelloAiMain`.
 
 ## Streaming chat
-
-`StreamingChatApp` in `lumina-examples` demonstrates `Ui.ai(TokenStream)`:
-replies stream to the client as they are produced instead of appearing all at
-once. See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat)
-for details.
 
 ```bash
 mvn -q -pl lumina-examples -am install
 mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.streaming.StreamingChatMain
 ```
 
+See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat).
+
+## Docs
+
+- [Product overview](docs/PRODUCT.md)
+- [Author guide](docs/GUIDE.md)
+- [Vision and roadmap](docs/VISION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Extensions](docs/EXTENSIONS.md)
+- [Migration](docs/MIGRATION.md)
+- [Releasing / Maven Central](docs/RELEASING.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
 ## Modules
 
-- `lumina-core` — application, UI, state, model, AI, and transport contracts.
-- `lumina-session` — isolated session and widget state storage.
-- `lumina-components` — shared built-in component property definitions.
-- `lumina-runtime` — UI binding, session execution, and component-tree diffing.
-- `lumina-web` — embedded Jetty server, WebSocket endpoint, and wire protocol.
-- `lumina-devtools` — development reload SPI and Phase 1 no-op implementation.
-- `lumina-spring-boot-starter` — optional Spring Boot auto-configuration.
-- `lumina-spring-ai` — optional Spring AI `ChatClient` adapter that streams
-  replies through `TokenStream` via a Reactor `Flux` bridge.
-- `lumina-cli` — command-line launcher for `LuminaApp` implementations.
-- `lumina-examples` — runnable applications, including the P1.5 showcase,
-  Hello AI, and the streaming chat example.
+| Module | Role |
+|--------|------|
+| `lumina-core` | App, UI, state, model, AI, and transport contracts |
+| `lumina-session` | Isolated session and widget state |
+| `lumina-components` | Built-in component property definitions |
+| `lumina-runtime` | Binding, execution, tree diffing |
+| `lumina-web` | Jetty server, WebSocket, wire protocol, thin client |
+| `lumina-devtools` | File-watch reload |
+| `lumina-spring-boot-starter` | Optional Spring Boot auto-configuration |
+| `lumina-spring-ai` | Spring AI `ChatClient` → `TokenStream` bridge |
+| `lumina-cli` | CLI launcher for `LuminaApp` |
+| `lumina-examples` | Showcase, Hello AI, streaming chat, agent demo |
 
-## Design
+## 1.0 limitations
 
-The approved [Phase 1 architecture design](docs/superpowers/specs/2026-07-18-lumina-phase1-design.md)
-documents the goals, non-goals, architecture, protocol, and ADRs behind the
-implementation.
+- Multi-node session clustering is not shipped.
+- SSE as an alternate transport is not shipped.
+- Cloud LLM coverage depends on Spring AI configuration; echo works offline.
+
+## License
+
+Copyright © Lumina contributors. Licensed under the [Apache License 2.0](LICENSE).
