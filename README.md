@@ -16,6 +16,8 @@ See [docs/RELEASING.md](docs/RELEASING.md).
 **Start here:** [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — extensive onboarding for
 standalone Java, Jakarta EE / other frameworks, Spring Boot, and Spring AI.
 
+Hosted docs: [lumina.readthedocs.io](https://lumina.readthedocs.io/) (builds from this repo via MkDocs).
+
 ## Requirements
 
 - **Java 25+** and **Maven 3.9+**

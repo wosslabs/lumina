@@ -869,16 +869,35 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 
 ## 21. Hosting docs on Read the Docs
 
-These Markdown files live in GitHub today. For a hosted site (free for public OSS):
+This repository is configured for [Read the Docs](https://readthedocs.org/):
 
-1. Create an account at [https://readthedocs.org/](https://readthedocs.org/)
-2. Import `wosslabs/lumina`
-3. Prefer **MkDocs** or **Sphinx** + Myst parser for Markdown
-4. Add a minimal `mkdocs.yml` (or Sphinx conf) pointing at `docs/`
-5. Enable builds on pushes to `main`
+| File | Role |
+|------|------|
+| [`.readthedocs.yaml`](https://github.com/wosslabs/lumina/blob/main/.readthedocs.yaml) | RTD build (Python + MkDocs) |
+| [`mkdocs.yml`](https://github.com/wosslabs/lumina/blob/main/mkdocs.yml) | Site nav, Material theme |
+| [`docs/requirements.txt`](requirements.txt) | Pinned MkDocs deps |
+| [`docs/index.md`](index.md) | Docs home page |
 
-You will get a URL like `https://lumina.readthedocs.io/`. Until that is wired, treat
-**this file** as the canonical developer guide.
+Published site (once the RTD project is linked and the first build succeeds):
+**https://lumina.readthedocs.io/** (or your chosen RTD subdomain).
+
+### Local preview
+
+```bash
+python3 -m venv .venv-docs
+source .venv-docs/bin/activate
+pip install -r docs/requirements.txt
+mkdocs serve
+# open http://127.0.0.1:8000/
+```
+
+### RTD dashboard checklist
+
+1. Import the GitHub repo `wosslabs/lumina` (already connected to your account).
+2. Confirm the default branch is `main`.
+3. Ensure **Build** uses the repository `.readthedocs.yaml` (MkDocs, not Sphinx).
+4. Trigger a build; fix any errors shown in the build log.
+5. Optional: set a custom domain under **Domains**.
 
 ---
 
