@@ -576,6 +576,11 @@
     }
   }
 
+  class LuminaRagSources extends LuminaEntries {}
+  class LuminaAgentTimeline extends LuminaEntries {}
+  class LuminaMemoryPanel extends LuminaEntries {}
+  class LuminaTabPanel extends LuminaLayoutElement {}
+
   class LuminaToolCall extends LuminaNodeElement {
     render() {
       const props = this._node?.props ?? {};
@@ -1101,15 +1106,15 @@
   customElements.define("lumina-app-header", LuminaAppHeader);
   customElements.define("lumina-expander", LuminaExpander);
   customElements.define("lumina-citation", LuminaCitation);
-  customElements.define("lumina-rag-sources", LuminaEntries);
+  customElements.define("lumina-rag-sources", LuminaRagSources);
   customElements.define("lumina-tool-call", LuminaToolCall);
   customElements.define("lumina-usage", LuminaUsage);
-  customElements.define("lumina-agent-timeline", LuminaEntries);
+  customElements.define("lumina-agent-timeline", LuminaAgentTimeline);
   customElements.define("lumina-tool-invocation", LuminaToolInvocation);
   customElements.define("lumina-approval", LuminaApproval);
-  customElements.define("lumina-memory-panel", LuminaEntries);
+  customElements.define("lumina-memory-panel", LuminaMemoryPanel);
   customElements.define("lumina-tabs", LuminaTabs);
-  customElements.define("lumina-tab-panel", LuminaLayoutElement);
+  customElements.define("lumina-tab-panel", LuminaTabPanel);
   customElements.define("lumina-dialog", LuminaDialog);
   customElements.define("lumina-notification", LuminaNotification);
   customElements.define("lumina-theme-toggle", LuminaThemeToggle);
