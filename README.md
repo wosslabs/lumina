@@ -8,8 +8,13 @@ Inspired by Streamlit and built for modern Java and AI workloads, it owns render
 session state, and real-time UI updates so application code needs **no HTML, CSS, or JavaScript**.
 
 **Status:** `1.0.0` — first community release (Apache-2.0).
-Maven coordinates use `io.github.wosslabs` (Central-verified GitHub namespace).
-Java packages remain `io.lumina.*`. See [docs/RELEASING.md](docs/RELEASING.md).
+Maven coordinates: `io.github.wosslabs` (Maven Central). Java packages remain `io.lumina.*`.
+See [docs/RELEASING.md](docs/RELEASING.md).
+
+## Developer guide
+
+**Start here:** [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — extensive onboarding for
+standalone Java, Jakarta EE / other frameworks, Spring Boot, and Spring AI.
 
 ## Requirements
 
@@ -18,17 +23,23 @@ Java packages remain `io.lumina.*`. See [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Maven coordinates
 
-After Central publish (or from a local `mvn install`):
-
 ```xml
+<!-- Standalone / any framework -->
 <dependency>
   <groupId>io.github.wosslabs</groupId>
   <artifactId>lumina-web</artifactId>
   <version>1.0.0</version>
 </dependency>
+
+<!-- Spring Boot -->
+<dependency>
+  <groupId>io.github.wosslabs</groupId>
+  <artifactId>lumina-spring-boot-starter</artifactId>
+  <version>1.0.0</version>
+</dependency>
 ```
 
-Optional: `lumina-spring-boot-starter`, `lumina-spring-ai`, `lumina-cli`.
+Optional: `lumina-spring-ai`, `lumina-cli`.
 
 ## Showcase quickstart
 
@@ -67,8 +78,9 @@ See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat).
 
 ## Docs
 
+- [**Developer guide** (start here)](docs/DEVELOPER_GUIDE.md)
 - [Product overview](docs/PRODUCT.md)
-- [Author guide](docs/GUIDE.md)
+- [Author cheat sheet](docs/GUIDE.md)
 - [Vision and roadmap](docs/VISION.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Extensions](docs/EXTENSIONS.md)

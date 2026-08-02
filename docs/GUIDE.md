@@ -1,6 +1,9 @@
 # Lumina Author Guide
 
-Framework-owned UI in pure Java. See also [PRODUCT.md](PRODUCT.md) and [VISION.md](VISION.md).
+Short API cheat sheet. For full onboarding (Spring Boot, Spring AI, standalone, Jakarta EE),
+see **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)**.
+
+Also: [PRODUCT.md](PRODUCT.md) and [VISION.md](VISION.md).
 
 ## Requirements
 

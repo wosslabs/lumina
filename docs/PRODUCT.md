@@ -36,9 +36,10 @@ Java / Spring teams who want Streamlit-like productivity on the JVM.
 
 ## Learn more
 
+- [**Developer guide**](DEVELOPER_GUIDE.md) — Spring Boot, Spring AI, standalone, Jakarta EE
 - [Vision & roadmap](VISION.md)
 - [Architecture](ARCHITECTURE.md)
-- [Author guide](GUIDE.md)
+- [Author cheat sheet](GUIDE.md)
 - [Extensions](EXTENSIONS.md)
 - [Migration to 1.0](MIGRATION.md)
 - [UX constitution checklist](UX_CONSTITUTION.md)
