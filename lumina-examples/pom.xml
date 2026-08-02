@@ -13,6 +13,7 @@
   <name>Lumina Examples</name>
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
+    <skipPublishing>true</skipPublishing>
     <exec.mainClass>io.lumina.examples.helloai.HelloAiMain</exec.mainClass>
   </properties>
   <dependencies>
