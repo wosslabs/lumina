@@ -27,7 +27,9 @@ lumina-app.lumina-has-sidebar {
   width: 100%;
 }
 
-lumina-banner {
+/* Client renders native <header class="lumina-banner"> / <main class="lumina-main"> */
+header.lumina-banner,
+.lumina-banner {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -44,7 +46,8 @@ lumina-banner {
   font-weight: 700;
 }
 
-lumina-app.lumina-has-sidebar > lumina-main {
+lumina-app.lumina-has-sidebar > main.lumina-main,
+lumina-app.lumina-has-sidebar > .lumina-main {
   grid-area: main;
   min-width: 0;
   display: flex;
@@ -52,13 +55,15 @@ lumina-app.lumina-has-sidebar > lumina-main {
   padding: var(--lumina-content-padding);
 }
 
-lumina-app > lumina-main {
+lumina-app > main.lumina-main,
+lumina-app > .lumina-main {
   display: block;
   width: 100%;
   padding: var(--lumina-content-padding);
 }
 
-lumina-app.lumina-layout-centered > lumina-main {
+lumina-app.lumina-layout-centered > main.lumina-main,
+lumina-app.lumina-layout-centered > .lumina-main {
   max-width: var(--lumina-content-max-centered);
   margin-inline: auto;
 }
@@ -195,21 +200,25 @@ lumina-sidebar > lumina-markdown:first-of-type h2 {
   letter-spacing: -0.02em;
 }
 
-lumina-main > lumina-markdown h3 {
+main.lumina-main > lumina-markdown h3,
+.lumina-main > lumina-markdown h3 {
   margin-top: var(--lumina-space-8);
   padding-top: var(--lumina-space-6);
   border-top: 1px solid var(--lumina-color-border);
 }
 
-lumina-main > lumina-markdown h3:first-of-type {
+main.lumina-main > lumina-markdown h3:first-of-type,
+.lumina-main > lumina-markdown h3:first-of-type {
   margin-top: var(--lumina-space-6);
 }
 
-lumina-main > lumina-title + lumina-markdown {
+main.lumina-main > lumina-title + lumina-markdown,
+.lumina-main > lumina-title + lumina-markdown {
   margin-top: calc(-1 * var(--lumina-space-2));
 }
 
-lumina-main > lumina-title + lumina-markdown p {
+main.lumina-main > lumina-title + lumina-markdown p,
+.lumina-main > lumina-title + lumina-markdown p {
   font-size: var(--lumina-text-lg);
   color: var(--lumina-color-text-muted);
   line-height: 1.6;
