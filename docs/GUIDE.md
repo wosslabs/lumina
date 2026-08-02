@@ -102,4 +102,4 @@ under `__lumina.messages` and resolve with `ui.t(key)`.
 ## UX standards
 
 PRs that touch UI must satisfy
-[`docs/superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md`](superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md).
+[`docs/UX_CONSTITUTION.md`](UX_CONSTITUTION.md).

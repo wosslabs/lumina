@@ -31,8 +31,7 @@ Open http://127.0.0.1:8080/
 2. Add or update tests for behavior changes.
 3. Run `mvn -q clean verify`.
 4. Fill out the PR template.
-5. UI changes must satisfy
-   [`docs/superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md`](docs/superpowers/specs/2026-08-01-lumina-ux-constitution-checklist.md).
+5. UI changes must satisfy [`docs/UX_CONSTITUTION.md`](docs/UX_CONSTITUTION.md).
 
 ## Invariants
 

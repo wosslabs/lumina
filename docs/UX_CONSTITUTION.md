@@ -1,6 +1,6 @@
 # Lumina UX Constitution — PR Checklist
 
-Use on every PR that touches `lumina-web` client/CSS or shell authoring APIs. Derived from `2026-08-01-lumina-ux-hard-reset-design.md` §4.
+Use on every PR that touches `lumina-web` client/CSS or shell authoring APIs.
 
 ## Semantics
 - [ ] Landmarks present where applicable (`banner`, `navigation`, `main`, `complementary`/`contentinfo`)

@@ -8,8 +8,9 @@ target/
 .settings/
 .DS_Store
 
-# Superpowers SDD scratch
+# Superpowers SDD scratch (local agent artifacts; not published)
 .superpowers/
+docs/superpowers/
 
 ################################################################################
 # OS Files
