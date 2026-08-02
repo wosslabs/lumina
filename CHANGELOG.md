@@ -18,8 +18,10 @@ First community release (Apache-2.0).
 - P9 file-watch development reload and JDK 25 CI.
 - P1 routing (`ui.path` / `ui.navigate`) and P1.5 enterprise shell UX hard reset.
 - Blank-page fixes for layout CSS selectors and custom-element registration.
+- Maven Central `groupId` set to `io.github.wosslabs` (GitHub-verified namespace).
+  Java packages remain `io.lumina.*`. `lumina-examples` is not published (`maven.deploy.skip`).
 
 ### Known limitations
 
-- Maven Central publish requires Central Portal credentials for `io.lumina`.
+- Claim/verify `io.github.wosslabs` in Central Portal before `mvn -Prelease deploy`.
 - No multi-node session clustering; no SSE transport; cloud providers via Spring AI only.

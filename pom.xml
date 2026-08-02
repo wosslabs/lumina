@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.lumina</groupId>
+  <groupId>io.github.wosslabs</groupId>
   <artifactId>lumina-parent</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
   <name>Lumina Parent</name>
   <description>Pure-Java, server-driven UI framework for interactive and AI-native apps</description>
-  <url>https://github.com/twangdi07/lumina</url>
+  <url>https://github.com/wosslabs/lumina</url>
   <inceptionYear>2024</inceptionYear>
 
   <licenses>
@@ -22,22 +22,22 @@
 
   <developers>
     <developer>
-      <id>twangdi07</id>
+      <id>wosslabs</id>
       <name>Lumina maintainers</name>
-      <url>https://github.com/twangdi07/lumina</url>
+      <url>https://github.com/wosslabs/lumina</url>
     </developer>
   </developers>
 
   <scm>
-    <connection>scm:git:https://github.com/twangdi07/lumina.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/twangdi07/lumina.git</developerConnection>
-    <url>https://github.com/twangdi07/lumina</url>
+    <connection>scm:git:https://github.com/wosslabs/lumina.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/wosslabs/lumina.git</developerConnection>
+    <url>https://github.com/wosslabs/lumina</url>
     <tag>v1.0.0</tag>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/twangdi07/lumina/issues</url>
+    <url>https://github.com/wosslabs/lumina/issues</url>
   </issueManagement>
 
   <modules>
@@ -69,47 +69,47 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-session</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-components</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-runtime</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-web</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-devtools</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-spring-boot-starter</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-spring-ai</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.lumina</groupId>
+        <groupId>io.github.wosslabs</groupId>
         <artifactId>lumina-cli</artifactId>
         <version>${project.version}</version>
       </dependency>

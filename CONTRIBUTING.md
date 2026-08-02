@@ -11,7 +11,7 @@ Please also follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 - Clone and verify:
 
 ```bash
-git clone https://github.com/twangdi07/lumina.git
+git clone https://github.com/wosslabs/lumina.git
 cd lumina
 mvn -q clean verify
 ```
