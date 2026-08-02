@@ -7,6 +7,8 @@ Inspired by Streamlit — application code needs **no HTML, CSS, or JavaScript**
     New to Lumina? Read the **[Developer guide](DEVELOPER_GUIDE.md)** — standalone Java,
     Spring Boot, Spring AI, Jakarta EE, and other frameworks.
 
+    Building RAG / agents / MCP UIs? Read the **[AI guide](AI_GUIDE.md)**.
+
 ## Quick install (Maven Central)
 
 ```xml
@@ -51,16 +53,17 @@ Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
 | Page | Audience |
 |------|----------|
 | [Developer guide](DEVELOPER_GUIDE.md) | Juniors & integrators (primary) |
+| [AI guide](AI_GUIDE.md) | RAG, agents, MCP UI patterns |
 | [Author cheat sheet](GUIDE.md) | Quick `Ui` API reference |
 | [Product overview](PRODUCT.md) | What Lumina ships in 1.0 |
 | [Architecture](ARCHITECTURE.md) | Module boundaries & design |
 | [Extensions](EXTENSIONS.md) | Plugins, themes, AI SPI |
 | [Migration](MIGRATION.md) | 1.0 API notes |
 | [Releasing](RELEASING.md) | Maintainers / Maven Central |
-| [ADRs](adr/ADR-001-module-boundaries.md) | Decision history |
 
 ## Project links
 
 - Source: [github.com/wosslabs/lumina](https://github.com/wosslabs/lumina)
+- Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedocs.io/)
 - License: [Apache-2.0](https://github.com/wosslabs/lumina/blob/main/LICENSE)
 - Security: [SECURITY.md](https://github.com/wosslabs/lumina/blob/main/SECURITY.md)

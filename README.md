@@ -16,6 +16,8 @@ See [docs/RELEASING.md](docs/RELEASING.md).
 **Start here:** [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) — extensive onboarding for
 standalone Java, Jakarta EE / other frameworks, Spring Boot, and Spring AI.
 
+AI cockpits: [docs/AI_GUIDE.md](docs/AI_GUIDE.md) (RAG, agents, MCP UI).
+
 Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedocs.io/) (builds from this repo via MkDocs).
 
 ## Requirements
@@ -81,6 +83,7 @@ See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat).
 ## Docs
 
 - [**Developer guide** (start here)](docs/DEVELOPER_GUIDE.md)
+- [**AI guide** — RAG / Agents / MCP](docs/AI_GUIDE.md)
 - [Product overview](docs/PRODUCT.md)
 - [Author cheat sheet](docs/GUIDE.md)
 - [Vision and roadmap](docs/VISION.md)
@@ -91,6 +94,8 @@ See [`lumina-examples/README.md`](lumina-examples/README.md#streaming-chat).
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
 - [Changelog](CHANGELOG.md)
+
+Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedocs.io/)
 
 ## Modules
 

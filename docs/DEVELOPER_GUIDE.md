@@ -9,8 +9,9 @@ frameworks.
 **Java packages:** `io.lumina.*`  
 **License:** Apache-2.0
 
-This guide is the main onboarding document. For a short API cheat sheet see [GUIDE.md](GUIDE.md).
-For architecture and ADRs see [ARCHITECTURE.md](ARCHITECTURE.md).
+This guide is the main onboarding document. For AI cockpits (RAG / agents / MCP) see
+[AI_GUIDE.md](AI_GUIDE.md). For a short API cheat sheet see [GUIDE.md](GUIDE.md).
+For architecture see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
@@ -484,7 +485,7 @@ var chat = ChatClients.echo();
 ui.ai(chat.stream(prompt));
 ```
 
-### 8.6 Rich AI widgets
+### 8.6 Rich AI widgets and complete demos
 
 ```java
 ui.citation("Architecture", "docs/ARCHITECTURE.md", "Server-driven component trees.");
@@ -495,8 +496,8 @@ ui.toolCall("search", "ok", Map.of("q", prompt), Map.of("hits", 3));
 ui.usage(120, 48, 0.001, 80L);
 ```
 
-Agent-oriented widgets: `agentTimeline`, `toolInvocation`, `approval`, `memoryPanel`
-(see the `AgentDemoApp` example in the GitHub repo).
+Interactive RAG / agent / MCP patterns: [AI_GUIDE.md](AI_GUIDE.md) and Showcase routes
+`/rag`, `/agent`, `/mcp`.
 
 ---
 
@@ -859,6 +860,7 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 | [PRODUCT.md](PRODUCT.md) | Product overview |
 | [GUIDE.md](GUIDE.md) | Short author cheat sheet |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design |
+| [AI_GUIDE.md](AI_GUIDE.md) | RAG / agents / MCP UI patterns |
 | [EXTENSIONS.md](EXTENSIONS.md) | Plugins / themes / AI SPI |
 | [MIGRATION.md](MIGRATION.md) | 1.0 API notes |
 | [UX_CONSTITUTION.md](UX_CONSTITUTION.md) | A11y / UX PR checklist |

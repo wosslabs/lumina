@@ -8,6 +8,8 @@ First community release (Apache-2.0).
   GitHub issue/PR templates, expanded README/GUIDE/CONTRIBUTING, `docs/RELEASING.md`.
 - Parent POM release metadata (`url`, `licenses`, `scm`, `developers`) and `-Prelease`
   profile (sources, javadoc, GPG, Central Publishing plugin).
+- Interactive AI demos: RAG chat, agent workbench (approval loop), MCP tool console;
+  `docs/AI_GUIDE.md` and Showcase routes `/rag`, `/agent`, `/mcp`.
 - P2 core widgets, download support, and showcase coverage.
 - P3 AI metadata cards for citations, RAG sources, tool calls, and usage.
 - P4 provider SPI and Spring AI bridge properties.
@@ -25,3 +27,4 @@ First community release (Apache-2.0).
 
 - Claim/verify `io.github.wosslabs` in Central Portal before `mvn -Prelease deploy`.
 - No multi-node session clustering; no SSE transport; cloud providers via Spring AI only.
+- MCP is a UI console pattern — bring your own MCP client SDK.

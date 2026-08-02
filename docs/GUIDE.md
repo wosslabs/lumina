@@ -71,19 +71,9 @@ if (ui.downloadButton("Download report", bytes, "report.csv")) {
 
 ## AI and agents
 
-Use `AiProvider` for provider-neutral streaming. Built-in `EchoAiProvider` needs no API keys:
-
-```java
-AiProvider provider = new EchoAiProvider();
-ui.ai(provider.stream("Summarize Lumina"));
-ui.citation("Architecture", "docs/ARCHITECTURE.md", "Server-driven component trees.");
-ui.usage(120, 48, 0.001, 80L);
-```
-
-`lumina-spring-ai` provides `SpringAiChatClientProvider` for an application-managed Spring AI
-`ChatClient`. Configure `lumina.ai.provider=echo`, `openai`, or `ollama` (echo is the safe default).
-
-Agent surfaces: `agentTimeline`, `toolInvocation`, `approval`, and `memoryPanel`.
+Use `AiProvider` for provider-neutral streaming. Built-in `EchoAiProvider` needs no API keys.
+For complete RAG / agent / MCP UI patterns see **[AI_GUIDE.md](AI_GUIDE.md)** and Showcase routes
+`/rag`, `/agent`, `/mcp`.
 
 ## Advanced UX
 

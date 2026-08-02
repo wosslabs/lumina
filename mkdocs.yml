@@ -64,6 +64,7 @@ nav:
   - Home: index.md
   - Getting started:
       - Developer guide: DEVELOPER_GUIDE.md
+      - AI guide (RAG / Agents / MCP): AI_GUIDE.md
       - Author cheat sheet: GUIDE.md
       - Product overview: PRODUCT.md
   - Concepts:
@@ -75,17 +76,3 @@ nav:
       - Migration to 1.0: MIGRATION.md
       - Releasing: RELEASING.md
       - Benchmarks: BENCHMARKS.md
-  - Architecture Decision Records:
-      - ADR-001 Module boundaries: adr/ADR-001-module-boundaries.md
-      - ADR-002 Rerun concurrency: adr/ADR-002-rerun-concurrency.md
-      - ADR-003 Wire protocol / diff: adr/ADR-003-wire-protocol-diff.md
-      - ADR-004 State keying: adr/ADR-004-state-keying.md
-      - ADR-005 Embedded server: adr/ADR-005-embedded-server.md
-      - ADR-006 Streaming protocol: adr/ADR-006-streaming-protocol.md
-      - ADR-007 Nested component tree: adr/ADR-007-nested-component-tree.md
-      - ADR-008 State and routing: adr/ADR-008-state-and-routing.md
-      - ADR-009 Extensibility SPIs: adr/ADR-009-extensibility-spis.md
-      - ADR-010 Security & sessions: adr/ADR-010-security-and-session-lifecycle.md
-      - ADR-011 AI capability SPIs: adr/ADR-011-ai-capability-spis.md
-      - ADR-012 Transport evolution: adr/ADR-012-transport-evolution.md
-      - ADR-013 Design system ownership: adr/ADR-013-design-system-ownership.md
