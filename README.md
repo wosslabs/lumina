@@ -64,6 +64,16 @@ widgets, and AI demos (`/`, `/about`, `/widgets`, `/ai`).
 The server binds to `127.0.0.1` by default. Use
 `LuminaServerConfig.builder().host("0.0.0.0")...` to expose it on the network.
 
+**Other paths** (see [lumina-examples/README.md](lumina-examples/README.md)):
+
+```bash
+# Path B — Spring Boot (UI on :8090)
+env -u SPRING_CONFIG_IMPORT mvn -q -pl lumina-examples-spring -am spring-boot:run
+
+# Path C — Boot + Spring AI (echo offline; set OPENAI_API_KEY for live)
+env -u SPRING_CONFIG_IMPORT mvn -q -pl lumina-examples-spring-ai -am spring-boot:run
+```
+
 ## Hello AI
 
 Minimal stateful chat with the built-in offline echo client:
