@@ -111,7 +111,9 @@ Scale model: **single-node default** (in-memory sessions). State store and trans
 
 ## 3. Component model
 
-Today the server builds an immutable [`ComponentNode`](../lumina-core/src/main/java/io/lumina/model/ComponentNode.java) tree (`id`, `type`, `props`, `children`). Children are effectively a **flat** list under the root — sufficient for current widgets, insufficient for nested layout containers.
+Today the server builds an immutable `ComponentNode` tree (`id`, `type`, `props`, `children`)
+in `lumina-core`. Children are effectively a **flat** list under the root — sufficient for
+current widgets, with nesting used for layout containers.
 
 **Direction (ADR-007):** evolve to a true **nested** `ComponentNode` tree with stable keys so layout containers (columns, tabs, sidebars, …) can hold children. Keying continues to follow ADR-004 (`path/type#index`, optional `withKey` path segments).
 
