@@ -59,6 +59,18 @@ class ProtocolCodecTest {
     }
 
     @Test
+    void parsesClickIntentWithCompanionValues() {
+        String json = "{\"type\":\"intent\",\"name\":\"click\",\"targetId\":\"auto:/button#0\","
+                + "\"payload\":{\"values\":{\"auto:/text_input#0\":\"Ada\"}}}";
+
+        Intent intent = ProtocolCodec.parseIntent(json);
+
+        assertThat(intent.name()).isEqualTo("click");
+        assertThat(intent.targetId()).isEqualTo("auto:/button#0");
+        assertThat(intent.payload().get("values")).isEqualTo(Map.of("auto:/text_input#0", "Ada"));
+    }
+
+    @Test
     void parsesInputIntentWithPayloadValue() {
         String json = "{\"type\":\"intent\",\"name\":\"input\",\"targetId\":\"auto:/text_input#0\","
                 + "\"payload\":{\"value\":\"hello\"}}";

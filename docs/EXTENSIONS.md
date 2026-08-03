@@ -11,7 +11,15 @@ property-schema description. Browser rendering remains framework-owned in this M
 ## Themes
 
 Implement `ThemeSpi` and register it through `META-INF/services/io.lumina.plugin.ThemeSpi`. The
-SPI returns a CSS resource path. Keep theme CSS limited to Lumina tokens and components.
+SPI returns a CSS resource path that must be served under `/lumina-web/**` (for example
+`/lumina-web/themes/chat.css`).
+
+`IndexServlet` loads `static/index.html` and injects one `<link rel="stylesheet">` per
+`ExtensionRegistry.themeCssResources()` entry after the base `lumina.css` link. Keep theme CSS
+limited to Lumina tokens and component classes.
+
+The built-in `io.lumina.web.theme.ChatTheme` ships with Lumina and contributes
+`/lumina-web/themes/chat.css` for `PageLayout.CHAT` polish.
 
 ## AI and transport
 

@@ -328,6 +328,64 @@ lumina-app-header {
   font-weight: 600;
 }
 
+lumina-app.lumina-layout-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+lumina-app.lumina-layout-chat > main.lumina-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  width: 100%;
+}
+
+lumina-chat-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+lumina-chat-header {
+  display: block;
+  flex-shrink: 0;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-shell.lumina-chat-newest-first lumina-chat-composer {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-shell.lumina-chat-oldest-first lumina-chat-composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  flex-shrink: 0;
+  order: 3;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-shell.lumina-chat-oldest-first lumina-chat-transcript {
+  order: 2;
+}
+
+lumina-chat-transcript {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lumina-space-3);
+  min-height: 0;
+}
+
 @media (max-width: 48rem) {
   lumina-app.lumina-has-sidebar {
     grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);

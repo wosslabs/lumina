@@ -45,7 +45,11 @@
     tab_panel: "lumina-tab-panel",
     dialog: "lumina-dialog",
     notification: "lumina-notification",
-    theme_toggle: "lumina-theme-toggle"
+    theme_toggle: "lumina-theme-toggle",
+    chat_shell: "lumina-chat-shell",
+    chat_header: "lumina-chat-header",
+    chat_composer: "lumina-chat-composer",
+    chat_transcript: "lumina-chat-transcript"
   };
   const MAX_UPLOAD_BYTES = 1024 * 1024;
 
@@ -119,8 +123,10 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = String(this._node?.props?.label ?? "");
+      // Keep focus on the active input so blur/change cannot re-render before this click.
+      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () =>
-        this.closest("lumina-app")?.sendIntent("click", this._node.id));
+        this.closest("lumina-app")?.sendClick(this._node.id));
       this.replaceChildren(button);
     }
   }
@@ -135,7 +141,7 @@
       input.type = "text";
       input.value = String(this._node?.props?.value ?? "");
       input.addEventListener("change", () =>
-        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value }));
+        this.closest("lumina-app")?.sendInput(this._node.id, input.value));
       label.append(input);
       this.replaceChildren(label);
     }
@@ -152,7 +158,7 @@
       text.textContent = String(this._node?.props?.label ?? "");
       label.htmlFor = input.id;
       input.addEventListener("change", () =>
-        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.checked }));
+        this.closest("lumina-app")?.sendInput(this._node.id, input.checked));
       label.append(input, text);
       this.replaceChildren(label);
     }
@@ -166,7 +172,7 @@
       setNumericAttributes(input, props);
       input.addEventListener("change", () => {
         if (input.validity.valid && input.value !== "") {
-          this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: Number(input.value) });
+          this.closest("lumina-app")?.sendInput(this._node.id, Number(input.value));
         }
       });
       this.replaceChildren(label);
@@ -190,7 +196,7 @@
         select.append(option);
       });
       select.addEventListener("change", () =>
-        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: select.value }));
+        this.closest("lumina-app")?.sendInput(this._node.id, select.value));
       this.replaceChildren(label);
     }
   }
@@ -216,7 +222,7 @@
         label.append(input, document.createTextNode(input.value));
         input.addEventListener("change", () => {
           if (input.checked) {
-            this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: input.value });
+            this.closest("lumina-app")?.sendInput(this._node.id, input.value);
           }
         });
         fieldset.append(label);
@@ -243,7 +249,7 @@
       readout.textContent = input.value;
       input.addEventListener("input", () => { readout.textContent = input.value; });
       input.addEventListener("change", () =>
-        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: Number(input.value) }));
+        this.closest("lumina-app")?.sendInput(this._node.id, Number(input.value)));
       this.replaceChildren(label);
     }
   }
@@ -268,10 +274,11 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = String(this._node?.props?.label ?? "");
+      button.addEventListener("mousedown", (event) => event.preventDefault());
       button.addEventListener("click", () => {
         const props = this._node?.props ?? {};
         downloadBase64(String(props.data ?? ""), String(props.fileName ?? "download"));
-        this.closest("lumina-app")?.sendIntent("click", this._node.id);
+        this.closest("lumina-app")?.sendClick(this._node.id);
       });
       this.replaceChildren(button);
     }
@@ -301,18 +308,25 @@
       const form = document.createElement("form");
       const input = document.createElement("input");
       const button = document.createElement("button");
+      const busy = this._node?.props?.busy === true
+        || this.closest("lumina-chat-composer")?._node?.props?.busy === true;
 
       input.type = "text";
       input.name = "message";
-      input.placeholder = "Type a message";
+      input.placeholder = busy ? "Generating…" : "Type a message";
       input.autocomplete = "off";
       input.setAttribute("aria-label", "Message");
+      input.disabled = busy;
       button.type = "submit";
       button.textContent = "Send";
+      button.disabled = busy;
 
       form.append(input, button);
       form.addEventListener("submit", (event) => {
         event.preventDefault();
+        if (busy) {
+          return;
+        }
         const value = input.value.trim();
         if (!value) {
           return;
@@ -505,6 +519,46 @@
     }
   }
 
+  class LuminaChatShell extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-chat-shell";
+      if (this._node?.props?.newestFirst === false) {
+        this.classList.add("lumina-chat-oldest-first");
+      } else {
+        this.classList.add("lumina-chat-newest-first");
+      }
+    }
+  }
+
+  class LuminaChatHeader extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-chat-header";
+    }
+  }
+
+  class LuminaChatComposer extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-chat-composer";
+      if (this._node?.props?.busy === true) {
+        this.classList.add("lumina-chat-busy");
+        this.setAttribute("aria-busy", "true");
+      } else {
+        this.classList.remove("lumina-chat-busy");
+        this.removeAttribute("aria-busy");
+      }
+    }
+  }
+
+  class LuminaChatTranscript extends LuminaLayoutElement {
+    render() {
+      super.render();
+      this.className = "lumina-chat-transcript";
+    }
+  }
+
   class LuminaExpander extends LuminaNodeElement {
     connectedCallback() {
       this._ensureDetails();
@@ -626,8 +680,8 @@
       const reject = document.createElement("button");
       reject.type = "button";
       reject.textContent = "Reject";
-      approve.addEventListener("click", () => this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: true }));
-      reject.addEventListener("click", () => this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: false }));
+      approve.addEventListener("click", () => this.closest("lumina-app")?.sendInput(this._node.id, true));
+      reject.addEventListener("click", () => this.closest("lumina-app")?.sendInput(this._node.id, false));
       this.replaceChildren(prompt, approve, reject);
     }
   }
@@ -701,7 +755,7 @@
         select.append(option);
       });
       select.addEventListener("change", () =>
-        this.closest("lumina-app")?.sendIntent("input", this._node.id, { value: select.value }));
+        this.closest("lumina-app")?.sendInput(this._node.id, select.value));
       this.replaceChildren(select);
     }
   }
@@ -730,6 +784,128 @@
 
     submitChat(targetId, value) {
       this.sendIntent("submit_chat", targetId, { value });
+    }
+
+    /**
+     * Collects current widget values and sends them in the same click intent so the server
+     * applies inputs and the click in one rerun. Also suppresses the trailing blur/{@code change}
+     * input that would otherwise rerun without the button and remove click-gated widgets.
+     */
+    sendClick(targetId) {
+      const values = this.collectPendingInputs(true);
+      this._suppressInputs = { ...values };
+      const payload = Object.keys(values).length === 0 ? {} : { values };
+      this.sendIntent("click", targetId, payload);
+    }
+
+    /**
+     * Sends an input intent unless this value was just committed via {@link sendClick}.
+     */
+    sendInput(targetId, value) {
+      if (this._suppressInputs && Object.prototype.hasOwnProperty.call(this._suppressInputs, targetId)
+          && Object.is(this._suppressInputs[targetId], value)) {
+        delete this._suppressInputs[targetId];
+        return;
+      }
+      if (this._suppressInputs && Object.prototype.hasOwnProperty.call(this._suppressInputs, targetId)
+          && String(this._suppressInputs[targetId]) === String(value)) {
+        delete this._suppressInputs[targetId];
+        return;
+      }
+      this.sendIntent("input", targetId, { value });
+    }
+
+    collectPendingInputs(forceAll = false) {
+      const values = {};
+      this.querySelectorAll("lumina-text-input").forEach((el) => {
+        const input = el.querySelector("input");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!input || !id) {
+          return;
+        }
+        const value = input.value;
+        if (forceAll || value !== String(el._node?.props?.value ?? "")) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      this.querySelectorAll("lumina-number-input").forEach((el) => {
+        const input = el.querySelector("input");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!input || !id || !input.validity.valid || input.value === "") {
+          return;
+        }
+        const value = Number(input.value);
+        if (forceAll || value !== Number(el._node?.props?.value ?? 0)) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      this.querySelectorAll("lumina-checkbox").forEach((el) => {
+        const input = el.querySelector("input");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!input || !id) {
+          return;
+        }
+        const value = input.checked;
+        if (forceAll || value !== (el._node?.props?.value === true)) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      this.querySelectorAll("lumina-selectbox").forEach((el) => {
+        const select = el.querySelector("select");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!select || !id) {
+          return;
+        }
+        const value = select.value;
+        if (forceAll || value !== String(el._node?.props?.value ?? "")) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      this.querySelectorAll("lumina-radio").forEach((el) => {
+        const checked = el.querySelector("input:checked");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!checked || !id) {
+          return;
+        }
+        const value = checked.value;
+        if (forceAll || value !== String(el._node?.props?.value ?? "")) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      this.querySelectorAll("lumina-slider").forEach((el) => {
+        const input = el.querySelector("input");
+        const id = el.dataset.luminaId || el._node?.id;
+        if (!input || !id) {
+          return;
+        }
+        const value = Number(input.value);
+        if (forceAll || value !== Number(el._node?.props?.value ?? 0)) {
+          if (el._node?.props) {
+            el._node.props = { ...el._node.props, value };
+          }
+          values[id] = value;
+        }
+      });
+      return values;
+    }
+
+    flushPendingInputs() {
+      return this.collectPendingInputs(true);
     }
 
     sendIntent(name, targetId, payload = {}) {
@@ -860,11 +1036,15 @@
     }
 
     applyPageConfig(props) {
-      const layout = props.layout === "centered" ? "centered" : "wide";
+      const layout = props.layout === "centered" ? "centered"
+        : props.layout === "chat" ? "chat" : "wide";
       const sidebarState = props.sidebarState === "collapsed" ? "collapsed" : "expanded";
-      this.classList.remove("lumina-layout-wide", "lumina-layout-centered",
+      this.classList.remove("lumina-layout-wide", "lumina-layout-centered", "lumina-layout-chat",
           "lumina-sidebar-expanded", "lumina-sidebar-collapsed", "lumina-has-sidebar");
-      this.classList.add(layout === "centered" ? "lumina-layout-centered" : "lumina-layout-wide");
+      this.classList.add(
+          layout === "centered" ? "lumina-layout-centered"
+            : layout === "chat" ? "lumina-layout-chat"
+              : "lumina-layout-wide");
       this.classList.add(sidebarState === "collapsed" ? "lumina-sidebar-collapsed" : "lumina-sidebar-expanded");
       const hasSidebar = (this.tree?.children ?? []).some((c) => c.type === "sidebar");
       if (hasSidebar) {
@@ -1104,6 +1284,10 @@
   customElements.define("lumina-nav-page", LuminaNavPage);
   customElements.define("lumina-sidebar-footer", LuminaSidebarFooter);
   customElements.define("lumina-app-header", LuminaAppHeader);
+  customElements.define("lumina-chat-shell", LuminaChatShell);
+  customElements.define("lumina-chat-header", LuminaChatHeader);
+  customElements.define("lumina-chat-composer", LuminaChatComposer);
+  customElements.define("lumina-chat-transcript", LuminaChatTranscript);
   customElements.define("lumina-expander", LuminaExpander);
   customElements.define("lumina-citation", LuminaCitation);
   customElements.define("lumina-rag-sources", LuminaRagSources);

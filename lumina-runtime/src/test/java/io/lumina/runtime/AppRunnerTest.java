@@ -134,6 +134,30 @@ class AppRunnerTest {
     }
 
     @Test
+    void clickWithCompanionValuesAppliesInputsInSameRun() {
+        LuminaApp app = ui -> {
+            String name = ui.textInput("Name");
+            if (ui.button("Greet") && !name.isBlank()) {
+                ui.markdown("Hello, **" + name.trim() + "**");
+            }
+        };
+        SessionHandle session = new SessionManager(app).create();
+        RunResult initial = session.submit(Intent.connect()).join();
+        String inputId = findType(initial.root(), ComponentTypes.TEXT_INPUT).id();
+        String buttonId = findType(initial.root(), ComponentTypes.BUTTON).id();
+
+        RunResult after = session.submit(new Intent(
+                        "click",
+                        buttonId,
+                        Map.of("values", Map.of(inputId, "Ada"))))
+                .join();
+
+        assertThat(flattenTypes(after.root())).contains(ComponentTypes.MARKDOWN);
+        assertThat(findType(after.root(), ComponentTypes.MARKDOWN).props().get("content"))
+                .isEqualTo("Hello, **Ada**");
+    }
+
+    @Test
     void sessionsAreIsolatedPerHandle() {
         LuminaApp app = ui -> {
             String name = ui.textInput("Name");

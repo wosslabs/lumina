@@ -55,6 +55,10 @@ public final class ComponentSpecs {
     public static final String LABELS = "labels";
     /** Property containing a theme preference. */
     public static final String THEME = "theme";
+    /** Property indicating a control or region is busy (e.g. streaming). */
+    public static final String BUSY = "busy";
+    /** Property indicating newest-first chat transcript ordering. */
+    public static final String NEWEST_FIRST = "newestFirst";
 
     private ComponentSpecs() {}
 }

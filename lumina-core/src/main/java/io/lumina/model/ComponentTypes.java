@@ -82,6 +82,14 @@ public final class ComponentTypes {
     public static final String SIDEBAR_FOOTER = "sidebar_footer";
     /** Optional app header context line (not the page H1). */
     public static final String APP_HEADER = "app_header";
+    /** Chat page shell (header / composer / transcript). */
+    public static final String CHAT_SHELL = "chat_shell";
+    /** Optional chat chrome region. */
+    public static final String CHAT_HEADER = "chat_header";
+    /** Sticky chat composer region. */
+    public static final String CHAT_COMPOSER = "chat_composer";
+    /** Scrollable chat transcript region. */
+    public static final String CHAT_TRANSCRIPT = "chat_transcript";
 
     private ComponentTypes() {}
 }
