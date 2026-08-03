@@ -43,6 +43,10 @@ Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedoc
 </dependency>
 ```
 
+If the app also has `spring-boot-starter-web` / `webmvc`, set `lumina.port=8090` and open
+**http://127.0.0.1:8090/** — not Tomcat’s `:8080` (that page often shows **Disconnected**).
+See [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md#7-path-b--spring-boot).
+
 Optional: `lumina-spring-ai`, `lumina-cli`.
 
 ## Showcase quickstart

@@ -12,6 +12,11 @@ You write `LuminaApp.build(Ui ui)` — Lumina owns HTML/CSS/JS, sessions, and li
 | Spring Boot + Spring AI | [Developer guide § Path C](DEVELOPER_GUIDE.md#8-path-c--spring-boot--spring-ai) | starter + `lumina-spring-ai` |
 | RAG / agents / MCP UIs | [AI guide](AI_GUIDE.md) | same as above + examples |
 
+!!! warning "Boot + Spring Web"
+    If your POM includes `spring-boot-starter-web` / `webmvc`, set `lumina.port=8090` and open
+    **http://127.0.0.1:8090/**. `http://localhost:8080/` often shows **Disconnected** — that is
+    Tomcat without Lumina’s WebSocket. Details: [Developer guide §7](DEVELOPER_GUIDE.md#7-path-b--spring-boot).
+
 ## Requirements
 
 - **Java 25+**

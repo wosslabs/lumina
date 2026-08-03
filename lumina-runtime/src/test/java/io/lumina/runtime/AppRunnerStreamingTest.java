@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.lumina.LuminaApp;
 import io.lumina.ai.ChatClients;
 import io.lumina.ai.TokenStream;
+import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import java.util.ArrayList;
@@ -52,9 +53,15 @@ class AppRunnerStreamingTest {
                 .reduce("", String::concat);
         assertThat(appended).isEqualTo(ChatClients.echo().prompt("hi there"));
 
-        // Only diff between the flushed interim and the final tree is the streamed
-        // ai_message content; suppression must drop that, leaving no patches at all.
-        assertThat(result.patches()).isEmpty();
+        // Streamed ai_message content is suppressed; the remaining patch clears composer busy.
+        assertThat(result.patches()).hasSize(1);
+        assertThat(result.patches().getFirst().op()).isEqualTo("UPDATE_PROPS");
+        assertThat(result.patches().getFirst().props()).doesNotContainKey("busy");
+        ComponentNode chatInput = result.root().children().stream()
+                .filter(n -> n.type().equals(ComponentTypes.CHAT_INPUT))
+                .findFirst()
+                .orElseThrow();
+        assertThat(chatInput.props()).doesNotContainKey("busy");
     }
 
     @Test

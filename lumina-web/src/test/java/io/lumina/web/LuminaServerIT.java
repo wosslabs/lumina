@@ -50,7 +50,20 @@ class LuminaServerIT {
         assertThat(response.body())
                 .contains("<lumina-app></lumina-app>")
                 .contains("/lumina-web/lumina-client.js")
-                .contains("/lumina-web/lumina.css");
+                .contains("/lumina-web/lumina.css")
+                .contains("href=\"/lumina-web/themes/chat.css\"");
+    }
+
+    @Test
+    void themeStylesheetIsServed() throws Exception {
+        server = LuminaServer.start(ui -> ui.title("Test App"), LuminaServerConfig.builder().port(0).build());
+        HttpResponse<String> css = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(server.uri().resolve("/lumina-web/themes/chat.css")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(css.statusCode()).isEqualTo(200);
+        assertThat(css.headers().firstValue("content-type").orElse("")).contains("text/css");
+        assertThat(css.body()).contains("lumina-layout-chat");
     }
 
     /**
@@ -71,6 +84,11 @@ class LuminaServerIT {
                 .contains("customElements.define")
                 .contains("\"submit_chat\"")
                 .contains("\"file_upload\"")
+                .contains("flushPendingInputs")
+                .contains("collectPendingInputs")
+                .contains("sendClick")
+                .contains("sendInput")
+                .contains("values")
                 .contains("lumina-markdown")
                 .contains("lumina-button")
                 .contains("lumina-text-input")
@@ -86,7 +104,40 @@ class LuminaServerIT {
                 .contains("lumina-table")
                 .contains("lumina-image")
                 .contains("lumina-file-upload")
-                .contains("lumina-progress");
+                .contains("lumina-progress")
+                .contains("lumina-chat-shell")
+                .contains("lumina-chat-composer")
+                .contains("lumina-chat-transcript")
+                .contains("Generating");
+    }
+
+    @Test
+    void textInputValueAvailableOnFollowingClickWithoutPriorBlurIntent() throws Exception {
+        server = LuminaServer.start(
+                ui -> {
+                    String name = ui.textInput("Name");
+                    if (ui.button("Greet") && !name.isBlank()) {
+                        ui.markdown("Hello, **" + name.trim() + "**");
+                    }
+                },
+                LuminaServerConfig.builder().port(0).build());
+        CollectingListener listener = new CollectingListener();
+        WebSocket webSocket = openWebSocket(listener);
+        String snapshot = listener.nextMessage();
+        JsonNode root = MAPPER.readTree(snapshot).path("root");
+        String inputId = findId(root, "text_input");
+        String buttonId = findId(root, "button");
+
+        // One click intent with companion values (client collectPendingInputs + sendClick).
+        webSocket.sendText(
+                "{\"type\":\"intent\",\"name\":\"click\",\"targetId\":\"" + buttonId
+                        + "\",\"payload\":{\"values\":{\"" + inputId + "\":\"Ada\"}}}",
+                true);
+        String patch = listener.nextMessage();
+
+        assertThat(patch).contains("\"type\":\"patch\"");
+        assertThat(patch).contains("Hello, **Ada**");
+        webSocket.abort();
     }
 
     @Test

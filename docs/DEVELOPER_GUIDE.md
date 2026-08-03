@@ -172,15 +172,32 @@ All paths share the same `LuminaApp` + `Ui` programming model.
 
 Best for: plain Java apps, Jakarta EE sidecars, Quarkus/Micronaut companions, CLIs, demos.
 
-### 6.1 Dependency
+### 6.1 Minimal Maven project
 
 ```xml
-<dependency>
-  <groupId>io.github.wosslabs</groupId>
-  <artifactId>lumina-web</artifactId>
-  <version>1.0.0</version>
-</dependency>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>hello-lumina</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.wosslabs</groupId>
+      <artifactId>lumina-web</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
+</project>
 ```
+
+Put the class at `src/main/java/com/example/HelloLumina.java` (standard Maven layout).
 
 ### 6.2 Minimal app
 
@@ -214,11 +231,20 @@ public final class HelloLumina implements LuminaApp {
 }
 ```
 
+Run:
+
+```bash
+mvn -q package exec:java -Dexec.mainClass=com.example.HelloLumina
+```
+
 Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
 
 ### 6.3 Server configuration tips
 
 ```java
+import java.time.Duration;
+import java.util.Set;
+
 LuminaServerConfig.builder()
     .host("127.0.0.1")          // default: loopback
     .port(8080)                 // 0 = ephemeral (good for tests)
@@ -259,19 +285,71 @@ ui.ai(provider.stream(prompt));
 
 Best for: teams already on Spring Boot who want Lumina as an embedded UI process.
 
-### 7.1 Dependency
+!!! warning "Spring Web + Lumina = two servers"
+    Most Boot apps include `spring-boot-starter-web` or `spring-boot-starter-webmvc`. That starts
+    **Tomcat** on `server.port` (usually `8080`). Lumina starts a **separate Jetty** server on
+    `lumina.port` (default also `8080`).
+
+    Opening `http://localhost:8080/` then often shows the Lumina shell (Tomcat can serve static
+    files from the Lumina JAR) but the status reads **Disconnected** — Tomcat has no `/ws`.
+    That is expected. Use Lumina’s port instead (recommended: `8090`).
+
+### 7.1 Typical Maven project (Boot + Spring Web)
+
+This is the common Initializr shape — Web + Lumina:
 
 ```xml
-<dependency>
-  <groupId>io.github.wosslabs</groupId>
-  <artifactId>lumina-spring-boot-starter</artifactId>
-  <version>1.0.0</version>
-</dependency>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.0</version>
+  </parent>
+  <groupId>com.example</groupId>
+  <artifactId>lumina-boot-demo</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <properties>
+    <java.version>25</java.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.wosslabs</groupId>
+      <artifactId>lumina-spring-boot-starter</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+  </dependencies>
+</project>
 ```
 
-The starter pulls `lumina-web` transitively.
+### 7.2 Required ports when Spring Web is present
 
-### 7.2 Application
+```yaml
+# src/main/resources/application.yml
+server:
+  port: 8080          # Tomcat — REST / Actuator / static
+lumina:
+  port: 8090          # Jetty — Lumina UI + WebSocket /ws
+```
+
+| URL | What you get |
+|-----|----------------|
+| `http://localhost:8080/` | Tomcat. May show Lumina HTML from the classpath, but **`/ws` is missing** → **Disconnected**. Do not use this for the UI. |
+| `http://127.0.0.1:8090/` | Lumina Jetty. Full UI + WebSocket. **Use this.** |
+
+Prefer `127.0.0.1` over `localhost` when debugging: on macOS, `localhost` often prefers IPv6
+(`::1`) and hits Tomcat’s `*:8080`, while Lumina defaults to binding `127.0.0.1` only.
+
+### 7.3 Application
+
+Put the class at `src/main/java/com/example/DemoApplication.java`.
 
 ```java
 package com.example;
@@ -296,66 +374,31 @@ public class DemoApplication {
             ui.title("Spring Boot + Lumina");
             String name = ui.textInput("Name");
             if (ui.button("Greet") && !name.isBlank()) {
-                ui.markdown("Hello, **" + name.trim() + "**");
+                ui.state().set("greeting", name.trim());
+            }
+            Object greeting = ui.state().get("greeting");
+            if (greeting instanceof String text) {
+                ui.markdown("Hello, **" + text + "**");
             }
         };
     }
 }
 ```
 
-### 7.3 Properties
+Run:
 
-```yaml
-# application.yml
-lumina:
-  port: 8080
+```bash
+env -u SPRING_CONFIG_IMPORT mvn -q spring-boot:run
 ```
 
-When a `LuminaApp` bean is present, auto-configuration starts the embedded Lumina server on that
-port (default `8080`). Port `0` requests an ephemeral port.
+Open **[http://127.0.0.1:8090/](http://127.0.0.1:8090/)** — not `:8080`.
 
-### 7.4 Inject collaborators
+When a `LuminaApp` bean is present, auto-configuration starts Lumina on `lumina.port`
+(default `8080` if unset). Port `0` requests an ephemeral port.
 
-Because `LuminaApp` is a Spring bean, you can inject services:
+### 7.4 Lumina-only Boot (no Spring Web)
 
-```java
-@Bean
-LuminaApp luminaApp(OrderService orders) {
-    return ui -> {
-        ui.title("Orders");
-        if (ui.button("Refresh")) {
-            ui.table(orders.asRows());
-        } else {
-            ui.table(orders.asRows());
-        }
-    };
-}
-```
-
-Prefer reading from services **inside** `build()`, and write durable UI/session data to
-`ui.state()`.
-
-### 7.5 Coexistence with Spring MVC / WebFlux
-
-Lumina starts its **own** embedded Jetty server (not your Boot servlet container). That means:
-
-- Boot may listen on `8080` for REST **and** Lumina may also want `8080` → **port conflict**
-- Solution: put Lumina on another port, e.g. `lumina.port=8090`, and open that URL for the UI
-
-```yaml
-server:
-  port: 8080          # Spring MVC / Actuator
-lumina:
-  port: 8090          # Lumina UI
-```
-
----
-
-## 8. Path C — Spring Boot + Spring AI
-
-Best for: AI chat / agent UIs backed by OpenAI, Ollama, or other Spring AI models.
-
-### 8.1 Dependencies (example: OpenAI)
+If you do **not** need REST controllers, omit the web starter. Then Lumina alone owns `8080`:
 
 ```xml
 <dependency>
@@ -363,28 +406,101 @@ Best for: AI chat / agent UIs backed by OpenAI, Ollama, or other Spring AI model
   <artifactId>lumina-spring-boot-starter</artifactId>
   <version>1.0.0</version>
 </dependency>
-<dependency>
-  <groupId>io.github.wosslabs</groupId>
-  <artifactId>lumina-spring-ai</artifactId>
-  <version>1.0.0</version>
-</dependency>
-
-<!-- Pick a Spring AI provider starter that matches your Spring AI BOM -->
-<dependency>
-  <groupId>org.springframework.ai</groupId>
-  <artifactId>spring-ai-starter-model-openai</artifactId>
-</dependency>
 ```
 
-Import the Spring AI BOM in `dependencyManagement` (version **2.0.0** aligns with Lumina 1.0).
+```yaml
+lumina:
+  port: 8080
+```
+
+Open [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
+
+### 7.5 Inject collaborators
+
+Because `LuminaApp` is a Spring bean, you can inject services:
+
+```java
+@Bean
+LuminaApp luminaApp(OrderService orders) { // your own @Service
+    return ui -> {
+        ui.title("Orders");
+        ui.table(orders.asRows()); // List<Map<String, Object>>
+    };
+}
+```
+
+Prefer reading from services **inside** `build()`, and write durable UI/session data to
+`ui.state()`.
+
+### 7.6 Why two ports?
+
+Lumina embeds **Jetty** and owns `/ws` (snapshot/patch protocol). It is not mounted into Boot’s
+Tomcat in 1.0. Spring Web and Lumina are sibling servers in one JVM — give them different ports.
+
+---
+
+## 8. Path C — Spring Boot + Spring AI
+
+Best for: AI chat / agent UIs backed by OpenAI, Ollama, or other Spring AI models.
+
+**Recommended order:** get Path B working, then add AI with the **offline echo** client (§8.5),
+then swap in a real Spring AI `ChatModel` (§8.1–8.3).
+
+### 8.1 Dependencies (example: OpenAI)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.0</version>
+  </parent>
+  <groupId>com.example</groupId>
+  <artifactId>lumina-ai-demo</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <properties>
+    <java.version>25</java.version>
+    <spring-ai.version>2.0.0</spring-ai.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.ai</groupId>
+        <artifactId>spring-ai-bom</artifactId>
+        <version>${spring-ai.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.github.wosslabs</groupId>
+      <artifactId>lumina-spring-boot-starter</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.wosslabs</groupId>
+      <artifactId>lumina-spring-ai</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-openai</artifactId>
+    </dependency>
+  </dependencies>
+</project>
+```
 
 ### 8.2 Configuration (never hardcode keys)
 
 ```yaml
 lumina:
-  port: 8090
-  ai:
-    provider: openai   # documentation hint; wire the real ChatModel via Spring AI
+  port: 8090   # keep off Tomcat's 8080 if spring-boot-starter-web* is on the classpath
 
 spring:
   ai:
@@ -402,18 +518,27 @@ export OPENAI_API_KEY=sk-...
 For local models with Ollama, use the Ollama Spring AI starter and point Spring AI at your local
 endpoint instead.
 
+!!! note "Provider selection"
+    Spring AI creates the `ChatModel` bean from its own starters/properties. Lumina adapts whatever
+    `ChatModel` is present — there is no separate Lumina switch that selects OpenAI vs Ollama.
+
 ### 8.3 Streaming chat app
 
-`lumina-spring-ai` adapts Spring AI’s fluent `ChatClient` to Lumina’s `TokenStream`:
+`lumina-spring-ai` adapts Spring AI’s fluent `ChatClient` to Lumina’s `TokenStream`.
+This sample needs a `ChatModel` bean (provided by the OpenAI starter when configured).
+Put the class at `src/main/java/com/example/AiDemoApplication.java`.
 
 ```java
 package com.example;
 
 import io.lumina.LuminaApp;
 import io.lumina.springai.SpringAiChatClient;
+import io.lumina.ui.PageConfig;
+import io.lumina.ui.PageLayout;
 import io.lumina.ui.Ui;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.boot.SpringApplication;
@@ -438,24 +563,41 @@ public class AiDemoApplication {
     }
 
     private static void buildChat(Ui ui, SpringAiChatClient chat) {
-        ui.title("AI Chat");
+        ui.pageConfig(PageConfig.builder()
+                .title("AI Chat")
+                .layout(PageLayout.CHAT)
+                .build());
+
         List<String[]> history = ui.state().computeIfAbsent("history", k -> new ArrayList<>());
+        AtomicReference<String> promptRef = new AtomicReference<>();
 
-        for (String[] turn : history) {
-            ui.user(turn[0]);
-            ui.ai(turn[1]);
-        }
-
-        String prompt = ui.chatInput();
-        if (prompt != null) {
-            ui.user(prompt);
-            // Streams tokens to the browser; returns the full reply when finished
-            String reply = ui.ai(chat.stream(prompt));
-            history.add(new String[] {prompt, reply});
-        }
+        ui.chatShell(shell -> {
+            shell.header(h -> {
+                h.title("AI Chat");
+                h.themeToggle();
+            });
+            shell.composer(c -> promptRef.set(c.chatInput()));
+            shell.transcript(t -> {
+                String prompt = promptRef.get();
+                if (prompt != null) {
+                    t.user(prompt);
+                    // Streams tokens to the browser; composer stays busy until finished
+                    String reply = t.ai(chat.stream(prompt));
+                    history.add(new String[] {prompt, reply});
+                }
+                int end = history.size() - (prompt != null ? 1 : 0);
+                for (int i = end - 1; i >= 0; i--) {
+                    t.user(history.get(i)[0]);
+                    t.ai(history.get(i)[1]);
+                }
+            });
+        });
     }
 }
 ```
+
+Without a valid `OPENAI_API_KEY`, the app may still **start**, but the first `chat.stream(...)`
+call will fail at runtime. Use §8.5 for key-free local development.
 
 ### 8.4 Auto-configuration note
 
@@ -474,15 +616,24 @@ LuminaApp app(io.lumina.ai.ChatClient chat) {
 }
 ```
 
-### 8.5 Develop without an API key
+### 8.5 Develop without an API key (echo)
 
-Use the built-in echo client until credentials are ready:
+Use the built-in echo client until credentials are ready — same Path B project shape, no OpenAI
+starter required:
 
 ```java
-import io.lumina.ai.ChatClients;
-
-var chat = ChatClients.echo();
-ui.ai(chat.stream(prompt));
+@Bean
+LuminaApp luminaApp() {
+    var chat = io.lumina.ai.ChatClients.echo();
+    return ui -> {
+        ui.title("AI Chat (echo)");
+        String prompt = ui.chatInput();
+        if (prompt != null) {
+            ui.user(prompt);
+            ui.ai(chat.stream(prompt));
+        }
+    };
+}
 ```
 
 ### 8.6 Rich AI widgets and complete demos
@@ -791,7 +942,9 @@ Always replay history from `ui.state()` at the start of `build()`, then append o
 | Property | Default | Meaning |
 |----------|---------|---------|
 | `lumina.port` | `8080` | Embedded Lumina HTTP/WebSocket port |
-| `lumina.ai.provider` | `echo` | Hint for docs/tooling; wire real models via Spring AI |
+
+Provider choice is **not** a Lumina property — wire a Spring AI `ChatModel` (OpenAI / Ollama / …)
+via Spring AI starters and config. See Path C.
 
 ### `LuminaServerConfig` (standalone)
 
@@ -825,9 +978,12 @@ Always replay history from `ui.state()` at the start of `build()`, then append o
 | Blank page | Port already in use / old process | `lsof -i :8080` and kill, or change port |
 | `BindException` | Another server on the port | Change `lumina.port` / `LuminaServerConfig.port` |
 | Maven cannot resolve `io.github.wosslabs` | CDN index lag after publish | Wait, or verify on Central Portal; `mvn -U` |
+| Boot fails on `Unable to load config data` / odd imports | Shell `SPRING_CONFIG_IMPORT` (or other `SPRING_*`) from another project | Unset them, or run with `--spring.config.location=classpath:/application.yml` |
+| UI loads on `:8080` but status is **Disconnected**; buttons do nothing | Spring Web (Tomcat) is serving Lumina’s static HTML; `/ws` lives on Lumina’s Jetty port | Set `lumina.port=8090` and open **`http://127.0.0.1:8090/`**. `:8080` Disconnected is expected with Web on the classpath. Or omit the web starter. |
+| Button needs a second click after typing / greeting flashes away | Trailing input `change` after click reran without the button and removed click-gated widgets | Fixed client suppresses that follow-up input (`sendInput` / `_suppressInputs`). Persist results in `ui.state()` (see Path B). Restart app + hard-refresh. |
 | UI does not update as expected | Mutating local fields instead of `ui.state()` | Use session state |
 | Button body never seems to run | Logic not gated on `if (ui.button(...))` | Gate side effects on the boolean |
-| Spring AI empty/failing | Missing API key / wrong starter | Check env vars and Spring AI config |
+| Spring AI empty/failing | Missing API key / wrong starter | Check env vars and Spring AI config; use §8.5 echo first |
 | CORS / WS rejected | Origin not allowed | Configure `allowedOrigins` |
 | `pageConfig` errors | Called after other widgets | Call it first |
 

@@ -1,0 +1,139 @@
+/* Lumina built-in chat theme — token + component overrides for PageLayout.CHAT */
+
+lumina-app.lumina-layout-chat {
+  --lumina-chat-composer-min-height: 2.75rem;
+  --lumina-chat-bubble-radius: 1rem;
+  --lumina-chat-user-bg: color-mix(in srgb, var(--lumina-color-primary) 14%, var(--lumina-color-bg));
+  --lumina-chat-ai-bg: var(--lumina-color-bg-subtle);
+  --lumina-chat-composer-bg: color-mix(in srgb, var(--lumina-color-bg) 92%, transparent);
+}
+
+html[data-theme="dark"] lumina-app.lumina-layout-chat {
+  --lumina-chat-user-bg: color-mix(in srgb, var(--lumina-color-primary) 22%, var(--lumina-color-bg));
+  --lumina-chat-ai-bg: color-mix(in srgb, var(--lumina-color-bg-subtle) 80%, #000);
+  --lumina-chat-composer-bg: color-mix(in srgb, var(--lumina-color-bg) 88%, #000);
+}
+
+lumina-app.lumina-layout-chat lumina-chat-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lumina-space-3);
+  padding: var(--lumina-space-3) var(--lumina-content-padding);
+  border-bottom: 1px solid var(--lumina-color-border);
+}
+
+lumina-app.lumina-layout-chat lumina-chat-header lumina-title h1 {
+  margin: 0;
+  font-size: var(--lumina-text-lg);
+  font-weight: 700;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-composer {
+  display: block;
+  padding: var(--lumina-space-3) var(--lumina-content-padding);
+  border-bottom: 1px solid var(--lumina-color-border);
+  background: var(--lumina-chat-composer-bg);
+  backdrop-filter: blur(8px);
+}
+
+lumina-app.lumina-layout-chat lumina-chat-shell.lumina-chat-oldest-first lumina-chat-composer {
+  border-bottom: none;
+  border-top: 1px solid var(--lumina-color-border);
+}
+
+lumina-app.lumina-layout-chat lumina-chat-input form {
+  display: flex;
+  gap: var(--lumina-space-2);
+  align-items: stretch;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-input input[type="text"] {
+  flex: 1;
+  min-height: var(--lumina-chat-composer-min-height);
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--lumina-color-border);
+  border-radius: var(--lumina-radius-lg);
+  background: var(--lumina-color-bg);
+  color: var(--lumina-color-text);
+  font: inherit;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-input button[type="submit"] {
+  min-height: var(--lumina-chat-composer-min-height);
+  padding-inline: 1.1rem;
+  border: none;
+  border-radius: var(--lumina-radius-lg);
+  background: var(--lumina-color-primary);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-input input:disabled,
+lumina-app.lumina-layout-chat lumina-chat-input button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+lumina-app.lumina-layout-chat lumina-chat-transcript {
+  padding: var(--lumina-space-4) var(--lumina-content-padding) var(--lumina-space-8);
+  gap: var(--lumina-space-4);
+}
+
+lumina-app.lumina-layout-chat lumina-user-message,
+lumina-app.lumina-layout-chat lumina-ai-message {
+  display: block;
+  max-width: min(44rem, 100%);
+}
+
+lumina-app.lumina-layout-chat lumina-user-message {
+  align-self: flex-end;
+}
+
+lumina-app.lumina-layout-chat lumina-ai-message {
+  align-self: flex-start;
+}
+
+lumina-app.lumina-layout-chat lumina-user-message > .message,
+lumina-app.lumina-layout-chat lumina-ai-message > .message {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--lumina-chat-bubble-radius);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+lumina-app.lumina-layout-chat lumina-user-message > .message {
+  background: var(--lumina-chat-user-bg);
+  border: 1px solid color-mix(in srgb, var(--lumina-color-primary) 18%, transparent);
+}
+
+lumina-app.lumina-layout-chat lumina-ai-message > .message {
+  background: var(--lumina-chat-ai-bg);
+  border: 1px solid var(--lumina-color-border);
+}
+
+lumina-app.lumina-layout-chat lumina-ai-message.streaming > .message::after {
+  content: "▍
+  display: inline-block;
+  width: 0.55ch;
+  margin-left: 0.1ch;
+  background: currentColor;
+  animation: lumina-chat-caret 1s steps(1) infinite;
+}
+
+@keyframes lumina-chat-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  lumina-app.lumina-layout-chat lumina-ai-message.streaming > .message::after {
+    animation: none;
+    opacity: 0.6;
+  }
+}

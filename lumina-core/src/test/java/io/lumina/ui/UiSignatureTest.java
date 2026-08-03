@@ -76,6 +76,10 @@ class UiSignatureTest {
         @Override public String t(String key) { return key; }
         @Override public void sidebar(Consumer<SidebarUi> body) { body.accept(this); }
         @Override public void header(Consumer<HeaderUi> body) { body.accept(this); }
+        @Override public void chatShell(Consumer<ChatShell> shell) { shell.accept(noopChatShell()); }
+        @Override public void chatShell(ChatShellOptions options, Consumer<ChatShell> shell) {
+            shell.accept(noopChatShell());
+        }
         @Override public void brand(Consumer<Ui> body) { body.accept(this); }
         @Override public void nav(Consumer<NavUi> body) { body.accept(this); }
         @Override public void footer(Consumer<Ui> body) { body.accept(this); }
@@ -84,12 +88,26 @@ class UiSignatureTest {
             body.accept(this);
             return false;
         }
+
+        private ChatShell noopChatShell() {
+            return new ChatShell() {
+                @Override public void header(Consumer<Ui> body) { body.accept(FakeUi.this); }
+                @Override public void composer(Consumer<Ui> body) { body.accept(FakeUi.this); }
+                @Override public void transcript(Consumer<Ui> body) { body.accept(FakeUi.this); }
+            };
+        }
     }
 
     @Test
     void fakeUiCompilesAgainstPublicContract() {
         Ui ui = new FakeUi();
         ui.title("x");
+        ui.chatShell(shell -> {
+            shell.header(h -> {});
+            shell.composer(c -> {});
+            shell.transcript(t -> {});
+        });
+        ui.chatShell(ChatShellOptions.defaults(), shell -> {});
     }
 
     @Test

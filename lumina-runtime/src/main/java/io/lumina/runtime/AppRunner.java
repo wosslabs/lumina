@@ -161,7 +161,12 @@ final class AppRunner {
                 }
             }
             case "navigate" -> SessionRoutes.set(session.store(), SessionRoutes.requirePayloadPath(intent));
-            case "click" -> session.widgets().set(requireTarget(intent), true);
+            case "click" -> {
+                // Companion values let the client commit dirty inputs in the same run as the click
+                // (typing only syncs on blur otherwise, so a lone click would see blank fields).
+                applyCompanionValues(session, intent.payload().get("values"));
+                session.widgets().set(requireTarget(intent), true);
+            }
             case "input" -> session.widgets().set(requireTarget(intent), intent.payload().get("value"));
             case "submit_chat" -> session.widgets().setChatSubmit(requireTarget(intent), (String) intent.payload().get("value"));
             case "file_upload" -> session.widgets().set(requireTarget(intent), intent.payload().get("file"));
@@ -171,6 +176,17 @@ final class AppRunner {
                 session.widgets().set(key, !open);
             }
             default -> throw new LuminaException("Unknown intent: " + intent.name());
+        }
+    }
+
+    private void applyCompanionValues(SessionState session, Object values) {
+        if (!(values instanceof Map<?, ?> map)) {
+            return;
+        }
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (entry.getKey() instanceof String key) {
+                session.widgets().set(key, entry.getValue());
+            }
         }
     }
 

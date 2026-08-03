@@ -278,6 +278,22 @@ public interface Ui {
     void header(Consumer<HeaderUi> body);
 
     /**
+     * Renders a chat shell with header, composer, and transcript regions (at most once per
+     * {@code build()}). Uses {@link ChatShellOptions#defaults()}.
+     *
+     * @param shell shell region declarations; never null
+     */
+    void chatShell(Consumer<ChatShell> shell);
+
+    /**
+     * Renders a chat shell with explicit options.
+     *
+     * @param options shell options; never null
+     * @param shell shell region declarations; never null
+     */
+    void chatShell(ChatShellOptions options, Consumer<ChatShell> shell);
+
+    /**
      * Collapsible section with {@code label}. Returns whether the expander is open after this run
      * (including any toggle intent applied before the rebuild). Open/closed persists in session
      * widget state keyed by the expander's node id.

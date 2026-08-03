@@ -8,8 +8,8 @@ import java.util.Map;
  * @param name intent kind: {@code connect}, {@code navigate}, {@code click}, {@code input},
  *     {@code submit_chat}, {@code file_upload}, or {@code expander_toggle}
  * @param targetId widget key this intent applies to, or {@code null} for {@code connect}
- * @param payload intent-specific data, e.g. {@code value} for text intents or {@code file} for an
- *     upload
+ * @param payload intent-specific data, e.g. {@code value} for text intents, {@code values} map of
+ *     dirty widget ids for a {@code click}, or {@code file} for an upload
  */
 public record Intent(String name, String targetId, Map<String, Object> payload) {
     /**

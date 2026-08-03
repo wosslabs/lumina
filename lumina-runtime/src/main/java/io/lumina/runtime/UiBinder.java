@@ -1,5 +1,6 @@
 package io.lumina.runtime;
 
+import static io.lumina.components.ComponentSpecs.BUSY;
 import static io.lumina.components.ComponentSpecs.CONTENT;
 import static io.lumina.components.ComponentSpecs.COUNT;
 import static io.lumina.components.ComponentSpecs.DATA;
@@ -13,6 +14,7 @@ import static io.lumina.components.ComponentSpecs.LANGUAGE;
 import static io.lumina.components.ComponentSpecs.LAYOUT;
 import static io.lumina.components.ComponentSpecs.MAX;
 import static io.lumina.components.ComponentSpecs.MIN;
+import static io.lumina.components.ComponentSpecs.NEWEST_FIRST;
 import static io.lumina.components.ComponentSpecs.OPEN;
 import static io.lumina.components.ComponentSpecs.OPTIONS;
 import static io.lumina.components.ComponentSpecs.PAGE_TITLE;
@@ -32,6 +34,8 @@ import io.lumina.model.ComponentNode;
 import io.lumina.model.ComponentTypes;
 import io.lumina.session.internal.SessionState;
 import io.lumina.state.StateStore;
+import io.lumina.ui.ChatShell;
+import io.lumina.ui.ChatShellOptions;
 import io.lumina.ui.HeaderUi;
 import io.lumina.ui.NavUi;
 import io.lumina.ui.PageConfig;
@@ -81,6 +85,9 @@ public final class UiBinder implements Ui {
     private OpenColumns openColumns;
     private boolean sidebarUsed;
     private boolean headerUsed;
+    private boolean chatShellUsed;
+    private String activeComposerId;
+    private String lastChatInputId;
     private PageConfig pageConfig;
     private boolean pageConfigLocked;
 
@@ -291,6 +298,7 @@ public final class UiBinder implements Ui {
     public String chatInput() {
         lockPageConfig();
         String key = addNode(ComponentTypes.CHAT_INPUT, Map.of());
+        lastChatInputId = key;
         return session.widgets().consumeChatSubmit(key);
     }
 
@@ -313,21 +321,26 @@ public final class UiBinder implements Ui {
         String key = nextKey(ComponentTypes.AI_MESSAGE);
         List<ComponentNode> current = targetChildren();
         current.add(new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, ""), List.of()));
-        stream.flushBefore(snapshotInterimRoot());
-        stream.streamStart(key);
-        StringBuilder acc = new StringBuilder();
+        setStreamingBusy(true);
         try {
-            for (String chunk : tokens) {
-                acc.append(chunk);
-                stream.streamAppend(key, chunk);
+            stream.flushBefore(snapshotInterimRoot());
+            stream.streamStart(key);
+            StringBuilder acc = new StringBuilder();
+            try {
+                for (String chunk : tokens) {
+                    acc.append(chunk);
+                    stream.streamAppend(key, chunk);
+                }
+            } finally {
+                stream.streamEnd(key);
             }
+            streamedIds.add(key);
+            int last = current.size() - 1;
+            current.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
+            return acc.toString();
         } finally {
-            stream.streamEnd(key);
+            setStreamingBusy(false);
         }
-        streamedIds.add(key);
-        int last = current.size() - 1;
-        current.set(last, new ComponentNode(key, ComponentTypes.AI_MESSAGE, Map.of(CONTENT, acc.toString()), List.of()));
-        return acc.toString();
     }
 
     @Override
@@ -599,6 +612,55 @@ public final class UiBinder implements Ui {
         addNode(ComponentTypes.APP_HEADER, Map.of(CONTENT, title[0]));
     }
 
+    @Override
+    public void chatShell(Consumer<ChatShell> shell) {
+        chatShell(ChatShellOptions.defaults(), shell);
+    }
+
+    @Override
+    public void chatShell(ChatShellOptions options, Consumer<ChatShell> body) {
+        lockPageConfig();
+        Objects.requireNonNull(options, "options");
+        Objects.requireNonNull(body, "body");
+        if (chatShellUsed) {
+            throw new LuminaException("Only one chatShell is allowed per build()");
+        }
+        chatShellUsed = true;
+        String shellId = nextKey(ComponentTypes.CHAT_SHELL);
+        Map<String, Object> shellProps = Map.of(NEWEST_FIRST, options.newestFirst());
+        List<ComponentNode> sections = withLayoutFrame(shellId, ComponentTypes.CHAT_SHELL, shellProps, () ->
+                body.accept(new ChatShell() {
+                    @Override
+                    public void header(Consumer<Ui> headerBody) {
+                        Objects.requireNonNull(headerBody, "body");
+                        String id = nextKey(ComponentTypes.CHAT_HEADER);
+                        List<ComponentNode> children =
+                                withLayoutFrame(id, ComponentTypes.CHAT_HEADER, Map.of(), () -> headerBody.accept(UiBinder.this));
+                        frames.peek().children().add(new ComponentNode(id, ComponentTypes.CHAT_HEADER, Map.of(), children));
+                    }
+
+                    @Override
+                    public void composer(Consumer<Ui> composerBody) {
+                        Objects.requireNonNull(composerBody, "body");
+                        String id = nextKey(ComponentTypes.CHAT_COMPOSER);
+                        activeComposerId = id;
+                        List<ComponentNode> children =
+                                withLayoutFrame(id, ComponentTypes.CHAT_COMPOSER, Map.of(), () -> composerBody.accept(UiBinder.this));
+                        frames.peek().children().add(new ComponentNode(id, ComponentTypes.CHAT_COMPOSER, Map.of(), children));
+                    }
+
+                    @Override
+                    public void transcript(Consumer<Ui> transcriptBody) {
+                        Objects.requireNonNull(transcriptBody, "body");
+                        String id = nextKey(ComponentTypes.CHAT_TRANSCRIPT);
+                        List<ComponentNode> children = withLayoutFrame(
+                                id, ComponentTypes.CHAT_TRANSCRIPT, Map.of(), () -> transcriptBody.accept(UiBinder.this));
+                        frames.peek().children().add(new ComponentNode(id, ComponentTypes.CHAT_TRANSCRIPT, Map.of(), children));
+                    }
+                }));
+        frames.peek().children().add(new ComponentNode(shellId, ComponentTypes.CHAT_SHELL, shellProps, sections));
+    }
+
     void sidebarBrand(Consumer<Ui> body) {
         Objects.requireNonNull(body, "body");
         String id = nextKey(ComponentTypes.SIDEBAR_BRAND);
@@ -671,6 +733,49 @@ public final class UiBinder implements Ui {
 
     private void lockPageConfig() {
         pageConfigLocked = true;
+    }
+
+    private void setStreamingBusy(boolean busy) {
+        String targetId = activeComposerId != null ? activeComposerId : lastChatInputId;
+        if (targetId == null) {
+            return;
+        }
+        for (Frame frame : frames) {
+            if (replaceBusyInList(frame.children(), targetId, busy)) {
+                return;
+            }
+        }
+    }
+
+    private boolean replaceBusyInList(List<ComponentNode> nodes, String id, boolean busy) {
+        for (int i = 0; i < nodes.size(); i++) {
+            ComponentNode node = nodes.get(i);
+            if (node.id().equals(id)) {
+                nodes.set(i, withBusySubtree(node, busy));
+                return true;
+            }
+            List<ComponentNode> children = new ArrayList<>(node.children());
+            if (replaceBusyInList(children, id, busy)) {
+                nodes.set(i, new ComponentNode(node.id(), node.type(), node.props(), children));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ComponentNode withBusySubtree(ComponentNode node, boolean busy) {
+        Map<String, Object> props = new LinkedHashMap<>(node.props());
+        if (ComponentTypes.CHAT_COMPOSER.equals(node.type()) || ComponentTypes.CHAT_INPUT.equals(node.type())) {
+            if (busy) {
+                props.put(BUSY, true);
+            } else {
+                props.remove(BUSY);
+            }
+        }
+        List<ComponentNode> children = node.children().stream()
+                .map(child -> withBusySubtree(child, busy))
+                .toList();
+        return new ComponentNode(node.id(), node.type(), Map.copyOf(props), children);
     }
 
     /**
@@ -1085,6 +1190,16 @@ public final class UiBinder implements Ui {
         }
 
         @Override
+        public void chatShell(Consumer<ChatShell> shell) {
+            run(() -> parent.chatShell(shell));
+        }
+
+        @Override
+        public void chatShell(ChatShellOptions options, Consumer<ChatShell> shell) {
+            run(() -> parent.chatShell(options, shell));
+        }
+
+        @Override
         public boolean expander(String label, Consumer<Ui> body) {
             return call(() -> parent.expander(label, body));
         }
@@ -1276,6 +1391,16 @@ public final class UiBinder implements Ui {
         @Override
         public void header(Consumer<HeaderUi> body) {
             parent.header(body);
+        }
+
+        @Override
+        public void chatShell(Consumer<ChatShell> shell) {
+            parent.chatShell(shell);
+        }
+
+        @Override
+        public void chatShell(ChatShellOptions options, Consumer<ChatShell> shell) {
+            parent.chatShell(options, shell);
         }
 
         @Override
