@@ -1,5 +1,5 @@
 site_name: Lumina
-site_description: Pure-Java, server-driven UI framework for interactive and AI-native apps
+site_description: Pure-Java, server-driven UI for interactive and AI-native apps
 site_url: https://wosslabs-lumina.readthedocs.io/
 site_author: Woss Labs
 repo_url: https://github.com/wosslabs/lumina
@@ -11,68 +11,107 @@ copyright: Copyright &copy; Lumina contributors — Apache License 2.0
 
 theme:
   name: material
+  language: en
   palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: blue
-      accent: blue
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue
-      accent: blue
+      primary: indigo
+      accent: indigo
       toggle:
         icon: material/brightness-4
-        name: Switch to light mode
+        name: Switch to system preference
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
   features:
     - navigation.instant
     - navigation.tracking
+    - navigation.tabs
     - navigation.sections
+    - navigation.expand
     - navigation.top
+    - navigation.footer
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
     - content.action.edit
     - toc.follow
   icon:
     repo: fontawesome/brands/github
+    admonition:
+      note: fontawesome/solid/circle-info
+      tip: fontawesome/solid/bullseye
+      warning: fontawesome/solid/triangle-exclamation
 
 plugins:
-  - search
+  - search:
+      lang: en
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
+  # Critical: stdlib fenced_code — pymdownx.superfences is broken with current Markdown
+  - fenced_code
+  - codehilite:
+      guess_lang: false
+      noclasses: false
   - admonition
   - attr_list
   - def_list
   - md_in_html
   - tables
+  - footnotes
   - toc:
       permalink: true
+      toc_depth: 3
   - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/wosslabs/lumina
+      name: GitHub
+    - icon: fontawesome/brands/java
+      link: https://central.sonatype.com/artifact/io.github.wosslabs/lumina-web
+      name: Maven Central
+  generator: false
 
 nav:
   - Home: index.md
-  - Getting started:
+  - Get started:
+      - Overview: getting-started.md
       - Developer guide: DEVELOPER_GUIDE.md
-      - AI guide (RAG / Agents / MCP): AI_GUIDE.md
+      - AI guide: AI_GUIDE.md
       - Author cheat sheet: GUIDE.md
+  - Product:
       - Product overview: PRODUCT.md
-  - Concepts:
       - Vision & roadmap: VISION.md
-      - Architecture: ARCHITECTURE.md
-      - UX constitution: UX_CONSTITUTION.md
-  - How-to:
-      - Extensions: EXTENSIONS.md
       - Migration to 1.0: MIGRATION.md
+  - Concepts:
+      - Architecture: ARCHITECTURE.md
+      - Extensions: EXTENSIONS.md
+      - UX constitution: UX_CONSTITUTION.md
+  - Maintainers:
       - Releasing: RELEASING.md
       - Benchmarks: BENCHMARKS.md

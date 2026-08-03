@@ -865,7 +865,7 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 | [MIGRATION.md](MIGRATION.md) | 1.0 API notes |
 | [UX_CONSTITUTION.md](UX_CONSTITUTION.md) | A11y / UX PR checklist |
 | [RELEASING.md](RELEASING.md) | Maintainers: Central publish |
-| [CHANGELOG.md](../CHANGELOG.md) | Release notes |
+| [CHANGELOG.md](https://github.com/wosslabs/lumina/blob/main/CHANGELOG.md) | Release notes |
 
 ---
 
