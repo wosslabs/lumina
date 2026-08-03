@@ -991,7 +991,19 @@ via Spring AI starters and config. See Path C.
 
 ## 19. Examples in this repository
 
-Clone [https://github.com/wosslabs/lumina](https://github.com/wosslabs/lumina):
+Clone [https://github.com/wosslabs/lumina](https://github.com/wosslabs/lumina). Examples are
+**not** published to Central.
+
+| Path | Module | Run | UI |
+|------|--------|-----|-----|
+| **A — Standalone** | `lumina-examples` | `mvn -pl lumina-examples exec:java -Dexec.mainClass=…` | `http://127.0.0.1:8080/` |
+| **B — Spring Boot** | `lumina-examples-spring` | `env -u SPRING_CONFIG_IMPORT mvn -pl lumina-examples-spring -am spring-boot:run` | `http://127.0.0.1:8090/` |
+| **C — Boot + AI** | `lumina-examples-spring-ai` | same pattern; optional `OPENAI_API_KEY` | `http://127.0.0.1:8090/` |
+
+Path B/C include Spring WebMVC (`server.port=8080`). Always open Lumina on **`8090`** — Tomcat
+`:8080` often shows **Disconnected**. Details: [lumina-examples/README.md](../lumina-examples/README.md).
+
+### Path A apps
 
 ```bash
 mvn -q -pl lumina-examples -am install
@@ -1006,6 +1018,13 @@ mvn -q -pl lumina-examples exec:java -Dexec.mainClass=io.lumina.examples.showcas
 | Streaming chat | `…streaming.StreamingChatMain` | `ui.ai(TokenStream)` |
 | Agent demo | `…agent.AgentDemoApp` | Timeline / approvals / memory |
 | Layout demo | `…layout.LayoutDemoMain` | Columns / containers / expanders |
+
+### Path B / C
+
+| Module | Shows |
+|--------|-------|
+| `lumina-examples-spring` | `@Bean LuminaApp` greet demo + dual ports |
+| `lumina-examples-spring-ai` | `PageLayout.CHAT` + `chatShell`; echo without key, OpenAI when set |
 
 ---
 

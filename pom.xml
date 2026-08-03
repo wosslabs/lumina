@@ -51,6 +51,8 @@
     <module>lumina-spring-ai</module>
     <module>lumina-cli</module>
     <module>lumina-examples</module>
+    <module>lumina-examples-spring</module>
+    <module>lumina-examples-spring-ai</module>
   </modules>
 
   <properties>
