@@ -113,14 +113,19 @@ This is the same idea as Streamlit’s script rerun.
 
 ## 4. Maven coordinates
 
-Artifacts are published to **Maven Central** under:
+**Current distribution:** GitHub soft launch. Build from source (tag `v1.0.0` or `main`) and
+`mvn install` the modules you need. Artifacts are **not** on Maven Central yet.
+
+Target coordinates after Central publish:
 
 ```text
 groupId:    io.github.wosslabs
 version:    1.0.0
 ```
 
-> **Note:** After a Central publish, [search.maven.org](https://search.maven.org/) and the CDN
+See [RELEASING.md](RELEASING.md) for the soft-launch path and the Central publish steps.
+
+> **Note:** After a future Central publish, [search.maven.org](https://search.maven.org/) and the CDN
 > can lag for a short time. The [Central Portal](https://central.sonatype.com/) artifact page is
 > authoritative. If resolve fails, wait or clear your local cache for that artifact.
 

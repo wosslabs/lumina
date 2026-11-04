@@ -145,5 +145,15 @@ Java packages remain `io.lumina.*`; only the Maven `groupId` is `io.github.wossl
 
 ## GitHub-only soft launch (no Central yet)
 
-If Central namespace or GPG setup is still pending, users can build from source
-from tag `v1.0.0` until Central is live.
+**This is the current distribution path.** Artifacts are not on Maven Central yet.
+Users should build from source from tag `v1.0.0` (or `main`) until Central is live:
+
+```bash
+git clone https://github.com/wosslabs/lumina.git
+cd lumina
+git checkout v1.0.0
+mvn -q clean install
+```
+
+When Central namespace verification and GPG are ready, follow the deploy steps above,
+then update README / DEVELOPER_GUIDE / docs index to drop the soft-launch wording.

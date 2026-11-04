@@ -93,8 +93,8 @@ extra:
       link: https://github.com/wosslabs/lumina
       name: GitHub
     - icon: fontawesome/brands/java
-      link: https://central.sonatype.com/artifact/io.github.wosslabs/lumina-web
-      name: Maven Central
+      link: https://github.com/wosslabs/lumina/releases/tag/v1.0.0
+      name: v1.0.0 release
   generator: false
 
 nav:

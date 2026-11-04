@@ -2,14 +2,54 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-25%2B-orange.svg)](pom.xml)
+[![Docs](https://img.shields.io/badge/docs-Read%20the%20Docs-8CA1AF.svg)](https://wosslabs-lumina.readthedocs.io/)
 
 **Lumina** is an open-source Java framework for interactive, server-driven web apps.
 Inspired by Streamlit and built for modern Java and AI workloads, it owns rendering,
 session state, and real-time UI updates so application code needs **no HTML, CSS, or JavaScript**.
 
-**Status:** `1.0.0` — first community release (Apache-2.0).
-Maven coordinates: `io.github.wosslabs` (Maven Central). Java packages remain `io.lumina.*`.
-See [docs/RELEASING.md](docs/RELEASING.md).
+**Maintainer:** [Tenzing Wangdi](https://www.linkedin.com/in/tenzing/) · GitHub [`wosslabs`](https://github.com/wosslabs)
+
+**Status:** `1.0.0` — first community release (Apache-2.0), **GitHub soft launch**.
+Target Maven coordinates: `io.github.wosslabs` (not on Maven Central yet). Java packages remain `io.lumina.*`.
+Install by building from source or from tag `v1.0.0` until Central is live — see [docs/RELEASING.md](docs/RELEASING.md).
+
+## How it works
+
+You declare UI and AI surfaces in Java. Lumina rebuilds a component tree on each
+interaction, diffs it, and patches a thin browser client over WebSocket — so you
+never write front-end code.
+
+```mermaid
+flowchart LR
+  subgraph Author["Your app — pure Java"]
+    A["LuminaApp.build(Ui)"]
+    S["Session state"]
+    AI["ChatClient / TokenStream<br/>Spring AI or echo"]
+  end
+
+  subgraph Runtime["Lumina runtime"]
+    B["UiBinder → ComponentNode tree"]
+    D["TreeDiffer → patches"]
+    W["Jetty + WebSocket"]
+  end
+
+  subgraph Browser["Thin client — framework-owned"]
+    C["Web Components + design system"]
+  end
+
+  A --> B
+  S --> B
+  AI --> B
+  B --> D --> W
+  W <-->|"intents / snapshots / stream frames"| C
+```
+
+| You write | Lumina owns |
+|-----------|-------------|
+| `ui.title`, `ui.chatShell`, `ui.ai(stream)` | HTML, CSS, JS client |
+| Session state and routing | Diff/patch protocol |
+| Optional Spring Boot / Spring AI wiring | Embedded Jetty, sessions, Origin checks |
 
 ## Developer guide
 
@@ -26,6 +66,17 @@ Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedoc
 - Platform stack: Spring Boot **4.1.0**, Spring AI **2.0.0**, Jetty **12.1.11** (EE11)
 
 ## Maven coordinates
+
+Target `groupId` after Central publish: `io.github.wosslabs`. **Artifacts are not on Maven Central yet** — clone and build from tag `v1.0.0` (or `main`):
+
+```bash
+git clone https://github.com/wosslabs/lumina.git
+cd lumina
+git checkout v1.0.0
+mvn -q -pl lumina-web,lumina-spring-boot-starter -am install
+```
+
+When Central is live, these coordinates will resolve without a local install:
 
 ```xml
 <!-- Standalone / any framework -->
@@ -131,6 +182,10 @@ Hosted docs: [wosslabs-lumina.readthedocs.io](https://wosslabs-lumina.readthedoc
 - Multi-node session clustering is not shipped.
 - SSE as an alternate transport is not shipped.
 - Cloud LLM coverage depends on Spring AI configuration; echo works offline.
+
+## Author
+
+Built and maintained by [Tenzing Wangdi](https://www.linkedin.com/in/tenzing/) ([`wosslabs`](https://github.com/wosslabs)).
 
 ## License
 

@@ -25,6 +25,7 @@ First community release (Apache-2.0).
 
 ### Known limitations
 
-- Claim/verify `io.github.wosslabs` in Central Portal before `mvn -Prelease deploy`.
+- **GitHub soft launch:** artifacts are not on Maven Central yet. Build from tag `v1.0.0`.
+  Claim/verify `io.github.wosslabs` in Central Portal before `mvn -Prelease deploy`.
 - No multi-node session clustering; no SSE transport; cloud providers via Spring AI only.
 - MCP is a UI console pattern — bring your own MCP client SDK.

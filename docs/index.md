@@ -16,7 +16,17 @@ Declare widgets in Java; Lumina owns the thin client, sessions, and live updates
     - Building RAG / agents / MCP UIs? Read the **[AI guide](AI_GUIDE.md)**.
     - Prefer a short API list? See the **[Author cheat sheet](GUIDE.md)**.
 
-## Install from Maven Central
+## Install (GitHub soft launch)
+
+Artifacts are **not** on Maven Central yet. Build from tag `v1.0.0` or `main`:
+
+```bash
+git clone https://github.com/wosslabs/lumina.git
+cd lumina && git checkout v1.0.0
+mvn -q -pl lumina-web,lumina-spring-boot-starter -am install
+```
+
+Target coordinates after Central publish:
 
 **Standalone / any JVM framework**
 

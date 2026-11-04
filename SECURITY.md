@@ -8,8 +8,9 @@ Security fixes are accepted for the latest released `1.x` line on `main`.
 
 Please **do not** open a public GitHub issue for security problems.
 
-Email the maintainers via the contact listed on the GitHub repository profile, or open a
-**private** security advisory on GitHub (Security → Advisories → New draft advisory).
+Use GitHub's private vulnerability reporting: **Security → Report a vulnerability** on this
+repository. If that is unavailable, contact the maintainers via the method listed on the
+GitHub repository profile.
 
 Include:
 - Affected version / commit

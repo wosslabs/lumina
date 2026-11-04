@@ -45,5 +45,6 @@ See [SECURITY.md](SECURITY.md). Do not file public issues for vulnerabilities.
 
 ## Questions
 
-Open a GitHub Discussion or Issue for design questions after checking
+Open a GitHub Issue for design questions after checking
 [docs/GUIDE.md](docs/GUIDE.md) and [docs/VISION.md](docs/VISION.md).
+GitHub Discussions are not enabled.
